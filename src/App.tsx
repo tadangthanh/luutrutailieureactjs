@@ -1,10 +1,23 @@
-import React from 'react';
-import logo from './logo.svg';
+
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import './App.css';
-import AppRouter from './routes/AppRouter';
+import MainLayout from './layouts/MainLayout';
+import DashboardPage from './pages/DashboardPage';
+import TrashPage from "./pages/TrashPage";
+import SharedPage from "./pages/SharedPage";
 
 function App() {
-    return <AppRouter />;
+    return (
+        <Router>
+            <MainLayout>
+                <Routes>
+                    <Route path="/" element={<DashboardPage />} />
+                    <Route path="/trash" element={<TrashPage />} />
+                    <Route path="/shared" element={<SharedPage />} />
+                </Routes>
+            </MainLayout>
+        </Router>
+    );
 }
 
 export default App;
