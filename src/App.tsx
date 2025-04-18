@@ -1,13 +1,10 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
+import AppRouter from './routes/AppRouter';
 
 function App() {
-  return (
-    <div className="text-3xl font-bold text-yellow-600">
-      Hello Tailwind with TypeScript! ok
-    </div>
-  );
+    return <AppRouter />;
 }
 
 export default App;
