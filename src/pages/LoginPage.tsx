@@ -1,10 +1,12 @@
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { toast } from "react-toastify";
 
 const LoginPage = () => {
+    const baseApi = process.env.REACT_APP_BASE_API;
     const handleLoginSuccess = async (credentialResponse: any) => {
         try {
-            const res = await axios.post('http://localhost:8080/api/auth/google', {
+            const res = await axios.post(baseApi + '/auth/google', {
                 token: credentialResponse.credential // Gửi nguyên token
             }, {
                 withCredentials: true, // nhận cookie từ backend nếu cần
@@ -17,15 +19,13 @@ const LoginPage = () => {
             localStorage.setItem("fullName", fullName);  // Lưu tên người dùng
             localStorage.setItem("email", email); // Lưu email người dùng
             localStorage.setItem("avatarUrl", avatarUrl); // Lưu avatar
+            toast.success("Đăng nhập thành công!", { position: "top-right" }); // ✅ Thông báo thành công
 
-            //  Hoặc nếu bạn thích dùng cookie:
-            // document.cookie = `accessToken=${accessToken}; path=/; max-age=900`; // 15 phút
-            // document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800`; // 7 ngày
-
-            //  Chuyển hướng sau khi đăng nhập thành công
-            window.location.href = "http://localhost:3000"; // hoặc trang chủ, tuỳ bạn
+            setTimeout(() => {
+                window.location.href = "http://localhost:3000";
+            }, 1000); // delay 1 chút để người dùng thấy thông báo
         } catch (err) {
-            console.error("Login thất bại", err);
+            toast.error("Đăng nhập thất bại. Vui lòng thử lại!", { position: "top-right" }); // ✅ Thông báo lỗi
         }
     };
 

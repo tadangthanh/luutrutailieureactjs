@@ -7,37 +7,41 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import PrivateRoute from "./routes/PrivateRoute";
 import PublicRoute from "./routes/PublicRoute";
+import { ToastContainer } from "react-toastify";
 
 function App() {
     return (
-        <Router>
-            <Routes>
-                {/* Public Routes */}
-                <Route path="/login" element={
-                    <PublicRoute><LoginPage /></PublicRoute>
-                } />
-                <Route path="/register" element={
-                    <PublicRoute><RegisterPage /></PublicRoute>
-                } />
+        <>
+            <ToastContainer />
+            <Router>
+                <Routes>
+                    {/* Public Routes */}
+                    <Route path="/login" element={
+                        <PublicRoute><LoginPage /></PublicRoute>
+                    } />
+                    <Route path="/register" element={
+                        <PublicRoute><RegisterPage /></PublicRoute>
+                    } />
 
-                {/* Protected Routes */}
-                <Route path="/" element={
-                    <PrivateRoute>
-                        <MainLayout><DashboardPage /></MainLayout>
-                    </PrivateRoute>
-                } />
-                <Route path="/trash" element={
-                    <PrivateRoute>
-                        <MainLayout><TrashPage /></MainLayout>
-                    </PrivateRoute>
-                } />
-                <Route path="/shared" element={
-                    <PrivateRoute>
-                        <MainLayout><SharedPage /></MainLayout>
-                    </PrivateRoute>
-                } />
-            </Routes>
-        </Router>
+                    {/* Protected Routes */}
+                    <Route path="/" element={
+                        <PrivateRoute>
+                            <MainLayout><DashboardPage /></MainLayout>
+                        </PrivateRoute>
+                    } />
+                    <Route path="/trash" element={
+                        <PrivateRoute>
+                            <MainLayout><TrashPage /></MainLayout>
+                        </PrivateRoute>
+                    } />
+                    <Route path="/shared" element={
+                        <PrivateRoute>
+                            <MainLayout><SharedPage /></MainLayout>
+                        </PrivateRoute>
+                    } />
+                </Routes>
+            </Router>
+        </>
     );
 }
 
