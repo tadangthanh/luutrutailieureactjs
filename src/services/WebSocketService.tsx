@@ -1,60 +1,82 @@
-import { Client } from "@stomp/stompjs";
+// WebSocketService.ts
+
+import { Client, StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
 import { getAccessToken } from "../utils/auth";
 
-// URL WebSocket server
-const token = getAccessToken();
 const baseApi = process.env.REACT_APP_BASE_URL_BACKEND;
 const WS_URL = baseApi + "/ws?token=" + getAccessToken();
+
 export class WebSocketService {
     private client: Client;
+    private progressSubscription: StompSubscription | null = null;
+    private completedSubscription: StompSubscription | null = null;
 
     constructor() {
         this.client = new Client({
-            webSocketFactory: () => new SockJS(WS_URL,null,{
-                transports: ["websocket"],
-                timeout: 5000
-            }),
+            webSocketFactory: () =>
+                new SockJS(WS_URL, null, {
+                    transports: ["websocket"],
+                    timeout: 5000,
+                }),
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000,
         });
-
     }
 
-    // Kết nối WebSocket
     connect(onMessage: (message: string) => void): void {
         this.client.onConnect = () => {
-            // console.log("Connected to WebSocket");
-            // Subscribe vào topic
-            this.client.subscribe("/user/topic/import-word-status", (message) => {
-                if (message.body) {
-                    onMessage(message.body);
-                }
-            });
-            // Subscribe vào topic import-sentence-status
-            this.client.subscribe("/user/topic/import-sentence-status", (message) => {
-                if (message.body) {
-                    onMessage(message.body);
-                }
-            });
+            console.log("✅ WebSocket connected");
+            // Không auto-subscribe ở đây nữa
         };
-        this.client.onDisconnect = () => {
-            // console.log("Disconnected from WebSocket");
-        };
-
         this.client.activate();
     }
 
-    // Ngắt kết nối WebSocket
     disconnect(): void {
         if (this.client.active) {
+            this.unsubscribeUploadProgress();
+            this.unsubscribeUploadCompleted();
             this.client.deactivate();
-            // console.log("WebSocket connection closed");
         }
+    }
+
+    // ✅ Gọi khi bắt đầu upload
+    subscribeUploadProgress(onMessage: (message: string) => void) {
+        if (!this.client.connected) return;
+        this.progressSubscription = this.client.subscribe(
+            "/user/topic/upload-documents",
+            (message) => {
+                if (message.body) {
+                    onMessage(message.body);
+                }
+            }
+        );
+    }
+
+    subscribeUploadCompleted(onMessage: (message: string) => void) {
+        if (!this.client.connected) return;
+        this.completedSubscription = this.client.subscribe(
+            "/user/topic/upload-documents-completed",
+            (message) => {
+                if (message.body) {
+                    onMessage(message.body);
+                }
+            }
+        );
+    }
+
+    // ✅ Gọi khi kết thúc hoặc hủy upload
+    unsubscribeUploadProgress() {
+        this.progressSubscription?.unsubscribe();
+        this.progressSubscription = null;
+    }
+
+    unsubscribeUploadCompleted() {
+        this.completedSubscription?.unsubscribe();
+        this.completedSubscription = null;
     }
 }
 
 export const webSocketService = new WebSocketService();
 export default webSocketService;
-

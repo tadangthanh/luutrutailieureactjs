@@ -7,14 +7,14 @@ import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import PrivateRoute from "./routes/PrivateRoute";
 import PublicRoute from "./routes/PublicRoute";
-import { ToastContainer } from "react-toastify";
 import { WebSocketProvider } from "./components/WebSocketProvider";
+import { Toaster } from "sonner";
 
 function App() {
     return (
         <WebSocketProvider>
             <>
-                <ToastContainer />
+                <Toaster richColors position="bottom-center" />
                 <Router>
                     <Routes>
                         {/* Public Routes */}
