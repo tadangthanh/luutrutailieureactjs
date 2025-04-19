@@ -1,27 +1,31 @@
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
-import { useState } from "react";
 
 const LoginPage = () => {
-    const [error, setError] = useState<string | null>(null); // 👉 State lỗi
-
     const handleLoginSuccess = async (credentialResponse: any) => {
         try {
             const res = await axios.post('http://localhost:8080/api/auth/google', {
-                token: credentialResponse.credential
+                token: credentialResponse.credential // Gửi nguyên token
             }, {
-                withCredentials: true,
+                withCredentials: true, // nhận cookie từ backend nếu cần
             });
+            const { accessToken, refreshToken, fullName, email, avatarUrl } = res.data;
 
-            const { accessToken, refreshToken } = res.data;
-
+            // Lưu vào localStorage
             localStorage.setItem("accessToken", accessToken);
             localStorage.setItem("refreshToken", refreshToken);
+            localStorage.setItem("fullName", fullName);  // Lưu tên người dùng
+            localStorage.setItem("email", email); // Lưu email người dùng
+            localStorage.setItem("avatarUrl", avatarUrl); // Lưu avatar
 
-            window.location.href = "http://localhost:3000";
+            //  Hoặc nếu bạn thích dùng cookie:
+            // document.cookie = `accessToken=${accessToken}; path=/; max-age=900`; // 15 phút
+            // document.cookie = `refreshToken=${refreshToken}; path=/; max-age=604800`; // 7 ngày
+
+            //  Chuyển hướng sau khi đăng nhập thành công
+            window.location.href = "http://localhost:3000"; // hoặc trang chủ, tuỳ bạn
         } catch (err) {
             console.error("Login thất bại", err);
-            setError("Đăng nhập bằng Google thất bại. Vui lòng thử lại!");
         }
     };
 
@@ -29,7 +33,6 @@ const LoginPage = () => {
         <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
             <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md w-full max-w-md">
                 <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">Đăng nhập</h2>
-
                 <form className="space-y-4">
                     <div>
                         <label className="block text-sm text-gray-700 dark:text-gray-300">Email</label>
@@ -57,18 +60,8 @@ const LoginPage = () => {
 
                 <GoogleLogin
                     onSuccess={handleLoginSuccess}
-                    onError={() => {
-                        console.log("Login Failed");
-                        setError("Không thể đăng nhập bằng Google.");
-                    }}
+                    onError={() => console.log("Login Failed")}
                 />
-
-                {/* 👉 Hiển thị lỗi nếu có */}
-                {error && (
-                    <div className="mt-4 text-sm text-red-500 text-center">
-                        {error}
-                    </div>
-                )}
 
                 <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
                     Chưa có tài khoản?{" "}
