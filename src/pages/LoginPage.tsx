@@ -1,29 +1,35 @@
 import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
+import { useState } from "react";
 
 const LoginPage = () => {
-    const handleLoginSuccess = async (credentialResponse: any) => {
-        const idToken = credentialResponse.credential;
+    const [error, setError] = useState<string | null>(null); // 👉 State lỗi
 
+    const handleLoginSuccess = async (credentialResponse: any) => {
         try {
-            // Gửi ID token đến backend để xác minh và nhận access token từ hệ thống bạn
-            const res = await axios.post('http://localhost:8080/login/oauth2/code/google', {
-                idToken,
+            const res = await axios.post('http://localhost:8080/api/auth/google', {
+                token: credentialResponse.credential
+            }, {
+                withCredentials: true,
             });
 
-            // Lưu token backend trả về (JWT hoặc gì đó)
-            localStorage.setItem('token', res.data.token);
+            const { accessToken, refreshToken } = res.data;
 
-            // Redirect qua trang chính
-            window.location.href = "/";
+            localStorage.setItem("accessToken", accessToken);
+            localStorage.setItem("refreshToken", refreshToken);
+
+            window.location.href = "http://localhost:3000";
         } catch (err) {
-            console.error('Login failed', err);
+            console.error("Login thất bại", err);
+            setError("Đăng nhập bằng Google thất bại. Vui lòng thử lại!");
         }
     };
+
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
             <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md w-full max-w-md">
                 <h2 className="text-2xl font-bold mb-6 text-center text-gray-800 dark:text-white">Đăng nhập</h2>
+
                 <form className="space-y-4">
                     <div>
                         <label className="block text-sm text-gray-700 dark:text-gray-300">Email</label>
@@ -49,7 +55,20 @@ const LoginPage = () => {
 
                 <div className="my-4 text-center text-gray-500">hoặc</div>
 
-                <GoogleLogin onSuccess={handleLoginSuccess} onError={() => console.log("Login Failed")} />
+                <GoogleLogin
+                    onSuccess={handleLoginSuccess}
+                    onError={() => {
+                        console.log("Login Failed");
+                        setError("Không thể đăng nhập bằng Google.");
+                    }}
+                />
+
+                {/* 👉 Hiển thị lỗi nếu có */}
+                {error && (
+                    <div className="mt-4 text-sm text-red-500 text-center">
+                        {error}
+                    </div>
+                )}
 
                 <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
                     Chưa có tài khoản?{" "}
