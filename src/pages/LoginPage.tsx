@@ -1,13 +1,25 @@
-import { useNavigate } from "react-router-dom";
+import { GoogleLogin } from "@react-oauth/google";
+import axios from "axios";
 
 const LoginPage = () => {
-    const navigate = useNavigate();
+    const handleLoginSuccess = async (credentialResponse: any) => {
+        const idToken = credentialResponse.credential;
 
-    const handleGoogleLogin = () => {
-        // Chuyển hướng đến endpoint Google OAuth backend
-        window.location.href = "http://localhost:8080/oauth2/authorization/google";
+        try {
+            // Gửi ID token đến backend để xác minh và nhận access token từ hệ thống bạn
+            const res = await axios.post('http://localhost:8080/login/oauth2/code/google', {
+                idToken,
+            });
+
+            // Lưu token backend trả về (JWT hoặc gì đó)
+            localStorage.setItem('token', res.data.token);
+
+            // Redirect qua trang chính
+            window.location.href = "/";
+        } catch (err) {
+            console.error('Login failed', err);
+        }
     };
-
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900">
             <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-md w-full max-w-md">
@@ -29,6 +41,7 @@ const LoginPage = () => {
                             placeholder="••••••••"
                         />
                     </div>
+
                     <button type="submit" className="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700">
                         Đăng nhập
                     </button>
@@ -36,13 +49,7 @@ const LoginPage = () => {
 
                 <div className="my-4 text-center text-gray-500">hoặc</div>
 
-                <button
-                    onClick={handleGoogleLogin}
-                    className="w-full border py-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700 flex justify-center items-center gap-2"
-                >
-                    <img src="https://www.svgrepo.com/show/475656/google-color.svg" alt="Google" className="w-5 h-5" />
-                    Đăng nhập với Google
-                </button>
+                <GoogleLogin onSuccess={handleLoginSuccess} onError={() => console.log("Login Failed")} />
 
                 <p className="mt-4 text-center text-sm text-gray-600 dark:text-gray-400">
                     Chưa có tài khoản?{" "}
