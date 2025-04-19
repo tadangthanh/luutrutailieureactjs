@@ -55,10 +55,10 @@ const Dropdown = ({ trigger, children, align = "right" }: DropdownProps) => {
                 >
                     {isLoggedIn ? (
                         <div>
-                            <div className="px-4 py-2 text-gray-700 dark:text-white">
-                                {/* Hiển thị tên hoặc email */}
-                                {fullName || email}
+                            <div className="px-4 py-2 text-gray-700 dark:text-white font-medium cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-700 whitespace-nowrap">
+                                Thông tin tài khoản
                             </div>
+
                             <button
                                 onClick={handleLogout}
                                 className="w-full text-left px-4 py-2 text-red-600 hover:bg-red-100 dark:hover:bg-gray-700 dark:text-red-400"
