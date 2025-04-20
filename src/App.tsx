@@ -42,7 +42,7 @@ function App() {
                                 <MainLayout><SharedPage /></MainLayout>
                             </PrivateRoute>
                         } />
-                        <Route path="/ask" element={
+                        <Route path="/document-assistant" element={
                             <PrivateRoute>
                                 <MainLayout><DocumentQA /></MainLayout>
                             </PrivateRoute>

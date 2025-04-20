@@ -2,7 +2,7 @@ import { GoogleLogin } from "@react-oauth/google";
 import axios from "axios";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 const LoginPage = () => {
     const baseApi = process.env.REACT_APP_BASE_API;
@@ -45,7 +45,7 @@ const LoginPage = () => {
             const res = await axios.post(`${baseApi}/auth/access`, { email, password }, {
                 withCredentials: true,
             });
-            if(res.data.status===200){
+            if (res.data.status === 200) {
                 toast.success(res.data.message, { position: "top-right" });
                 const { accessToken, refreshToken, fullName, avatarUrl } = res.data.data;
                 localStorage.setItem("accessToken", accessToken);

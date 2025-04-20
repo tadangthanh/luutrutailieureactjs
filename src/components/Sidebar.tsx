@@ -16,8 +16,8 @@ const Sidebar = () => {
                 <Link to="/trash" className="flex items-center gap-2 hover:text-blue-600">
                     <Trash2 size={18} /> Thùng rác
                 </Link>
-                <Link to="/ask" className="flex items-center gap-2 hover:text-blue-600">
-                    <Asterisk size={18} /> Hoi dap
+                <Link to="/document-assistant" className="flex items-center gap-2 hover:text-blue-600">
+                    <Asterisk size={18} /> Trợ lý tài liệu
                 </Link>
             </nav>
         </aside>
