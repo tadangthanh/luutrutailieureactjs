@@ -15,7 +15,8 @@ const DocumentQA: React.FC = () => {
     const fileInput = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const contentsRef = useRef<Content[]>([]); // Khởi tạo content là một mảng rỗng
-    const totalToken = useRef(0); // Khởi tạo totalToken là 0
+    const tokenUsage = useRef(0); // Khởi tạo totalToken là 0
+    const tokenDocument = useRef(0); // Khởi tạo tokenDocument là 0
     const maxToken = 1000000; // Giới hạn token tối đa
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
@@ -70,6 +71,15 @@ const DocumentQA: React.FC = () => {
 
             for await (const chunk of response) {
                 const content = chunk.candidates?.[0]?.content;
+                const usageMetadata = chunk.usageMetadata;
+                if (usageMetadata) {
+                    tokenUsage.current = usageMetadata.totalTokenCount|| 0;
+                    usageMetadata.promptTokensDetails?.forEach((detail) => {
+                        if (detail?.modality === "DOCUMENT") {
+                            tokenDocument.current = detail.tokenCount || 0;
+                        }
+                    });
+                }
                 if (!content) continue;
                 contentsRef.current.push(content);
                 fullText += chunk.text;
