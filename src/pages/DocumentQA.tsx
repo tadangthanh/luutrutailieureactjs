@@ -17,7 +17,7 @@ const DocumentQA: React.FC = () => {
     const contentsRef = useRef<Content[]>([]); // Khởi tạo content là một mảng rỗng
     const tokenUsage = useRef(0); // Khởi tạo totalToken là 0
     const tokenDocument = useRef(0); // Khởi tạo tokenDocument là 0
-    const maxToken = 1000000; // Giới hạn token tối đa
+    const maxToken = 1000000; // Giới hạn token tối đa 1triệu
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         if (e.target.files && e.target.files.length > 0) {
             if (e.target.files[0].type !== "application/pdf") {
@@ -30,11 +30,55 @@ const DocumentQA: React.FC = () => {
             setFile(e.target.files[0]);
         }
     };
+    const countTokensInContents = (contents: Content[]): number => {
+        return contents.reduce((total, content) => {
+            let text = "";
+
+            // Duyệt từng phần của content để lấy text
+            content.parts?.forEach((part) => {
+                if ("text" in part && typeof part.text === "string") {
+                    text += part.text + " ";
+                }
+            });
+
+            // Đếm số từ (token ~ từ)
+            const tokenCount = text.trim().split(/\s+/).length;
+            return total + tokenCount;
+        }, 0);
+    };
 
     const scrollToBottom = () => {
         setTimeout(() => {
             messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
         }, 100);
+    };
+    const countTokens = (text: string): number => {
+        return text.trim().split(/\s+/).length;
+    };
+    // hàm xóa các phần tử trong mảng contents cho đến khi tổng số token nhỏ hơn maxToken
+    const trimContentsToMaxToken = (contents: Content[], maxToken: number): void => {
+        // Tính số token cho từng content trong mảng
+        const tokenCounts = contents.map((content) => {
+            let total = 0;
+            if (content.parts) {
+                for (const part of content.parts) {
+                    if ("text" in part && part.text) {
+                        total += countTokens(part.text);
+                    }
+                }
+            }
+            return total;
+        });
+
+        // Tính tổng số token
+        let total = tokenCounts.reduce((sum, count) => sum + count, 0);
+
+        // Nếu vượt giới hạn thì xoá dần từ đầu mảng
+        while (total >= maxToken && contents.length > 0) {
+            const removed = contents.shift();        // Xoá phần tử đầu
+            const removedToken = tokenCounts.shift(); // Xoá số token tương ứng
+            total -= removedToken || 0;               // Cập nhật tổng
+        }
     };
 
     const handleAsk = async () => {
@@ -70,6 +114,7 @@ const DocumentQA: React.FC = () => {
             let fullText = "";
 
             for await (const chunk of response) {
+                console.log("Chunk:", chunk);
                 const content = chunk.candidates?.[0]?.content;
                 const usageMetadata = chunk.usageMetadata;
                 if (usageMetadata) {
@@ -105,6 +150,7 @@ const DocumentQA: React.FC = () => {
                     clearInterval(typeInterval);
                 }
             }, 10);
+            trimContentsToMaxToken(contentsRef.current, maxToken);
         } catch (err) {
             console.error(err);
             setMessages((prev) => [...prev, { role: "ai", text: "Đã xảy ra lỗi. Vui lòng thử lại." }]);
