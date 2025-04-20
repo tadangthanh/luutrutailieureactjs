@@ -2,8 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { Content, GoogleGenAI } from "@google/genai";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
-import { IoMdCloseCircle } from "react-icons/io"; // Sử dụng icon cấm từ react-icons
-import { SendHorizonalIcon, StopCircle } from "lucide-react";
+import { SendHorizonalIcon } from "lucide-react";
 
 type Message = {
     role: "user" | "ai";
@@ -15,9 +14,6 @@ const DocumentQA: React.FC = () => {
     const [question, setQuestion] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(false);
-    const [isStopped, setIsStopped] = useState(false); // Trạng thái dừng trả lời
-    const [elapsedTime, setElapsedTime] = useState(0); // Thời gian trôi qua (mili giây)
-    const [timeRemainingForAI, setTimeRemainingForAI] = useState<number | null>(null); // Thời gian còn lại cho AI
 
     const fileInput = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -25,20 +21,40 @@ const DocumentQA: React.FC = () => {
     const tokenUsage = useRef(0);
     const tokenDocument = useRef(0);
     const maxToken = 1000000;
-    const intervalRef = useRef<NodeJS.Timeout | null>(null); // Dùng để dừng interval khi cần
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        if (e.target.files && e.target.files.length > 0) {
-            if (e.target.files[0].type !== "application/pdf") {
-                toast.error("Vui lòng chọn tệp PDF.");
-                setFile(null);
-                setQuestion("");
-                fileInput.current!.value = "";
-                return;
-            }
-            setFile(e.target.files[0]);
+        const newFile = e.target.files?.[0];
+
+        // Nếu không có file mới (tức là user ấn cancel) => không làm gì cả
+        if (!newFile) return;
+
+        // Kiểm tra loại file
+        if (newFile.type !== "application/pdf") {
+            toast.error("Vui lòng chọn tệp PDF.");
+            fileInput.current!.value = ""; // reset input
+            return;
         }
+
+        // Nếu là cùng 1 file
+        if (
+            file &&
+            newFile.name === file.name &&
+            newFile.size === file.size &&
+            newFile.lastModified === file.lastModified
+        ) {
+            toast.info("Bạn vừa chọn lại cùng một tệp.");
+            return;
+        }
+
+        // Nếu là file hợp lệ và khác file cũ
+        toast.success("Đã chọn tệp mới.");
+        setFile(newFile);
+        setQuestion("");
+        setMessages([]);
+        contentsRef.current = [];
     };
+
+
 
     const scrollToBottom = () => {
         setTimeout(() => {
@@ -79,18 +95,6 @@ const DocumentQA: React.FC = () => {
         setMessages((prev) => [...prev, userMessage]);
         setQuestion("");
         setLoading(true);
-        setIsStopped(false);
-        setElapsedTime(0); // Reset thời gian khi bắt đầu hỏi
-
-        // Khởi tạo một interval để tính thời gian trôi qua
-        intervalRef.current = setInterval(() => {
-            if (!isStopped) {
-                setElapsedTime((prevTime) => {
-                    const newTime = prevTime + 0.1;
-                    return Math.round(newTime * 10) / 10; // Làm tròn đến 1 chữ số thập phân
-                });
-            }
-        }, 100); // 100 ms
 
         try {
             const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY });
@@ -114,10 +118,10 @@ const DocumentQA: React.FC = () => {
                 contents: contentsRef.current,
                 config: { responseMimeType: "text/plain" }
             });
+
             let fullText = "";
 
             for await (const chunk of response) {
-                if (isStopped) break; // Nếu đã dừng thì thoát khỏi vòng lặp
                 const content = chunk.candidates?.[0]?.content;
                 const usageMetadata = chunk.usageMetadata;
                 if (usageMetadata) {
@@ -160,97 +164,73 @@ const DocumentQA: React.FC = () => {
             setMessages((prev) => [...prev, { role: "ai", text: "Đã xảy ra lỗi. Vui lòng thử lại." }]);
         } finally {
             setLoading(false);
-            clearInterval(intervalRef.current!); // Dừng interval khi kết thúc
         }
     };
 
-    const handleStop = () => {
-        setIsStopped(true); // Đánh dấu dừng trả lời
-        clearInterval(intervalRef.current!); // Dừng interval tính thời gian
-    };
-
     return (
-        <div className="max-w-2xl mx-auto p-6 space-y-4 bg-neutral-light dark:bg-neutral-dark rounded-xl mt-10 shadow-md transition-colors duration-300">
-            <h1 className="text-2xl text-secondary font-bold">Trợ lý tài liệu</h1>
+        <div className="max-w-3xl mx-auto px-6 py-8 space-y-6 bg-white dark:bg-neutral-900 rounded-2xl mt-12 shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300">
+            <h1 className="text-3xl font-extrabold text-primary dark:text-white tracking-tight">
+                🤖 Trợ lý Tài Liệu Thông Minh
+            </h1>
 
-            <input
-                ref={fileInput}
-                type="file"
-                accept=".pdf,.doc,.docx"
-                onChange={handleFileChange}
-                className="file-input file-input-bordered w-full text-primary file:text-primary file:border-primary/50 file:bg-primary/10 hover:file:bg-primary/20"
-            />
+            <div>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                    Tải tệp tài liệu của bạn (.pdf, .doc, .docx)
+                </label>
+                <input
+                    ref={fileInput}
+                    type="file"
+                    accept=".pdf,.doc,.docx"
+                    onChange={handleFileChange}
+                    className="file-input w-full file:bg-primary file:text-white file:border-none file:py-2 file:px-4 rounded-lg cursor-pointer bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-gray-200 focus:outline-none transition"
+                />
+            </div>
 
-            <div className="h-96 overflow-y-auto bg-white dark:bg-neutral-dark p-4 rounded-md space-y-4 border border-gray-200 dark:border-gray-700">
+            <div className="h-96 overflow-y-auto bg-neutral-100 dark:bg-neutral-800 p-5 rounded-xl space-y-4 border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar">
                 {messages.map((msg, idx) => (
                     <div
                         key={idx}
                         className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
                     >
                         <div
-                            className={`max-w-[80%] px-4 py-2 rounded-lg text-sm whitespace-pre-wrap ${msg.role === "user"
+                            className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md ${msg.role === "user"
                                 ? "bg-primary text-white rounded-br-none"
-                                : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-bl-none"
+                                : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none"
                                 }`}
                         >
                             <ReactMarkdown>{msg.text}</ReactMarkdown>
-                            {/* Hiển thị thời gian trong tin nhắn của AI sắp tới */}
-                            {msg.role === "ai" && loading && !isStopped && timeRemainingForAI !== null && (
-                                <div className="text-sm text-gray-500 mt-2">
-                                    Thời gian đã trôi qua: {elapsedTime}s
-                                </div>
-                            )}
                         </div>
                     </div>
                 ))}
                 <div ref={messagesEndRef} />
             </div>
 
-            <textarea
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                placeholder="Nhập câu hỏi của bạn về tài liệu..."
-                className="w-full bg-white dark:bg-neutral-dark  text-gray-800 dark:text-white placeholder-gray-400 outline-none focus:ring-0 focus:border-transparent rounded-md p-3"
-            />
-
-            <div className="relative h-[50px]">
-                {/* Hiển thị thời gian đếm nếu đang loading */}
-                {loading && !isStopped && (
-                    <div className="absolute bottom-4 right-[175px] text-sm text-gray-600 dark:text-gray-300 font-medium">
-                        ⏱ {elapsedTime.toFixed(1)}s
-                    </div>
-                )}
-
-                {/* Nút Gửi câu hỏi */}
-                {!loading && (
-                    <button
-                        onClick={handleAsk}
-                        disabled={!file || !question}
-                        className={`absolute bottom-4 right-4 w-[150px] p-2 text-white rounded-md flex items-center justify-center transition-colors duration-200 ${!file || !question
-                                ? "bg-primary/50 cursor-not-allowed"
-                                : "bg-primary hover:bg-primary-dark"
-                            }`}
-                    >
-                        Gửi câu hỏi
-                        <SendHorizonalIcon className="ms-2 w-5 h-5 text-white" />
-                    </button>
-                )}
-
-                {/* Nút Dừng trả lời */}
-                {loading && (
-                    <button
-                        onClick={handleStop}
-                        className="absolute bottom-4 right-4 w-[150px] p-2 bg-red-500 hover:bg-red-600 text-white rounded-md flex items-center justify-center transition-colors duration-200"
-                    >
-                        Dừng
-                        <StopCircle className="ms-2 w-5 h-5 text-white" />
-                    </button>
-                )}
+            <div>
+                <textarea
+                    value={question}
+                    onChange={(e) => setQuestion(e.target.value)}
+                    placeholder="Nhập câu hỏi của bạn về tài liệu..."
+                    rows={3}
+                    className="w-full resize-none bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
+                />
             </div>
 
-
+            <div className="flex justify-end">
+                <button
+                    onClick={handleAsk}
+                    disabled={!file || !question || loading}
+                    className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${!file || !question || loading
+                        ? "bg-primary/50 cursor-not-allowed"
+                        : "bg-primary hover:bg-primary-dark"
+                        }`}
+                >
+                    Gửi câu hỏi
+                    <SendHorizonalIcon className="ml-2 w-5 h-5" />
+                </button>
+            </div>
         </div>
     );
+
 };
 
 export default DocumentQA;

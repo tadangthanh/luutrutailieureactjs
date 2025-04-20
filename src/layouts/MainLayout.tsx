@@ -127,11 +127,11 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     }, [handleDragOver, handleDragLeave, handleDrop]);
 
     return (
-        <div className="flex h-screen relative">
+        <div className="flex h-screen relative ">
             <Sidebar />
             <div className="flex flex-col flex-1 overflow-hidden">
                 <Header />
-                <main className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 relative">
+                <main className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 relative custom-scrollbar">
                     {children}
                     {isDragging && (
                         <div className="absolute inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center pointer-events-none">
