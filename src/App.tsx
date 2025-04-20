@@ -9,6 +9,7 @@ import PrivateRoute from "./routes/PrivateRoute";
 import PublicRoute from "./routes/PublicRoute";
 import { WebSocketProvider } from "./components/WebSocketProvider";
 import { Toaster } from "sonner";
+import DocumentQA from "./pages/DocumentQA";
 
 function App() {
     return (
@@ -39,6 +40,11 @@ function App() {
                         <Route path="/shared" element={
                             <PrivateRoute>
                                 <MainLayout><SharedPage /></MainLayout>
+                            </PrivateRoute>
+                        } />
+                        <Route path="/ask" element={
+                            <PrivateRoute>
+                                <MainLayout><DocumentQA /></MainLayout>
                             </PrivateRoute>
                         } />
                     </Routes>

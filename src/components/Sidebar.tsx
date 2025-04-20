@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom"; // Import Link từ react-router-dom
-import { Home, Share2, Trash2 } from "lucide-react";
+import { Asterisk, Home, Share2, Trash2 } from "lucide-react";
 
 const Sidebar = () => {
     return (
@@ -15,6 +15,9 @@ const Sidebar = () => {
                 </Link>
                 <Link to="/trash" className="flex items-center gap-2 hover:text-blue-600">
                     <Trash2 size={18} /> Thùng rác
+                </Link>
+                <Link to="/ask" className="flex items-center gap-2 hover:text-blue-600">
+                    <Asterisk size={18} /> Hoi dap
                 </Link>
             </nav>
         </aside>
