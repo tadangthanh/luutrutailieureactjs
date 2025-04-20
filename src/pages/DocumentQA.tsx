@@ -1,5 +1,5 @@
-import React, { useRef, useState, useEffect } from "react";
-import { Content, GoogleGenAI } from "@google/genai";
+import React, { useRef, useState, useEffect, use } from "react";
+import { Content, GetFileParameters, GoogleGenAI } from "@google/genai";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { SendHorizonalIcon } from "lucide-react";
@@ -21,6 +21,7 @@ const DocumentQA: React.FC = () => {
     const tokenUsage = useRef(0);
     const tokenDocument = useRef(0);
     const maxToken = 1000000;
+    const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY });
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newFile = e.target.files?.[0];
@@ -53,7 +54,6 @@ const DocumentQA: React.FC = () => {
         setMessages([]);
         contentsRef.current = [];
     };
-
 
 
     const scrollToBottom = () => {
@@ -95,11 +95,13 @@ const DocumentQA: React.FC = () => {
         setMessages((prev) => [...prev, userMessage]);
         setQuestion("");
         setLoading(true);
-
         try {
-            const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY });
             const uploadedFile = await ai.files.upload({ file });
-            const newContent: Content = {
+            if (!uploadedFile) {
+                toast.error("Tải lên tệp thất bại.");
+                return;
+            }
+            const initContent: Content = {
                 role: "user",
                 parts: [
                     {
@@ -111,7 +113,7 @@ const DocumentQA: React.FC = () => {
                     { text: question },
                 ],
             };
-            contentsRef.current.push(newContent);
+            contentsRef.current.push(initContent);
 
             const response = await ai.models.generateContentStream({
                 model: "gemini-2.5-flash-preview-04-17",
