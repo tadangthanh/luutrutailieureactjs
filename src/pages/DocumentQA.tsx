@@ -1,6 +1,7 @@
 import React, { useRef, useState } from "react";
 import { Content, GoogleGenAI } from "@google/genai";
 import { toast } from "sonner";
+import ReactMarkdown from "react-markdown"; // ⬅ import ở đầu file
 
 type Message = {
     role: "user" | "ai";
@@ -29,22 +30,6 @@ const DocumentQA: React.FC = () => {
             }
             setFile(e.target.files[0]);
         }
-    };
-    const countTokensInContents = (contents: Content[]): number => {
-        return contents.reduce((total, content) => {
-            let text = "";
-
-            // Duyệt từng phần của content để lấy text
-            content.parts?.forEach((part) => {
-                if ("text" in part && typeof part.text === "string") {
-                    text += part.text + " ";
-                }
-            });
-
-            // Đếm số từ (token ~ từ)
-            const tokenCount = text.trim().split(/\s+/).length;
-            return total + tokenCount;
-        }, 0);
     };
 
     const scrollToBottom = () => {
@@ -127,7 +112,7 @@ const DocumentQA: React.FC = () => {
                 }
                 if (!content) continue;
                 contentsRef.current.push(content);
-                fullText += chunk.text;
+                fullText += chunk.text || "";
             }
 
             let index = 0;
@@ -183,7 +168,7 @@ const DocumentQA: React.FC = () => {
                                 : "bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-white rounded-bl-none"
                                 }`}
                         >
-                            {msg.text}
+                            <ReactMarkdown>{msg.text}</ReactMarkdown>
                         </div>
                     </div>
                 ))}
