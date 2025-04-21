@@ -1,11 +1,9 @@
 // WebSocketService.ts
-
 import { Client, StompSubscription } from "@stomp/stompjs";
 import SockJS from "sockjs-client";
-import { getAccessToken } from "../utils/auth";
 
 const baseApi = process.env.REACT_APP_BASE_URL_BACKEND;
-const WS_URL = baseApi + "/ws?token=" + getAccessToken();
+const WS_URL = baseApi + "/ws?token=" + localStorage.getItem("accessToken");
 
 export class WebSocketService {
     private client: Client;
@@ -28,7 +26,6 @@ export class WebSocketService {
     connect(onMessage: (message: string) => void): void {
         this.client.onConnect = () => {
             console.log("✅ WebSocket connected");
-            // Không auto-subscribe ở đây nữa
         };
         this.client.activate();
     }
