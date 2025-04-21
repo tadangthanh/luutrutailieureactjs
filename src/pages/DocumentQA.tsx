@@ -1,9 +1,15 @@
-import React, { useRef, useState, useEffect, use } from "react";
-import { Content, GetFileParameters, GoogleGenAI } from "@google/genai";
+import React, { useRef, useState, useEffect } from "react";
+import { Content, GoogleGenAI } from "@google/genai";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { SendHorizonalIcon } from "lucide-react";
-import SidebarChatList from "../components/SidebarChatList";
+import { SidebarChatList } from "../components/SidebarChatList";
+import { AssistantFile } from "../types/AssistantFile";
+import { getAssistantFileList } from "../services/AssistantFileApi";
+import { PageResponse } from "../types/PageResponse";
+import { Conversation } from "../types/Conversation";
+import { getConversations } from "../services/ConversationApi";
+
 
 type Message = {
     role: "user" | "ai";
@@ -169,12 +175,68 @@ const DocumentQA: React.FC = () => {
             setLoading(false);
         }
     };
+    const handleChatSelect = (assistantFileId: number) => {
+        setAssistantFileId(assistantFileId);
+    };
+    const handleChatDelete = (assistantFileId: number) => {
+        setAssistantFileId(assistantFileId);
+    }
+    const [pageAssistantFile, setPageAssistantFile] = useState<PageResponse<AssistantFile>>(
+        {
+            pageNo: 0,
+            pageSize: 10,
+            totalPage: 0,
+            hasNext: false,
+            totalItems: 0,
+            items: [],
+        }
+    );
+    const [assistantFilePage, setAssistantFilePage] = useState<number>(0);
+    useEffect(() => {
+        getAssistantFileList(assistantFilePage, 10).then((response) => {
+            if (response.status === 200) {
+                setPageAssistantFile(prev => ({
+                    ...prev,
+                    items: [...prev.items, ...response.data.data.items],
+                    hasNext: response.data.data.hasNext,
+                    totalItems: response.data.data.totalItems,
+                }));
+            } else {
+                toast.error("Lỗi khi tải danh sách tệp trợ lý.");
+            }
+        }).catch((error) => {
+            toast.error("Lỗi khi tải danh sách tệp trợ lý.");
+        })
+    }, [assistantFilePage]);
+    const [assistantFileId, setAssistantFileId] = useState<number>(0);
+    const [conversations, setConversations] = useState<Conversation[]>([]);
+
+    useEffect(() => {
+        if (assistantFileId) {
+            getConversations(assistantFileId).then((response) => {
+                if (response.status === 200) {
+                    setConversations(response.data.data);
+                } else {
+                    toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
+                }
+            }).catch((error) => {
+                toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
+            })
+        }
+    }, [assistantFileId]);
 
     return (
         <div className="flex min-h-screen bg-neutral-light dark:bg-gray-900">
             {/* Sidebar */}
             <div className="w-64 mt-20  dark:bg-gray-900  flex flex-col">
-                <SidebarChatList />
+                <SidebarChatList
+                    onChatSelect={handleChatSelect}
+                    onChatDelete={handleChatDelete}
+                    pageAssistantFile={pageAssistantFile}
+                    onLoadMore={() => {
+                        setAssistantFilePage((prev) => prev + 1);
+                    }}
+                />
             </div>
 
             {/* Main Content */}
