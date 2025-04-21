@@ -4,5 +4,5 @@ export interface AssistantFile {
     originalFileName: string;
     expirationTime: Date | null;
     createTime: Date | null;
-    userId: number;
+    chatSessionId: number;
 }

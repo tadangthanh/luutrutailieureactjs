@@ -1,6 +1,6 @@
 export interface Conversation {
-    id?: number;
+    id: number;
     question: string;
-    answer?: string;
-    assistantFileId: number;
+    answer: string;
+    chatSessionId: number;
 }

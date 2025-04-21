@@ -2,13 +2,15 @@ import React, { useRef, useState, useEffect } from "react";
 import { Content, GoogleGenAI } from "@google/genai";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
-import { SendHorizonalIcon } from "lucide-react";
+import { ChevronDown, FileText, Plus, SendHorizonalIcon, X } from "lucide-react";
 import { SidebarChatList } from "../components/SidebarChatList";
 import { AssistantFile } from "../types/AssistantFile";
-import { getAssistantFileList } from "../services/AssistantFileApi";
+import { delAssistantFile, getAssistantFileList } from "../services/AssistantFileApi";
 import { PageResponse } from "../types/PageResponse";
 import { Conversation } from "../types/Conversation";
 import { getConversations } from "../services/ConversationApi";
+import { ChatSessionDto } from "../types/ChatSessionDto";
+import { getChatSessions } from "../services/ChatSessionApi";
 
 
 type Message = {
@@ -31,36 +33,27 @@ const DocumentQA: React.FC = () => {
     const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY });
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const newFile = e.target.files?.[0];
-
-        // Nếu không có file mới (tức là user ấn cancel) => không làm gì cả
-        if (!newFile) return;
-
-        // Kiểm tra loại file
-        if (newFile.type !== "application/pdf") {
-            toast.error("Vui lòng chọn tệp PDF.");
-            fileInput.current!.value = ""; // reset input
-            return;
+        const fileList = Array.from(e.target.files || []);
+        if (fileList == null || fileList?.length === 0) return;
+        for (let i = 0; i < fileList.length; i++) {
+            // Kiểm tra loại file
+            if (fileList[i].type !== "application/pdf") {
+                toast.error("Vui lòng chọn tệp PDF.");
+                e.target.value = ""; // reset input value
+                return;
+            }
         }
-
-        // Nếu là cùng 1 file
-        if (
-            file &&
-            newFile.name === file.name &&
-            newFile.size === file.size &&
-            newFile.lastModified === file.lastModified
-        ) {
-            toast.info("Bạn vừa chọn lại cùng một tệp.");
-            return;
-        }
-
-        // Nếu là file hợp lệ và khác file cũ
-        toast.success("Đã chọn tệp mới.");
-        setFile(newFile);
         setQuestion("");
         setMessages([]);
         contentsRef.current = [];
+        setFiles(
+            (prevFiles) => [...prevFiles, ...Array.from(fileList)],
+        ); // Thêm file vào danh sách file đã chọn
+
+        // Reset input để cho phép chọn lại cùng file sau này
+        e.target.value = "";
     };
+
 
 
     const scrollToBottom = () => {
@@ -175,13 +168,17 @@ const DocumentQA: React.FC = () => {
             setLoading(false);
         }
     };
-    const handleChatSelect = (assistantFileId: number) => {
-        setAssistantFileId(assistantFileId);
+
+    const handleChatSelect = (chatSession: ChatSessionDto) => {
+        setChatSessionSelected(chatSession);
     };
-    const handleChatDelete = (assistantFileId: number) => {
-        setAssistantFileId(assistantFileId);
+    const deleteFileStorageAi = async (name: string) => {
+        await ai.files.delete({ name: name });
     }
-    const [pageAssistantFile, setPageAssistantFile] = useState<PageResponse<AssistantFile>>(
+    const handleChatDelete = (id: number) => {
+
+    }
+    const [chatSessionPage, setChatSessionPage] = useState<PageResponse<ChatSessionDto>>(
         {
             pageNo: 0,
             pageSize: 10,
@@ -191,29 +188,30 @@ const DocumentQA: React.FC = () => {
             items: [],
         }
     );
-    const [assistantFilePage, setAssistantFilePage] = useState<number>(0);
+    const[pageSessionNumber, setPageSessionNumber] = useState(0);
     useEffect(() => {
-        getAssistantFileList(assistantFilePage, 10).then((response) => {
+        getChatSessions(pageSessionNumber, 10)
+        .then((response) => {
             if (response.status === 200) {
-                setPageAssistantFile(prev => ({
-                    ...prev,
-                    items: [...prev.items, ...response.data.data.items],
-                    hasNext: response.data.data.hasNext,
-                    totalItems: response.data.data.totalItems,
-                }));
+                setChatSessionPage(response.data.data);
             } else {
-                toast.error("Lỗi khi tải danh sách tệp trợ lý.");
+                toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
             }
-        }).catch((error) => {
-            toast.error("Lỗi khi tải danh sách tệp trợ lý.");
         })
-    }, [assistantFilePage]);
-    const [assistantFileId, setAssistantFileId] = useState<number>(0);
+        .catch((error) => {
+            toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
+        })
+
+    }, [pageSessionNumber]);
+
+
+
+    const [chatSessionSelected, setChatSessionSelected] = useState<ChatSessionDto | null>(null);
     const [conversations, setConversations] = useState<Conversation[]>([]);
 
     useEffect(() => {
-        if (assistantFileId) {
-            getConversations(assistantFileId).then((response) => {
+        if (chatSessionSelected) {
+            getConversations(chatSessionSelected.id).then((response) => {
                 if (response.status === 200) {
                     setConversations(response.data.data);
                 } else {
@@ -223,73 +221,163 @@ const DocumentQA: React.FC = () => {
                 toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
             })
         }
-    }, [assistantFileId]);
+    }, [chatSessionSelected]);
+
+    const [files, setFiles] = useState<File[]>([]);
+    // xóa file khỏi ô input
+    const handleRemoveFile = (file: File) => {
+        setFiles((prevFiles) => prevFiles.filter((f) => f !== file));
+        setQuestion("");
+        if (fileInput.current) fileInput.current.value = ""; // reset input value
+    }
+    const [showUploadedFiles, setShowUploadedFiles] = useState(false);
+
+    // Mảng các file đã tải lên
+    const uploadedFiles = [
+        { id: 1, name: "Document1.pdf" },
+        { id: 2, name: "Báo cáo_ABC.docx" },
+        { id: 3, name: "notes.doc" },
+    ];
 
     return (
-        <div className="flex min-h-screen bg-neutral-light dark:bg-gray-900">
+        <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
             {/* Sidebar */}
-            <div className="w-64 mt-20  dark:bg-gray-900  flex flex-col">
+            <div className="w-full md:w-64 md:mt-20 dark:bg-gray-900 flex-shrink-0">
                 <SidebarChatList
+                    chatSelected={chatSessionSelected}
                     onChatSelect={handleChatSelect}
                     onChatDelete={handleChatDelete}
-                    pageAssistantFile={pageAssistantFile}
-                    onLoadMore={() => {
-                        setAssistantFilePage((prev) => prev + 1);
-                    }}
+                    chatSessionsPage={chatSessionPage}
+                    onLoadMore={() => setPageSessionNumber((prev) => prev + 1)}
                 />
             </div>
 
             {/* Main Content */}
-            <div className="flex-1 px-4 md:px-10 py-8">
-                <div className=" px-6 py-8 space-y-6 bg-white dark:bg-gray-900 rounded-2xl mt-12 shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300">
-                    <h1 className="text-3xl font-extrabold text-primary dark:text-white tracking-tight">
+            <div className="flex-1 px-4 sm:px-6 md:px-10 py-6">
+                <div className="px-4 sm:px-6 py-6 space-y-6 bg-white dark:bg-gray-900 rounded-2xl mt-4 md:mt-12 shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300">
+                    <h1 className="text-2xl sm:text-3xl font-extrabold text-primary dark:text-white tracking-tight">
                         🤖 Trợ lý Tài Liệu Thông Minh
                     </h1>
 
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                            Tải tệp tài liệu của bạn (.pdf, .doc, .docx)
-                        </label>
-                        <input
-                            ref={fileInput}
-                            type="file"
-                            accept=".pdf,.doc,.docx"
-                            onChange={handleFileChange}
-                            className="file-input w-full file:bg-primary file:text-white file:border-none file:py-2 file:px-4 rounded-lg cursor-pointer bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-gray-200 focus:outline-none transition"
-                        />
-                    </div>
+                    <div className="relative h-[24rem] sm:h-96 overflow-y-auto bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-5 rounded-xl space-y-4 border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar">
+                        {conversations.map((conv) => (
+                            <div key={conv.id} className="space-y-4">
+                                {/* User question */}
+                                <div className="flex justify-end">
+                                    <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-primary text-white rounded-br-none">
+                                        <ReactMarkdown>{conv.question}</ReactMarkdown>
+                                    </div>
+                                </div>
 
-                    <div className="h-96 overflow-y-auto bg-neutral-100 dark:bg-neutral-800 p-5 rounded-xl space-y-4 border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar">
-                        {messages.map((msg, idx) => (
-                            <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
-                                <div
-                                    className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md ${msg.role === "user"
-                                        ? "bg-primary text-white rounded-br-none"
-                                        : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none"
-                                        }`}
-                                >
-                                    <ReactMarkdown>{msg.text}</ReactMarkdown>
+                                {/* Assistant answer */}
+                                <div className="flex justify-start">
+                                    <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
+                                        <ReactMarkdown>{conv.answer}</ReactMarkdown>
+                                    </div>
                                 </div>
                             </div>
                         ))}
                         <div ref={messagesEndRef} />
+
+                        {/* Góc dưới bên phải hiển thị danh sách file đã upload */}
+                        <div className="absolute bottom-4 right-4">
+                            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 w-64 max-w-full">
+                                <button
+                                    onClick={() => setShowUploadedFiles(!showUploadedFiles)}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-t-xl transition w-full"
+                                >
+                                    <FileText size={16} />
+                                    <span>Các file đã tải lên</span>
+                                    <ChevronDown
+                                        size={16}
+                                        className={`ml-auto transition-transform ${showUploadedFiles ? "rotate-180" : ""}`}
+                                    />
+                                </button>
+
+                                {showUploadedFiles && (
+                                    <div className="max-h-48 sm:max-h-64 overflow-y-auto border-t border-gray-200 dark:border-gray-600">
+                                        <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                                            {uploadedFiles.map((file) => (
+                                                <li
+                                                    key={file.id}
+                                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer truncate"
+                                                    title={file.name}
+                                                >
+                                                    📎 {file.name}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
 
-                    <div>
-                        <textarea
-                            value={question}
-                            onChange={(e) => setQuestion(e.target.value)}
-                            placeholder="Nhập câu hỏi của bạn về tài liệu..."
-                            rows={3}
-                            className="w-full resize-none bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
-                        />
+                    <div className="space-y-4">
+                        {/* Upload tài liệu */}
+                        <div>
+                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                Tải tệp tài liệu của bạn (.pdf)
+                            </label>
+
+                            <div className="flex flex-wrap items-center gap-3">
+                                <button
+                                    type="button"
+                                    onClick={() => fileInput.current?.click()}
+                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary hover:bg-primary-dark text-white transition"
+                                    title="Tải tài liệu lên"
+                                >
+                                    <Plus size={20} />
+                                </button>
+
+                                {files.length > 0 && (
+                                    <div className="flex flex-wrap items-center gap-2 bg-gray-100 dark:bg-neutral-700 px-3 py-1.5 rounded-lg w-full sm:w-auto">
+                                        <FileText size={20} className="text-primary" />
+                                        {files.map((file, index) => (
+                                            <div key={index} className="flex items-center gap-2">
+                                                <span className="text-sm text-gray-800 dark:text-white truncate max-w-[150px]">{file.name}</span>
+                                                <button
+                                                    type="button"
+                                                    onClick={() => handleRemoveFile(file)}
+                                                    className="text-red-500 hover:text-red-700 transition"
+                                                    title="Xóa tệp"
+                                                >
+                                                    <X size={16} />
+                                                </button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
+
+                            <input
+                                multiple
+                                ref={fileInput}
+                                type="file"
+                                accept=".pdf"
+                                onChange={handleFileChange}
+                                className="hidden"
+                            />
+                        </div>
+
+                        {/* Nhập câu hỏi */}
+                        <div>
+                            <textarea
+                                value={question}
+                                onChange={(e) => setQuestion(e.target.value)}
+                                placeholder="Nhập câu hỏi của bạn về tài liệu..."
+                                rows={3}
+                                className="w-full resize-none bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
+                            />
+                        </div>
                     </div>
 
+                    {/* Nút gửi câu hỏi */}
                     <div className="flex justify-end">
                         <button
                             onClick={handleAsk}
-                            disabled={!file || !question || loading}
-                            className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${!file || !question || loading
+                            disabled={files.length === 0 || !question || loading}
+                            className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${files.length === 0 || !question || loading
                                 ? "bg-primary/50 cursor-not-allowed"
                                 : "bg-primary hover:bg-primary-dark"
                                 }`}
@@ -302,6 +390,7 @@ const DocumentQA: React.FC = () => {
             </div>
         </div>
     );
+
 
 };
 
