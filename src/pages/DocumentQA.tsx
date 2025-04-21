@@ -10,7 +10,8 @@ import { PageResponse } from "../types/PageResponse";
 import { Conversation } from "../types/Conversation";
 import { getConversations } from "../services/ConversationApi";
 import { ChatSessionDto } from "../types/ChatSessionDto";
-import { getChatSessions } from "../services/ChatSessionApi";
+import { getChatSessions, initChatSession } from "../services/ChatSessionApi";
+import { ChatSessionInit } from "../types/ChatSessionInit";
 
 
 type Message = {
@@ -88,86 +89,86 @@ const DocumentQA: React.FC = () => {
         }
     };
 
-    const handleAsk = async () => {
-        if (!file || !question) return;
+    // const handleAsk = async () => {
+    //     if (!file || !question) return;
 
-        const userMessage: Message = { role: "user", text: question };
-        setMessages((prev) => [...prev, userMessage]);
-        setQuestion("");
-        setLoading(true);
-        try {
-            const uploadedFile = await ai.files.upload({ file });
-            if (!uploadedFile) {
-                toast.error("Tải lên tệp thất bại.");
-                return;
-            }
-            const initContent: Content = {
-                role: "user",
-                parts: [
-                    {
-                        fileData: {
-                            fileUri: uploadedFile.uri,
-                            mimeType: uploadedFile.mimeType,
-                        },
-                    },
-                    { text: question },
-                ],
-            };
-            contentsRef.current.push(initContent);
+    //     const userMessage: Message = { role: "user", text: question };
+    //     setMessages((prev) => [...prev, userMessage]);
+    //     setQuestion("");
+    //     setLoading(true);
+    //     try {
+    //         const uploadedFile = await ai.files.upload({ file });
+    //         if (!uploadedFile) {
+    //             toast.error("Tải lên tệp thất bại.");
+    //             return;
+    //         }
+    //         const initContent: Content = {
+    //             role: "user",
+    //             parts: [
+    //                 {
+    //                     fileData: {
+    //                         fileUri: uploadedFile.uri,
+    //                         mimeType: uploadedFile.mimeType,
+    //                     },
+    //                 },
+    //                 { text: question },
+    //             ],
+    //         };
+    //         contentsRef.current.push(initContent);
 
-            const response = await ai.models.generateContentStream({
-                model: "gemini-2.5-flash-preview-04-17",
-                contents: contentsRef.current,
-                config: { responseMimeType: "text/plain" }
-            });
+    //         const response = await ai.models.generateContentStream({
+    //             model: "gemini-2.5-flash-preview-04-17",
+    //             contents: contentsRef.current,
+    //             config: { responseMimeType: "text/plain" }
+    //         });
 
-            let fullText = "";
+    //         let fullText = "";
 
-            for await (const chunk of response) {
-                const content = chunk.candidates?.[0]?.content;
-                const usageMetadata = chunk.usageMetadata;
-                if (usageMetadata) {
-                    tokenUsage.current = usageMetadata.totalTokenCount || 0;
-                    usageMetadata.promptTokensDetails?.forEach((detail) => {
-                        if (detail?.modality === "DOCUMENT") {
-                            tokenDocument.current = detail.tokenCount || 0;
-                        }
-                    });
-                }
-                if (!content) continue;
-                contentsRef.current.push(content);
-                fullText += chunk.text || "";
-            }
+    //         for await (const chunk of response) {
+    //             const content = chunk.candidates?.[0]?.content;
+    //             const usageMetadata = chunk.usageMetadata;
+    //             if (usageMetadata) {
+    //                 tokenUsage.current = usageMetadata.totalTokenCount || 0;
+    //                 usageMetadata.promptTokensDetails?.forEach((detail) => {
+    //                     if (detail?.modality === "DOCUMENT") {
+    //                         tokenDocument.current = detail.tokenCount || 0;
+    //                     }
+    //                 });
+    //             }
+    //             if (!content) continue;
+    //             contentsRef.current.push(content);
+    //             fullText += chunk.text || "";
+    //         }
 
-            let index = 0;
-            let newText = "";
-            const typeInterval = setInterval(() => {
-                if (index < fullText.length) {
-                    newText += fullText[index];
-                    index++;
-                    setMessages((prev) => {
-                        const updated = [...prev];
-                        if (updated[updated.length - 1]?.role === "ai") {
-                            updated[updated.length - 1].text = newText;
-                        } else {
-                            updated.push({ role: "ai", text: newText });
-                        }
-                        return updated;
-                    });
-                    scrollToBottom();
-                } else {
-                    clearInterval(typeInterval);
-                }
-            }, 10);
+    //         let index = 0;
+    //         let newText = "";
+    //         const typeInterval = setInterval(() => {
+    //             if (index < fullText.length) {
+    //                 newText += fullText[index];
+    //                 index++;
+    //                 setMessages((prev) => {
+    //                     const updated = [...prev];
+    //                     if (updated[updated.length - 1]?.role === "ai") {
+    //                         updated[updated.length - 1].text = newText;
+    //                     } else {
+    //                         updated.push({ role: "ai", text: newText });
+    //                     }
+    //                     return updated;
+    //                 });
+    //                 scrollToBottom();
+    //             } else {
+    //                 clearInterval(typeInterval);
+    //             }
+    //         }, 10);
 
-            trimContentsToMaxToken(contentsRef.current, maxToken);
-        } catch (err) {
-            console.error(err);
-            setMessages((prev) => [...prev, { role: "ai", text: "Đã xảy ra lỗi. Vui lòng thử lại." }]);
-        } finally {
-            setLoading(false);
-        }
-    };
+    //         trimContentsToMaxToken(contentsRef.current, maxToken);
+    //     } catch (err) {
+    //         console.error(err);
+    //         setMessages((prev) => [...prev, { role: "ai", text: "Đã xảy ra lỗi. Vui lòng thử lại." }]);
+    //     } finally {
+    //         setLoading(false);
+    //     }
+    // };
 
     const handleChatSelect = (chatSession: ChatSessionDto) => {
         setChatSessionSelected(chatSession);
@@ -246,6 +247,101 @@ const DocumentQA: React.FC = () => {
             })
         }
     }, [chatSessionSelected]);
+
+    const handleAsk = async () => {
+        if (!chatSessionSelected) {
+            const assistantFiles: AssistantFile[] = [];
+
+            for (let i = 0; i < files.length; i++) {
+                const uploadedFile = await ai.files.upload({ file: files[i] });
+
+                if (!uploadedFile) {
+                    toast.error("Tải lên tệp thất bại.");
+                    return;
+                }
+
+                assistantFiles.push({
+                    id: null,
+                    name: uploadedFile.name,
+                    uri: uploadedFile.uri,
+                    mimeType: uploadedFile.mimeType,
+                    originalFileName: uploadedFile.name,
+                    expirationTime: uploadedFile.expirationTime,
+                    createTime: uploadedFile.createTime,
+                    chatSessionId: 0
+                });
+            }
+
+            const parts = assistantFiles.map((file) => ({
+                fileData: {
+                    fileUri: file.uri,
+                    mimeType: file.mimeType,
+                },
+            }));
+
+            const initContent: Content = {
+                role: "user",
+                parts: [...parts, { text: question }],
+            };
+
+            const response = await ai.models.generateContentStream({
+                model: "gemini-2.5-flash-preview-04-17",
+                contents: initContent,
+                config: { responseMimeType: "text/plain" }
+            });
+
+            let fullText = "";
+
+            for await (const chunk of response) {
+                const content = chunk.candidates?.[0]?.content;
+                const usageMetadata = chunk.usageMetadata;
+
+                if (usageMetadata) {
+                    tokenUsage.current = usageMetadata.totalTokenCount || 0;
+                    usageMetadata.promptTokensDetails?.forEach((detail) => {
+                        if (detail?.modality === "DOCUMENT") {
+                            tokenDocument.current = detail.tokenCount || 0;
+                        }
+                    });
+                }
+
+                if (!content) continue;
+
+                contentsRef.current.push(content);
+                fullText += chunk.text || "";
+            }
+
+            const conversation: Conversation = {
+                id: null,
+                question: question,
+                answer: fullText,
+                chatSessionId: null
+            };
+
+            const chatSessionInit: ChatSessionInit = {
+                name: question.substring(0, 20) + "...",
+                assistantFiles,
+                conversation,
+            };
+            console.log("chatSessionInit", chatSessionInit);
+
+            initChatSession(chatSessionInit).then((response) => {
+                if (response.data.status === 201) {
+                    console.log(response.data.data);
+                } else {
+                    toast.error("Lỗi khi khởi tạo cuộc trò chuyện.");
+                }
+            });
+
+            const listResponse = await ai.files.list({ config: { 'pageSize': 10 } });
+            for await (const file of listResponse) {
+                console.log(file.name);
+                if (file && file.name) {
+                    await ai.files.delete({ name: file.name });
+                }
+            }
+        }
+    };
 
 
     return (

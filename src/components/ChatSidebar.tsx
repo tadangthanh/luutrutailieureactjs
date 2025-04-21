@@ -31,7 +31,7 @@ export default function ChatSidebar({
                         key={session.id}
                         className={`flex items-center justify-between px-4 py-3 cursor-pointer hover:bg-primary/10 ${selectedId === session.id ? "bg-primary/20" : ""
                             }`}
-                        onClick={() => onSelect(session.id)}
+                        onClick={() => onSelect(session.id || 0)}
                     >
                         <div className="text-sm text-gray-800 dark:text-white truncate w-[140px]">
                             {session.originalFileName}
@@ -39,7 +39,7 @@ export default function ChatSidebar({
                         <button
                             onClick={(e) => {
                                 e.stopPropagation();
-                                onDelete(session.id);
+                                onDelete(session.id || 0);
                             }}
                             className="text-gray-400 hover:text-red-500"
                         >

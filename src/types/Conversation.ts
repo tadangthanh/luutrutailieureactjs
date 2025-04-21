@@ -1,6 +1,6 @@
 export interface Conversation {
-    id: number;
+    id: number | null;
     question: string;
     answer: string;
-    chatSessionId: number;
+    chatSessionId: number | null;
 }

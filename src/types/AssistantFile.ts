@@ -1,8 +1,10 @@
 export interface AssistantFile {
-    id: number;
-    name: string;
-    originalFileName: string;
-    expirationTime: Date | null;
-    createTime: Date | null;
+    id: number | null;
+    name: string | undefined;
+    uri: string | undefined;
+    originalFileName: string | undefined;
+    expirationTime: string | undefined;
+    createTime: string | undefined;
     chatSessionId: number;
+    mimeType: string | undefined;
 }
