@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown";
 import { ChevronDown, FileText, Plus, SendHorizonalIcon, X } from "lucide-react";
 import { SidebarChatList } from "../components/SidebarChatList";
 import { AssistantFile } from "../types/AssistantFile";
-import { delAssistantFile, getAssistantFileList } from "../services/AssistantFileApi";
+import { delAssistantFile, getAssistantFilesByChatSessionId } from "../services/AssistantFileApi";
 import { PageResponse } from "../types/PageResponse";
 import { Conversation } from "../types/Conversation";
 import { getConversations } from "../services/ConversationApi";
@@ -188,19 +188,19 @@ const DocumentQA: React.FC = () => {
             items: [],
         }
     );
-    const[pageSessionNumber, setPageSessionNumber] = useState(0);
+    const [pageSessionNumber, setPageSessionNumber] = useState(0);
     useEffect(() => {
         getChatSessions(pageSessionNumber, 10)
-        .then((response) => {
-            if (response.status === 200) {
-                setChatSessionPage(response.data.data);
-            } else {
+            .then((response) => {
+                if (response.status === 200) {
+                    setChatSessionPage(response.data.data);
+                } else {
+                    toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
+                }
+            })
+            .catch((error) => {
                 toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
-            }
-        })
-        .catch((error) => {
-            toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
-        })
+            })
 
     }, [pageSessionNumber]);
 
@@ -232,12 +232,21 @@ const DocumentQA: React.FC = () => {
     }
     const [showUploadedFiles, setShowUploadedFiles] = useState(false);
 
-    // Mảng các file đã tải lên
-    const uploadedFiles = [
-        { id: 1, name: "Document1.pdf" },
-        { id: 2, name: "Báo cáo_ABC.docx" },
-        { id: 3, name: "notes.doc" },
-    ];
+    const [assistantFileUploaded, setAssistantFileUploaded] = useState<AssistantFile[]>([])
+    useEffect(() => {
+        if (chatSessionSelected) {
+            getAssistantFilesByChatSessionId(chatSessionSelected.id).then((response) => {
+                if (response.status === 200) {
+                    setAssistantFileUploaded(response.data.data);
+                } else {
+                    toast.error("Lỗi khi tải danh sách file đã tải lên.");
+                }
+            }).catch((error) => {
+                toast.error("Lỗi khi tải danh sách file đã tải lên.");
+            })
+        }
+    }, [chatSessionSelected]);
+
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
@@ -297,13 +306,13 @@ const DocumentQA: React.FC = () => {
                                 {showUploadedFiles && (
                                     <div className="max-h-48 sm:max-h-64 overflow-y-auto border-t border-gray-200 dark:border-gray-600">
                                         <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                                            {uploadedFiles.map((file) => (
+                                            {assistantFileUploaded.map((file) => (
                                                 <li
                                                     key={file.id}
-                                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700 cursor-pointer truncate"
-                                                    title={file.name}
+                                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700  truncate"
+                                                    title={file.originalFileName}
                                                 >
-                                                    📎 {file.name}
+                                                    📎 {file.originalFileName}
                                                 </li>
                                             ))}
                                         </ul>
