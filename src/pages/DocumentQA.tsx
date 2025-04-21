@@ -3,6 +3,7 @@ import { Content, GetFileParameters, GoogleGenAI } from "@google/genai";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { SendHorizonalIcon } from "lucide-react";
+import SidebarChatList from "../components/SidebarChatList";
 
 type Message = {
     role: "user" | "ai";
@@ -170,65 +171,72 @@ const DocumentQA: React.FC = () => {
     };
 
     return (
-        <div className="max-w-3xl mx-auto px-6 py-8 space-y-6 bg-white dark:bg-neutral-900 rounded-2xl mt-12 shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300">
-            <h1 className="text-3xl font-extrabold text-primary dark:text-white tracking-tight">
-                🤖 Trợ lý Tài Liệu Thông Minh
-            </h1>
-
-            <div>
-                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                    Tải tệp tài liệu của bạn (.pdf, .doc, .docx)
-                </label>
-                <input
-                    ref={fileInput}
-                    type="file"
-                    accept=".pdf,.doc,.docx"
-                    onChange={handleFileChange}
-                    className="file-input w-full file:bg-primary file:text-white file:border-none file:py-2 file:px-4 rounded-lg cursor-pointer bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-gray-200 focus:outline-none transition"
-                />
+        <div className="flex min-h-screen bg-neutral-light dark:bg-gray-900">
+            {/* Sidebar */}
+            <div className="w-64 mt-20  dark:bg-gray-900  flex flex-col">
+                <SidebarChatList />
             </div>
 
-            <div className="h-96 overflow-y-auto bg-neutral-100 dark:bg-neutral-800 p-5 rounded-xl space-y-4 border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar">
-                {messages.map((msg, idx) => (
-                    <div
-                        key={idx}
-                        className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}
-                    >
-                        <div
-                            className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md ${msg.role === "user"
-                                ? "bg-primary text-white rounded-br-none"
-                                : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none"
+            {/* Main Content */}
+            <div className="flex-1 px-4 md:px-10 py-8">
+                <div className=" px-6 py-8 space-y-6 bg-white dark:bg-gray-900 rounded-2xl mt-12 shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300">
+                    <h1 className="text-3xl font-extrabold text-primary dark:text-white tracking-tight">
+                        🤖 Trợ lý Tài Liệu Thông Minh
+                    </h1>
+
+                    <div>
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                            Tải tệp tài liệu của bạn (.pdf, .doc, .docx)
+                        </label>
+                        <input
+                            ref={fileInput}
+                            type="file"
+                            accept=".pdf,.doc,.docx"
+                            onChange={handleFileChange}
+                            className="file-input w-full file:bg-primary file:text-white file:border-none file:py-2 file:px-4 rounded-lg cursor-pointer bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-gray-200 focus:outline-none transition"
+                        />
+                    </div>
+
+                    <div className="h-96 overflow-y-auto bg-neutral-100 dark:bg-neutral-800 p-5 rounded-xl space-y-4 border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar">
+                        {messages.map((msg, idx) => (
+                            <div key={idx} className={`flex ${msg.role === "user" ? "justify-end" : "justify-start"}`}>
+                                <div
+                                    className={`max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md ${msg.role === "user"
+                                        ? "bg-primary text-white rounded-br-none"
+                                        : "bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none"
+                                        }`}
+                                >
+                                    <ReactMarkdown>{msg.text}</ReactMarkdown>
+                                </div>
+                            </div>
+                        ))}
+                        <div ref={messagesEndRef} />
+                    </div>
+
+                    <div>
+                        <textarea
+                            value={question}
+                            onChange={(e) => setQuestion(e.target.value)}
+                            placeholder="Nhập câu hỏi của bạn về tài liệu..."
+                            rows={3}
+                            className="w-full resize-none bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
+                        />
+                    </div>
+
+                    <div className="flex justify-end">
+                        <button
+                            onClick={handleAsk}
+                            disabled={!file || !question || loading}
+                            className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${!file || !question || loading
+                                ? "bg-primary/50 cursor-not-allowed"
+                                : "bg-primary hover:bg-primary-dark"
                                 }`}
                         >
-                            <ReactMarkdown>{msg.text}</ReactMarkdown>
-                        </div>
+                            Gửi câu hỏi
+                            <SendHorizonalIcon className="ml-2 w-5 h-5" />
+                        </button>
                     </div>
-                ))}
-                <div ref={messagesEndRef} />
-            </div>
-
-            <div>
-                <textarea
-                    value={question}
-                    onChange={(e) => setQuestion(e.target.value)}
-                    placeholder="Nhập câu hỏi của bạn về tài liệu..."
-                    rows={3}
-                    className="w-full resize-none bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
-                />
-            </div>
-
-            <div className="flex justify-end">
-                <button
-                    onClick={handleAsk}
-                    disabled={!file || !question || loading}
-                    className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${!file || !question || loading
-                        ? "bg-primary/50 cursor-not-allowed"
-                        : "bg-primary hover:bg-primary-dark"
-                        }`}
-                >
-                    Gửi câu hỏi
-                    <SendHorizonalIcon className="ml-2 w-5 h-5" />
-                </button>
+                </div>
             </div>
         </div>
     );

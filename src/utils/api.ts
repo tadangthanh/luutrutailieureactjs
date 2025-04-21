@@ -79,7 +79,7 @@ api.interceptors.response.use(
 
             try {
                 const res = await axios.post<TokenResponse>(
-                    `${process.env.REACT_APP_BASE_API_V1}/auth/refresh`,
+                    `${process.env.REACT_APP_BASE_API}/auth/refresh-token`,
                     { refreshToken },
                     { withCredentials: true }
                 );
