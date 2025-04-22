@@ -23,14 +23,13 @@ const DocumentQA: React.FC = () => {
     const [question, setQuestion] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(false);
-    const fileInput = useRef<HTMLInputElement>(null);
+    const filesInput = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const tokenUsage = useRef(0);
     const tokenDocument = useRef(0);
     const maxToken = 1000000;
     const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY });
-
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const fileList = Array.from(e.target.files || []);
         if (fileList == null || fileList?.length === 0) return;
@@ -42,6 +41,7 @@ const DocumentQA: React.FC = () => {
                 return;
             }
         }
+
         setFiles(
             (prevFiles) => [...prevFiles, ...Array.from(fileList)],
         ); // Thêm file vào danh sách file đã chọn
@@ -242,6 +242,7 @@ const DocumentQA: React.FC = () => {
 
     useEffect(() => {
         if (chatSessionSelected) {
+            setAssistantFileUploaded([]); // xóa danh sách file đã tải lên
             getConversations(chatSessionSelected.id).then((response) => {
                 if (response.status === 200) {
                     setConversations(response.data.data);
@@ -251,21 +252,7 @@ const DocumentQA: React.FC = () => {
             }).catch((error) => {
                 toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
             })
-        }
-    }, [chatSessionSelected]);
-
-    const [files, setFiles] = useState<File[]>([]);
-    // xóa file khỏi ô input
-    const handleRemoveFile = (file: File) => {
-        setFiles((prevFiles) => prevFiles.filter((f) => f !== file));
-        setQuestion("");
-        if (fileInput.current) fileInput.current.value = ""; // reset input value
-    }
-    const [showUploadedFiles, setShowUploadedFiles] = useState(false);
-
-    const [assistantFileUploaded, setAssistantFileUploaded] = useState<AssistantFile[]>([])
-    useEffect(() => {
-        if (chatSessionSelected) {
+            
             getAssistantFilesByChatSessionId(chatSessionSelected.id).then((response) => {
                 if (response.status === 200) {
                     setAssistantFileUploaded(response.data.data);
@@ -277,6 +264,18 @@ const DocumentQA: React.FC = () => {
             })
         }
     }, [chatSessionSelected]);
+
+    const [files, setFiles] = useState<File[]>([]);
+    // xóa file khỏi ô input
+    const handleRemoveFile = (file: File) => {
+        setFiles((prevFiles) => prevFiles.filter((f) => f !== file));
+        setQuestion("");
+        if (filesInput.current) filesInput.current.value = ""; // reset input value
+    }
+    const [showUploadedFiles, setShowUploadedFiles] = useState(false);
+
+    const [assistantFileUploaded, setAssistantFileUploaded] = useState<AssistantFile[]>([])
+
 
     const initChatSession = async () => {
         setLoading(true);
@@ -310,6 +309,7 @@ const DocumentQA: React.FC = () => {
                     chatSessionId: 0
                 });
             }
+            setFiles([]); // xóa file đã tải lên
             // init part ban đầu cho cuộc trò chuyện
             const parts = assistantFiles.map((file) => ({
                 fileData: {
@@ -425,8 +425,8 @@ const DocumentQA: React.FC = () => {
         }
     }
     const clearInputFiles = () => {
-        if (fileInput.current) {
-            fileInput.current.value = "";
+        if (filesInput.current) {
+            filesInput.current.value = "";
         }
     }
     const [textAreaValue, setTextAreaValue] = useState<string>("");
@@ -449,6 +449,7 @@ const DocumentQA: React.FC = () => {
     const handleCreateNewChat = () => {
         setChatSessionSelected(null);
         setConversations([]);
+        setAssistantFileUploaded([]);
         setFiles([]);
         setQuestion("");
         setShowUploadedFiles(false);
@@ -520,7 +521,7 @@ const DocumentQA: React.FC = () => {
                             <div className="flex flex-wrap items-center gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => fileInput.current?.click()}
+                                    onClick={() => filesInput.current?.click()}
                                     className="flex items-center justify-center w-10 h-10 rounded-full bg-primary hover:bg-primary-dark text-white transition"
                                     title="Tải tài liệu lên"
                                 >
@@ -549,7 +550,7 @@ const DocumentQA: React.FC = () => {
 
                             <input
                                 multiple
-                                ref={fileInput}
+                                ref={filesInput}
                                 type="file"
                                 accept=".pdf"
                                 onChange={handleFileChange}
