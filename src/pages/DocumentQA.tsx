@@ -1,14 +1,14 @@
 import React, { useRef, useState, useEffect } from "react";
-import { Content, GoogleGenAI } from "@google/genai";
+import { GoogleGenAI } from "@google/genai";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
 import { ChevronDown, FileText, Plus, SendHorizonalIcon, X } from "lucide-react";
 import { SidebarChatList } from "../components/SidebarChatList";
 import { AssistantFile } from "../types/AssistantFile";
-import { getAssistantFilesByChatSessionId } from "../services/AssistantFileApi";
+import { addAssistantFiles, getAssistantFilesByChatSessionId } from "../services/AssistantFileApi";
 import { PageResponse } from "../types/PageResponse";
 import { Conversation } from "../types/Conversation";
-import { getConversations } from "../services/ConversationApi";
+import { addConversation, getConversations } from "../services/ConversationApi";
 import { ChatSessionDto } from "../types/ChatSessionDto";
 import { getChatSessions, createChatSession, delChatSession } from "../services/ChatSessionApi";
 import { ChatSessionInit } from "../types/ChatSessionInit";
@@ -22,7 +22,7 @@ const DocumentQA: React.FC = () => {
     const [chatSelected, setChatSelected] = useState<ChatSessionDto | null>(null);
     const [conversations, setConversations] = useState<Conversation[]>([]);
     const [filesSelected, setFilesSelected] = useState<File[]>([]);
-    const[filesInput, setFilesInput] = useState<File[]>([]);
+    const [filesInput, setFilesInput] = useState<File[]>([]);
     const [filesUploaded, setFilesUploaded] = useState<AssistantFile[]>([]);
     const [showUploadedFiles, setShowUploadedFiles] = useState(false);
     const [pageSessionNumber, setPageSessionNumber] = useState(0);
@@ -67,7 +67,8 @@ const DocumentQA: React.FC = () => {
     };
 
     const clearInputQuestion = () => setTextAreaValue("");
-    const clearInputFiles = () =>{
+
+    const clearInputFiles = () => {
         filesInputRef.current && (filesInputRef.current.value = "")
         setFilesInput([]);
     };
@@ -150,19 +151,19 @@ const DocumentQA: React.FC = () => {
         setChatSelected(null);
         setConversations([]);
         setFilesUploaded([]);
+        setFilesInput([]);
         setFilesSelected([]);
         setQuestion("");
         setShowUploadedFiles(false);
         setLoading(false);
     };
 
+
     // ====== INIT CHAT ======
     const initChatSession = async () => {
         setLoading(true);
         try {
-            setConversations([{ id: null, question, answer: "", chatSessionId: null }]);
-
-            // Upload files
+            setConversations([{ id: null, question, answer: "", chatSessionId: null }]);            // Upload files
             const assistantFiles: AssistantFile[] = [];
             for (const file of filesSelected) {
                 const uploaded = await ai.files.upload({ file });
@@ -211,19 +212,12 @@ const DocumentQA: React.FC = () => {
                 const newChat = createRes.data.data;
                 setChatSessionPage((prev) => ({ ...prev, items: [newChat, ...prev.items] }));
                 setChatSelected(newChat);
-                setFilesUploaded(newChat.assistantFiles);
                 setQuestion("");
                 setFilesSelected([]);
                 generateContentTimeSecond(conversation.answer);
             } else {
                 toast.error("Lỗi khi khởi tạo cuộc trò chuyện.");
                 deleteListFileCloudAI(assistantFiles);
-            }
-
-            // Xóa file cũ trên cloud AI
-            const listResponse = await ai.files.list({ config: { pageSize: 10 } });
-            for await (const file of listResponse) {
-                if (file?.name) await ai.files.delete({ name: file.name });
             }
         } catch (err) {
             console.error(err);
@@ -235,15 +229,100 @@ const DocumentQA: React.FC = () => {
             setLoading(false);
         }
     };
-
+    const saveGenAiFiles = async (files: AssistantFile[]) => {
+        const fileUploaded = await addAssistantFiles(files)
+            .then((res) => {
+                if (res.data.status === 201) {
+                    return res.data.data;
+                } else {
+                    toast.error("Lỗi khi tải lên tệp.");
+                    return [];
+                }
+            }).catch(() => {
+                toast.error("Lỗi khi tải lên tệp.");
+                return [];
+            });
+        setFilesUploaded((prev) => [...prev, ...fileUploaded]);
+        return fileUploaded;
+    }
     // ====== ASK ======
     const handleAsk = async () => {
         clearInputQuestion();
         clearInputFiles();
-        if (!question || filesSelected.length === 0) return;
+        if (!question || (filesSelected.length === 0 && filesUploaded.length === 0)) return;
 
         if (!chatSelected) {
             await initChatSession();
+        } else {
+            setLoading(true);
+            try {
+                setConversations((prev) => [...prev, { id: null, question, answer: "", chatSessionId: chatSelected.id }]);
+                const genAiFiles: AssistantFile[] = [];
+                for (const file of filesSelected) {
+                    const uploaded = await ai.files.upload({ file });
+                    if (!uploaded) {
+                        toast.error(`Tải lên tệp ${file.name} thất bại.`);
+                        return;
+                    }
+                    genAiFiles.push({
+                        id: null,
+                        name: uploaded.name,
+                        uri: uploaded.uri,
+                        mimeType: uploaded.mimeType,
+                        originalFileName: file.name,
+                        expirationTime: uploaded.expirationTime,
+                        createTime: uploaded.createTime,
+                        chatSessionId: chatSelected.id,
+                    });
+                }
+                // CHUA CAC FILE DA UPLOAD LEN CLOUD AI VA LUU VAO DATABASE
+                const assistantFilesUploaded = await saveGenAiFiles(genAiFiles);
+                const tempFileUploaded = [...filesUploaded, ...assistantFilesUploaded]
+
+
+                const parts = tempFileUploaded.map((f) => ({
+                    fileData: { fileUri: f.uri, mimeType: f.mimeType },
+                }));
+
+                const response = await ai.models.generateContentStream({
+                    model: "gemini-2.5-flash-preview-04-17",
+                    contents: {
+                        role: "user",
+                        parts: [...parts, { text: question }],
+                    },
+                    config: { responseMimeType: "text/plain" },
+                });
+
+                let fullText = "";
+                for await (const chunk of response) {
+                    fullText += chunk.text || "";
+                }
+
+                const conversation: Conversation = { id: null, question, answer: fullText, chatSessionId: chatSelected.id };
+                const conversationAdded = await addConversation(conversation)
+                    .then((res) => {
+                        if (res.data.status === 201) {
+                            return res.data.data;
+                        } else {
+                            toast.error("Lỗi khi thêm cuộc trò chuyện.");
+                            return null;
+                        }
+                    }).catch(() => {
+                        toast.error("Lỗi khi thêm cuộc trò chuyện.");
+                        return null;
+                    })
+                if (conversationAdded) {
+                    setConversations((prev) => prev.map((conv) => (conv.id === null ? conversationAdded : conv)));
+                    generateContentTimeSecond(fullText);
+                }
+            } catch (err) {
+                console.error(err);
+                toast.error("Đã xảy ra lỗi trong quá trình khởi tạo cuộc trò chuyện.");
+            } finally {
+                setFilesInput([]);
+                setTextAreaValue("");
+                setLoading(false);
+            }
         }
     };
 
@@ -266,37 +345,50 @@ const DocumentQA: React.FC = () => {
                     toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
                 }
             })
-            .catch(() => toast.error("Lỗi khi tải danh sách cuộc trò chuyện."));
+            .catch(() => toast.error("Lỗi khi tải danh sách cuộc trò chuyện."))
     }, [pageSessionNumber]);
 
     // ====== LOAD CONVERSATION WHEN CHAT SELECTED ======
+
     useEffect(() => {
         if (!chatSelected) return;
+        handleChangeChatSession();
+        try {
+            getConversations(chatSelected.id)
+                .then((res) => {
+                    if (res.status === 200) {
+                        setConversations(res.data.data);
+                    } else {
+                        toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
+                    }
+                })
+                .catch(() => toast.error("Lỗi khi tải danh sách cuộc trò chuyện."));
 
-        setFilesUploaded([]);
-
-        getConversations(chatSelected.id)
-            .then((res) => {
-                if (res.status === 200) {
-                    setConversations(res.data.data);
-                } else {
-                    toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
-                }
-            })
-            .catch(() => toast.error("Lỗi khi tải danh sách cuộc trò chuyện."));
-
-        getAssistantFilesByChatSessionId(chatSelected.id)
-            .then((res) => {
-                if (res.status === 200) {
-                    setFilesUploaded(res.data.data);
-                } else {
-                    toast.error("Lỗi khi tải danh sách file đã tải lên.");
-                }
-            })
-            .catch(() => toast.error("Lỗi khi tải danh sách file đã tải lên."));
+            getAssistantFilesByChatSessionId(chatSelected.id)
+                .then((res) => {
+                    if (res.status === 200) {
+                        setFilesUploaded(res.data.data);
+                    } else {
+                        toast.error("Lỗi khi tải danh sách file đã tải lên.");
+                    }
+                })
+                .catch(() => toast.error("Lỗi khi tải danh sách file đã tải lên."));
+        } catch (error) {
+            toast.error("Đã xảy ra lỗi trong quá trình tải danh sách file.");
+        } finally {
+            setLoading(false);
+        }
     }, [chatSelected]);
 
-
+    const handleChangeChatSession = () => {
+        setFilesUploaded([]);
+        setFilesInput([]);
+        setFilesSelected([]);
+        setQuestion("");
+        setShowUploadedFiles(false);
+        setLoading(false);
+        setConversations([]);
+    }
 
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
@@ -450,8 +542,8 @@ const DocumentQA: React.FC = () => {
                     <div className="flex justify-end">
                         <button
                             onClick={handleAsk}
-                            disabled={filesSelected.length === 0 || !question || loading}
-                            className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${filesSelected.length === 0 || !question || loading
+                            disabled={(filesUploaded.length === 0 && filesSelected.length === 0) || !question || loading}
+                            className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${(filesUploaded.length === 0 && filesSelected.length === 0) || !question || loading
                                 ? "bg-primary/50 cursor-not-allowed"
                                 : "bg-primary hover:bg-primary-dark"
                                 }`}

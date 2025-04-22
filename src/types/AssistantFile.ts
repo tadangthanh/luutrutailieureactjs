@@ -5,6 +5,6 @@ export interface AssistantFile {
     originalFileName: string | undefined;
     expirationTime: string | undefined;
     createTime: string | undefined;
-    chatSessionId: number;
+    chatSessionId: number | null;
     mimeType: string | undefined;
 }

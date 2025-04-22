@@ -1,11 +1,8 @@
-import { ChatSessionDto } from "../types/ChatSessionDto";
 import { ChatSessionInit } from "../types/ChatSessionInit";
 import api from "../utils/api";
 import { apiUrl } from "../utils/ApiUtil";
 
-// export const createChatSession = async (chatSession: ChatSessionDto) => {
-//     return await api.post(`${apiUrl}/chat-session`, chatSession);
-// }
+
 export const createChatSession = async (chatSessionInit: ChatSessionInit) => {
     return await api.post(`${apiUrl}/chat-session/init-chat`, chatSessionInit);
 }
