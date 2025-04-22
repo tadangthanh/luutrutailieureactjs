@@ -114,14 +114,28 @@ const DocumentQA: React.FC = () => {
 
     const deleteListFileCloudAI = async (files: AssistantFile[]) => {
         for (const file of files) {
+            console.log(file.name);
             await deleteFileStorageAi(file.name);
         }
     };
 
     const handleChatDelete = async (id: number) => {
+        const fileUploaded = await getAssistantFilesByChatSessionId(id)
+            .then((res) => {
+                if (res.data.status === 200) {
+                    return res.data.data;
+                } else {
+                    toast.error("Lỗi khi tải danh sách file đã tải lên.");
+                    return [];
+                }
+            }).catch(() => {
+                toast.error("Lỗi khi tải danh sách file đã tải lên.");
+                return [];
+            })
         try {
             const res = await delChatSession(id);
             if (res.data.status === 200) {
+                await deleteListFileCloudAI(fileUploaded);
                 setChatSessionPage((prev) => ({
                     ...prev,
                     items: prev.items.filter((item) => item.id !== id),
@@ -254,77 +268,81 @@ const DocumentQA: React.FC = () => {
         if (!chatSelected) {
             await initChatSession();
         } else {
-            setLoading(true);
-            try {
-                setConversations((prev) => [...prev, { id: null, question, answer: "", chatSessionId: chatSelected.id }]);
-                const genAiFiles: AssistantFile[] = [];
-                for (const file of filesSelected) {
-                    const uploaded = await ai.files.upload({ file });
-                    if (!uploaded) {
-                        toast.error(`Tải lên tệp ${file.name} thất bại.`);
-                        return;
-                    }
-                    genAiFiles.push({
-                        id: null,
-                        name: uploaded.name,
-                        uri: uploaded.uri,
-                        mimeType: uploaded.mimeType,
-                        originalFileName: file.name,
-                        expirationTime: uploaded.expirationTime,
-                        createTime: uploaded.createTime,
-                        chatSessionId: chatSelected.id,
-                    });
-                }
-                // CHUA CAC FILE DA UPLOAD LEN CLOUD AI VA LUU VAO DATABASE
-                const assistantFilesUploaded = await saveGenAiFiles(genAiFiles);
-                const tempFileUploaded = [...filesUploaded, ...assistantFilesUploaded]
-
-
-                const parts = tempFileUploaded.map((f) => ({
-                    fileData: { fileUri: f.uri, mimeType: f.mimeType },
-                }));
-
-                const response = await ai.models.generateContentStream({
-                    model: "gemini-2.5-flash-preview-04-17",
-                    contents: {
-                        role: "user",
-                        parts: [...parts, { text: question }],
-                    },
-                    config: { responseMimeType: "text/plain" },
-                });
-
-                let fullText = "";
-                for await (const chunk of response) {
-                    fullText += chunk.text || "";
-                }
-
-                const conversation: Conversation = { id: null, question, answer: fullText, chatSessionId: chatSelected.id };
-                const conversationAdded = await addConversation(conversation)
-                    .then((res) => {
-                        if (res.data.status === 201) {
-                            return res.data.data;
-                        } else {
-                            toast.error("Lỗi khi thêm cuộc trò chuyện.");
-                            return null;
-                        }
-                    }).catch(() => {
-                        toast.error("Lỗi khi thêm cuộc trò chuyện.");
-                        return null;
-                    })
-                if (conversationAdded) {
-                    setConversations((prev) => prev.map((conv) => (conv.id === null ? conversationAdded : conv)));
-                    generateContentTimeSecond(fullText);
-                }
-            } catch (err) {
-                console.error(err);
-                toast.error("Đã xảy ra lỗi trong quá trình khởi tạo cuộc trò chuyện.");
-            } finally {
-                setFilesInput([]);
-                setTextAreaValue("");
-                setLoading(false);
-            }
+            await continueAsk();
         }
     };
+    const continueAsk = async () => {
+        if (!chatSelected) return;
+        setLoading(true);
+        try {
+            setConversations((prev) => [...prev, { id: null, question, answer: "", chatSessionId: chatSelected.id }]);
+            const genAiFiles: AssistantFile[] = [];
+            for (const file of filesSelected) {
+                const uploaded = await ai.files.upload({ file });
+                if (!uploaded) {
+                    toast.error(`Tải lên tệp ${file.name} thất bại.`);
+                    return;
+                }
+                genAiFiles.push({
+                    id: null,
+                    name: uploaded.name,
+                    uri: uploaded.uri,
+                    mimeType: uploaded.mimeType,
+                    originalFileName: file.name,
+                    expirationTime: uploaded.expirationTime,
+                    createTime: uploaded.createTime,
+                    chatSessionId: chatSelected.id,
+                });
+            }
+            // CHUA CAC FILE DA UPLOAD LEN CLOUD AI VA LUU VAO DATABASE
+            const assistantFilesUploaded = await saveGenAiFiles(genAiFiles);
+            const tempFileUploaded = [...filesUploaded, ...assistantFilesUploaded]
+
+
+            const parts = tempFileUploaded.map((f) => ({
+                fileData: { fileUri: f.uri, mimeType: f.mimeType },
+            }));
+
+            const response = await ai.models.generateContentStream({
+                model: "gemini-2.5-flash-preview-04-17",
+                contents: {
+                    role: "user",
+                    parts: [...parts, { text: question }],
+                },
+                config: { responseMimeType: "text/plain" },
+            });
+
+            let fullText = "";
+            for await (const chunk of response) {
+                fullText += chunk.text || "";
+            }
+
+            const conversation: Conversation = { id: null, question, answer: fullText, chatSessionId: chatSelected.id };
+            const conversationAdded = await addConversation(conversation)
+                .then((res) => {
+                    if (res.data.status === 201) {
+                        return res.data.data;
+                    } else {
+                        toast.error("Lỗi khi thêm cuộc trò chuyện.");
+                        return null;
+                    }
+                }).catch(() => {
+                    toast.error("Lỗi khi thêm cuộc trò chuyện.");
+                    return null;
+                })
+            if (conversationAdded) {
+                setConversations((prev) => prev.map((conv) => (conv.id === null ? conversationAdded : conv)));
+                generateContentTimeSecond(fullText);
+            }
+        } catch (err) {
+            console.error(err);
+            toast.error("Đã xảy ra lỗi trong quá trình khởi tạo cuộc trò chuyện.");
+        } finally {
+            setFilesInput([]);
+            setTextAreaValue("");
+            setLoading(false);
+        }
+    }
 
     // ====== FETCH CHAT SESSION ======
     useEffect(() => {
