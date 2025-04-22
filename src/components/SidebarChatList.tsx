@@ -7,6 +7,7 @@ interface ChatListProps {
     onChatSelect: (chatSession: ChatSessionDto) => void;
     chatSelected: ChatSessionDto | null;
     onChatDelete: (id: number) => void;
+    onCreateNewChat: () => void;
     onChatRename?: (id: number, newName: string) => void;
     chatSessionsPage: PageResponse<ChatSessionDto>;
     onLoadMore: () => void;
@@ -15,6 +16,7 @@ interface ChatListProps {
 export const SidebarChatList: React.FC<ChatListProps> = ({
     onChatDelete,
     onChatRename,
+    onCreateNewChat,
     onChatSelect,
     chatSessionsPage,
     onLoadMore,
@@ -63,9 +65,7 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
         setRenameTarget(null);
     };
 
-    const handleCreateNewChat = () => {
-        // TODO: Xử lý tạo mới
-    };
+
 
     useEffect(() => {
         const handleClickOutside = (e: MouseEvent) => {
@@ -82,7 +82,7 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
     return (
         <div className="flex flex-col h-full px-4 sm:px-6 pt-4">
             <button
-                onClick={handleCreateNewChat}
+                onClick={onCreateNewChat}
                 className="flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary-dark transition rounded-xl py-2.5 font-medium mb-4 sm:mb-6"
             >
                 <Plus size={18} /> Tạo cuộc trò chuyện

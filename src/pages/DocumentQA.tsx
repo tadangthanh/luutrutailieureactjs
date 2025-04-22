@@ -25,7 +25,7 @@ const DocumentQA: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const fileInput = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const questionRef = useRef<HTMLTextAreaElement>(null);
+    const textAreaRef = useRef<HTMLTextAreaElement>(null);
     const tokenUsage = useRef(0);
     const tokenDocument = useRef(0);
     const maxToken = 1000000;
@@ -42,8 +42,6 @@ const DocumentQA: React.FC = () => {
                 return;
             }
         }
-        setQuestion("");
-        setMessages([]);
         setFiles(
             (prevFiles) => [...prevFiles, ...Array.from(fileList)],
         ); // Thêm file vào danh sách file đã chọn
@@ -176,9 +174,6 @@ const DocumentQA: React.FC = () => {
         }
     }
     const handleChatDelete = (id: number) => {
-        if (chatSessionSelected && chatSessionSelected.id === id) {
-            setChatSessionSelected(null);
-        }
         delChatSession(id).then((response) => {
             if (response.data.status === 200) {
                 setChatSessionPage((prev) => {
@@ -187,6 +182,15 @@ const DocumentQA: React.FC = () => {
                         items: prev.items.filter((item) => item.id !== id),
                     };
                 });
+                if (chatSessionSelected && chatSessionSelected.id === id) {
+                    setChatSessionSelected(null);
+                }
+                setConversations([]);
+                setAssistantFileUploaded([]);
+                setFiles([]);
+                setQuestion("");
+                setShowUploadedFiles(false);
+                setLoading(false);
                 toast.success(response.data.message);
             } else {
                 toast.error(response.data.message);
@@ -390,13 +394,25 @@ const DocumentQA: React.FC = () => {
                 index++;
                 setConversations((prev) => {
                     const updated = [...prev];
-                    if (updated[updated.length - 1]?.answer) {
-                        updated[updated.length - 1].answer = newText;
+                    const last = updated[updated.length - 1];
+
+                    if (last) {
+                        updated[updated.length - 1] = {
+                            ...last,
+                            answer: newText, // giữ nguyên question
+                        };
                     } else {
-                        updated.push({ id: null, question: "", answer: newText, chatSessionId: null });
+                        updated.push({
+                            id: null,
+                            question: question, // fallback nếu không có gì
+                            answer: newText,
+                            chatSessionId: null
+                        });
                     }
+
                     return updated;
                 });
+
 
             } else {
                 clearInterval(typeInterval);
@@ -404,8 +420,8 @@ const DocumentQA: React.FC = () => {
         }, 10);
     }
     const clearInputQuestion = () => {
-        if (questionRef.current) {
-            questionRef.current.value = "";
+        if (textAreaRef.current) {
+            setTextAreaValue("");
         }
     }
     const clearInputFiles = () => {
@@ -413,6 +429,8 @@ const DocumentQA: React.FC = () => {
             fileInput.current.value = "";
         }
     }
+    const [textAreaValue, setTextAreaValue] = useState<string>("");
+
     const handleAsk = async () => {
         clearInputQuestion();
         clearInputFiles();
@@ -428,6 +446,14 @@ const DocumentQA: React.FC = () => {
             await deleteFileStorageAi(files[i].name);
         }
     }
+    const handleCreateNewChat = () => {
+        setChatSessionSelected(null);
+        setConversations([]);
+        setFiles([]);
+        setQuestion("");
+        setShowUploadedFiles(false);
+        setLoading(false);
+    }
 
 
     return (
@@ -438,6 +464,7 @@ const DocumentQA: React.FC = () => {
                     chatSelected={chatSessionSelected}
                     onChatSelect={handleChatSelect}
                     onChatDelete={handleChatDelete}
+                    onCreateNewChat={handleCreateNewChat}
                     chatSessionsPage={chatSessionPage}
                     onLoadMore={() => setPageSessionNumber((prev) => prev + 1)}
                 />
@@ -533,15 +560,18 @@ const DocumentQA: React.FC = () => {
                         {/* Nhập câu hỏi */}
                         <div>
                             <textarea
-                                ref={questionRef}
-                                value={question}
-                                onChange={(e) => setQuestion(e.target.value)}
+                                ref={textAreaRef}
+                                value={textAreaValue}
+                                onChange={(e) => {
+                                    setQuestion(e.target.value);
+                                    setTextAreaValue(e.target.value);
+                                }}
                                 placeholder="Nhập câu hỏi của bạn về tài liệu..."
                                 rows={3}
                                 className="w-full resize-none bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
                             />
                         </div>
-                        <div className="absolute bottom-4 right-20">
+                        <div className=" bottom-4 right-20">
                             <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 w-64 max-w-full">
                                 <button
                                     onClick={() => setShowUploadedFiles(!showUploadedFiles)}
