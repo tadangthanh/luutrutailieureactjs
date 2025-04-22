@@ -5,14 +5,14 @@ import ReactMarkdown from "react-markdown";
 import { ChevronDown, FileText, Plus, SendHorizonalIcon, X } from "lucide-react";
 import { SidebarChatList } from "../components/SidebarChatList";
 import { AssistantFile } from "../types/AssistantFile";
-import { delAssistantFile, getAssistantFilesByChatSessionId } from "../services/AssistantFileApi";
+import { getAssistantFilesByChatSessionId } from "../services/AssistantFileApi";
 import { PageResponse } from "../types/PageResponse";
 import { Conversation } from "../types/Conversation";
 import { getConversations } from "../services/ConversationApi";
 import { ChatSessionDto } from "../types/ChatSessionDto";
-import { getChatSessions, initChatSession } from "../services/ChatSessionApi";
+import { getChatSessions, createChatSession, delChatSession } from "../services/ChatSessionApi";
 import { ChatSessionInit } from "../types/ChatSessionInit";
-
+import { TypingIndicator } from "../components/TypingIndicator";
 
 type Message = {
     role: "user" | "ai";
@@ -20,14 +20,12 @@ type Message = {
 };
 
 const DocumentQA: React.FC = () => {
-    const [file, setFile] = useState<File | null>(null);
     const [question, setQuestion] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [loading, setLoading] = useState(false);
-
     const fileInput = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const contentsRef = useRef<Content[]>([]);
+    const questionRef = useRef<HTMLTextAreaElement>(null);
     const tokenUsage = useRef(0);
     const tokenDocument = useRef(0);
     const maxToken = 1000000;
@@ -46,7 +44,6 @@ const DocumentQA: React.FC = () => {
         }
         setQuestion("");
         setMessages([]);
-        contentsRef.current = [];
         setFiles(
             (prevFiles) => [...prevFiles, ...Array.from(fileList)],
         ); // Thêm file vào danh sách file đã chọn
@@ -173,11 +170,30 @@ const DocumentQA: React.FC = () => {
     const handleChatSelect = (chatSession: ChatSessionDto) => {
         setChatSessionSelected(chatSession);
     };
-    const deleteFileStorageAi = async (name: string) => {
-        await ai.files.delete({ name: name });
+    const deleteFileStorageAi = async (name: string | undefined) => {
+        if (name) {
+            await ai.files.delete({ name: name });
+        }
     }
     const handleChatDelete = (id: number) => {
-
+        if (chatSessionSelected && chatSessionSelected.id === id) {
+            setChatSessionSelected(null);
+        }
+        delChatSession(id).then((response) => {
+            if (response.data.status === 200) {
+                setChatSessionPage((prev) => {
+                    return {
+                        ...prev,
+                        items: prev.items.filter((item) => item.id !== id),
+                    };
+                });
+                toast.success(response.data.message);
+            } else {
+                toast.error(response.data.message);
+            }
+        }).catch((error) => {
+            toast.error("Lỗi khi xóa cuộc trò chuyện.");
+        })
     }
     const [chatSessionPage, setChatSessionPage] = useState<PageResponse<ChatSessionDto>>(
         {
@@ -194,7 +210,17 @@ const DocumentQA: React.FC = () => {
         getChatSessions(pageSessionNumber, 10)
             .then((response) => {
                 if (response.status === 200) {
-                    setChatSessionPage(response.data.data);
+                    setChatSessionPage((prev) => {
+                        return {
+                            ...prev,
+                            items: [...prev.items, ...response.data.data.items],
+                            pageNo: response.data.data.pageNo,
+                            pageSize: response.data.data.pageSize,
+                            totalPage: response.data.data.totalPage,
+                            hasNext: response.data.data.hasNext,
+                            totalItems: response.data.data.totalItems,
+                        };
+                    });
                 } else {
                     toast.error("Lỗi khi tải danh sách cuộc trò chuyện.");
                 }
@@ -248,30 +274,39 @@ const DocumentQA: React.FC = () => {
         }
     }, [chatSessionSelected]);
 
-    const handleAsk = async () => {
-        if (!chatSessionSelected) {
+    const initChatSession = async () => {
+        setLoading(true);
+        try {
+            setConversations([
+                {
+                    id: null,
+                    question: question,
+                    answer: "",
+                    chatSessionId: null
+                }
+            ]);
+            // danh sách các file đã tải lên
             const assistantFiles: AssistantFile[] = [];
-
             for (let i = 0; i < files.length; i++) {
+                // file đã upload lên Google GenAI
                 const uploadedFile = await ai.files.upload({ file: files[i] });
-
                 if (!uploadedFile) {
-                    toast.error("Tải lên tệp thất bại.");
+                    toast.error(`Tải lên tệp ${files[i].name} thất bại.`);
                     return;
                 }
-
+                // thêm file đã upload vào danh sách
                 assistantFiles.push({
                     id: null,
                     name: uploadedFile.name,
                     uri: uploadedFile.uri,
                     mimeType: uploadedFile.mimeType,
-                    originalFileName: uploadedFile.name,
+                    originalFileName: files[i].name,
                     expirationTime: uploadedFile.expirationTime,
                     createTime: uploadedFile.createTime,
                     chatSessionId: 0
                 });
             }
-
+            // init part ban đầu cho cuộc trò chuyện
             const parts = assistantFiles.map((file) => ({
                 fileData: {
                     fileUri: file.uri,
@@ -283,7 +318,6 @@ const DocumentQA: React.FC = () => {
                 role: "user",
                 parts: [...parts, { text: question }],
             };
-
             const response = await ai.models.generateContentStream({
                 model: "gemini-2.5-flash-preview-04-17",
                 contents: initContent,
@@ -294,20 +328,7 @@ const DocumentQA: React.FC = () => {
 
             for await (const chunk of response) {
                 const content = chunk.candidates?.[0]?.content;
-                const usageMetadata = chunk.usageMetadata;
-
-                if (usageMetadata) {
-                    tokenUsage.current = usageMetadata.totalTokenCount || 0;
-                    usageMetadata.promptTokensDetails?.forEach((detail) => {
-                        if (detail?.modality === "DOCUMENT") {
-                            tokenDocument.current = detail.tokenCount || 0;
-                        }
-                    });
-                }
-
                 if (!content) continue;
-
-                contentsRef.current.push(content);
                 fullText += chunk.text || "";
             }
 
@@ -319,17 +340,28 @@ const DocumentQA: React.FC = () => {
             };
 
             const chatSessionInit: ChatSessionInit = {
-                name: question.substring(0, 20) + "...",
+                name: question.substring(0, 20) + "...",// tên cuộc trò chuyện
                 assistantFiles,
                 conversation,
             };
-            console.log("chatSessionInit", chatSessionInit);
-
-            initChatSession(chatSessionInit).then((response) => {
+            createChatSession(chatSessionInit).then((response) => {
                 if (response.data.status === 201) {
-                    console.log(response.data.data);
+                    setChatSessionPage((prev) => {
+                        return {
+                            ...prev,
+                            items: [response.data.data, ...prev.items],
+                        };
+                    });
+                    setChatSessionSelected(response.data.data);
+                    setLoading(false);
+                    generateContentTimeSecond(conversation.answer);
+                    setFiles([]); // xóa file đã tải lên
+                    setQuestion(""); // xóa câu hỏi đã nhập
+                    setAssistantFileUploaded(response.data.data.assistantFiles); // cập nhật danh sách file đã tải lên
                 } else {
                     toast.error("Lỗi khi khởi tạo cuộc trò chuyện.");
+                    // nếu lỗi thì xóa các file đã tải lên
+                    deleteListFileCloudAI(assistantFiles);
                 }
             });
 
@@ -340,8 +372,62 @@ const DocumentQA: React.FC = () => {
                     await ai.files.delete({ name: file.name });
                 }
             }
+        } catch (error) {
+            console.error(error);
+            toast.error("Đã xảy ra lỗi trong quá trình khởi tạo cuộc trò chuyện.");
+        } finally {
+            setLoading(false);
+        }
+    }
+    // khi có câu trả lời từ AI thì sẽ gọi hàm này để hiển thị câu trả lời
+    const generateContentTimeSecond = async (answer: string) => {
+        let index = 0;
+        let newText = "";
+        scrollToBottom();
+        const typeInterval = setInterval(() => {
+            if (index < answer.length) {
+                newText += answer[index];
+                index++;
+                setConversations((prev) => {
+                    const updated = [...prev];
+                    if (updated[updated.length - 1]?.answer) {
+                        updated[updated.length - 1].answer = newText;
+                    } else {
+                        updated.push({ id: null, question: "", answer: newText, chatSessionId: null });
+                    }
+                    return updated;
+                });
+
+            } else {
+                clearInterval(typeInterval);
+            }
+        }, 10);
+    }
+    const clearInputQuestion = () => {
+        if (questionRef.current) {
+            questionRef.current.value = "";
+        }
+    }
+    const clearInputFiles = () => {
+        if (fileInput.current) {
+            fileInput.current.value = "";
+        }
+    }
+    const handleAsk = async () => {
+        clearInputQuestion();
+        clearInputFiles();
+        if (files.length === 0 || !question) return;
+        // nếu ko có chatSessionSelected thì tạo mới cuộc trò chuyện
+        if (!chatSessionSelected) {
+            await initChatSession();
+            return;
         }
     };
+    const deleteListFileCloudAI = async (files: AssistantFile[]) => {
+        for (let i = 0; i < files.length; i++) {
+            await deleteFileStorageAi(files[i].name);
+        }
+    }
 
 
     return (
@@ -375,47 +461,26 @@ const DocumentQA: React.FC = () => {
                                 </div>
 
                                 {/* Assistant answer */}
-                                <div className="flex justify-start">
-                                    <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
-                                        <ReactMarkdown>{conv.answer}</ReactMarkdown>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        <div ref={messagesEndRef} />
-
-                        {/* Góc dưới bên phải hiển thị danh sách file đã upload */}
-                        <div className="absolute bottom-4 right-4">
-                            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 w-64 max-w-full">
-                                <button
-                                    onClick={() => setShowUploadedFiles(!showUploadedFiles)}
-                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-t-xl transition w-full"
-                                >
-                                    <FileText size={16} />
-                                    <span>Các file đã tải lên</span>
-                                    <ChevronDown
-                                        size={16}
-                                        className={`ml-auto transition-transform ${showUploadedFiles ? "rotate-180" : ""}`}
-                                    />
-                                </button>
-
-                                {showUploadedFiles && (
-                                    <div className="max-h-48 sm:max-h-64 overflow-y-auto border-t border-gray-200 dark:border-gray-600">
-                                        <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                                            {assistantFileUploaded.map((file) => (
-                                                <li
-                                                    key={file.id}
-                                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700  truncate"
-                                                    title={file.originalFileName}
-                                                >
-                                                    📎 {file.originalFileName}
-                                                </li>
-                                            ))}
-                                        </ul>
+                                {conv.answer && (
+                                    <div className="flex justify-start">
+                                        <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
+                                            <ReactMarkdown>{conv.answer}</ReactMarkdown>
+                                        </div>
                                     </div>
                                 )}
                             </div>
-                        </div>
+                        ))}
+                        {loading && (
+                            <div className="flex justify-start">
+                                <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
+                                    <TypingIndicator />
+                                </div>
+                            </div>
+                        )}
+                        <div ref={messagesEndRef} />
+
+                        {/* Góc dưới bên phải hiển thị danh sách file đã upload */}
+
                     </div>
 
                     <div className="space-y-4">
@@ -468,12 +533,44 @@ const DocumentQA: React.FC = () => {
                         {/* Nhập câu hỏi */}
                         <div>
                             <textarea
+                                ref={questionRef}
                                 value={question}
                                 onChange={(e) => setQuestion(e.target.value)}
                                 placeholder="Nhập câu hỏi của bạn về tài liệu..."
                                 rows={3}
                                 className="w-full resize-none bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
                             />
+                        </div>
+                        <div className="absolute bottom-4 right-20">
+                            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 w-64 max-w-full">
+                                <button
+                                    onClick={() => setShowUploadedFiles(!showUploadedFiles)}
+                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-t-xl transition w-full"
+                                >
+                                    <FileText size={16} />
+                                    <span>Các file đã tải lên</span>
+                                    <ChevronDown
+                                        size={16}
+                                        className={`ml-auto transition-transform ${showUploadedFiles ? "rotate-180" : ""}`}
+                                    />
+                                </button>
+
+                                {showUploadedFiles && (
+                                    <div className="max-h-48 sm:max-h-64 overflow-y-auto border-t border-gray-200 dark:border-gray-600">
+                                        <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                                            {assistantFileUploaded.map((file) => (
+                                                <li
+                                                    key={file.id}
+                                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700  truncate"
+                                                    title={file.originalFileName}
+                                                >
+                                                    📎 {file.originalFileName}
+                                                </li>
+                                            ))}
+                                        </ul>
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 

@@ -3,13 +3,13 @@ import { ChatSessionInit } from "../types/ChatSessionInit";
 import api from "../utils/api";
 import { apiUrl } from "../utils/ApiUtil";
 
-export const createChatSession = async (chatSession: ChatSessionDto) => {
-    return await api.post(`${apiUrl}/chat-session`, chatSession);
-}
-export const initChatSession = async (chatSessionInit: ChatSessionInit) => {
+// export const createChatSession = async (chatSession: ChatSessionDto) => {
+//     return await api.post(`${apiUrl}/chat-session`, chatSession);
+// }
+export const createChatSession = async (chatSessionInit: ChatSessionInit) => {
     return await api.post(`${apiUrl}/chat-session/init-chat`, chatSessionInit);
 }
-export const delChatSession = async (id: string) => {
+export const delChatSession = async (id: number) => {
     return await api.delete(`${apiUrl}/chat-session/${id}`);
 }
 export const getChatSessions = async (page = 0, size = 10) => {
