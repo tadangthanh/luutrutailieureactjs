@@ -1,5 +1,5 @@
 import { ChevronDown } from "lucide-react";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 interface DashboardDropdownProps {
     id: number;
@@ -16,7 +16,8 @@ export const DashboardDropdown: React.FC<DashboardDropdownProps> = ({
     isOpen,
     setOpenId,
 }) => {
-    const [selectedOption, setSelectedOption] = React.useState<string>(label);
+    const [selectedOption, setSelectedOption] = useState<string>(label);
+    const dropdownRef = useRef<HTMLDivElement>(null);
 
     const handleSelect = (option: string) => {
         setSelectedOption(option);
@@ -27,8 +28,26 @@ export const DashboardDropdown: React.FC<DashboardDropdownProps> = ({
         setOpenId(isOpen ? null : id);
     };
 
+    // Đóng dropdown khi click ra ngoài
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                isOpen &&
+                dropdownRef.current &&
+                !dropdownRef.current.contains(event.target as Node)
+            ) {
+                setOpenId(null);
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, [isOpen, setOpenId]);
+
     return (
-        <div className="relative">
+        <div ref={dropdownRef} className="relative">
             <button
                 onClick={handleToggle}
                 className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"

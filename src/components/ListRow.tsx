@@ -7,6 +7,9 @@ interface ListRowProps {
     rowId: number;
     name: string;
     type: "file" | "folder";
+    createdBy: string;
+    updatedAt: string;
+    ownerEmail: string;
     size?: string;
     openMenuId: number | null;
     setOpenMenuId: (id: number | null) => void;
@@ -18,6 +21,9 @@ const ListRow: React.FC<ListRowProps> = ({
     type,
     size,
     openMenuId,
+    createdBy,
+    updatedAt,
+    ownerEmail,
     setOpenMenuId,
 }) => {
     const menuRef = useRef<HTMLDivElement | null>(null);
@@ -49,16 +55,30 @@ const ListRow: React.FC<ListRowProps> = ({
     const renderIcon = () => type === "folder"
         ? <Folder size={16} className="mr-2" />
         : <FileText size={16} className="mr-2" />;
+    function formatDate(dateString: string): string {
+        const date = new Date(dateString);
 
+        const day = String(date.getDate()).padStart(2, '0'); // Ngày
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng
+        const year = date.getFullYear(); // Năm
+
+        return `${day}/${month}/${year}`;  // Định dạng ngày/tháng/năm (DD/MM/YYYY)
+    }
+    const formatOwner = (ownerEmail: string) => {
+        if (ownerEmail === localStorage.getItem('email')) {
+            return "Tôi";
+        }
+        return ownerEmail;
+    }
     return (
         <div className="cursor-pointer grid grid-cols-5 items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700">
             <div className="col-span-1 flex items-center">
                 {renderIcon()}
                 {name}
             </div>
-            <div className="col-span-1">Tôi</div>
-            <div className="col-span-1">2 ngày trước</div>
-            <div className="col-span-1">{size}</div>
+            <div className="col-span-1">{formatOwner(ownerEmail)}</div>
+            <div className="col-span-1">{formatDate(updatedAt)}</div>
+            <div className="col-span-1">{type === "folder" ? "--" : size}</div>
             <div className="col-span-1 flex justify-end relative">
                 <button
                     onClick={handleMenuClick}

@@ -1,15 +1,19 @@
+import { ResourceResponse } from "../types/ResourceResponse";
 import ListRow from "./ListRow";
 import { MoreHorizontal } from "lucide-react";
 
 interface DashboardListViewProps {
     openMenuId: number | null;
     setOpenMenuId: (id: number | null) => void;
+    folders: ResourceResponse[];
 }
 
 const DashboardListView: React.FC<DashboardListViewProps> = ({
     openMenuId,
     setOpenMenuId,
+    folders
 }) => {
+
     return (
         <div className="w-full border border-gray-200 dark:border-gray-700 rounded-md">
             <div className="grid grid-cols-5 bg-gray-100 dark:bg-gray-800 px-4 py-2 font-semibold text-sm text-gray-700 dark:text-gray-300">
@@ -27,19 +31,15 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
                 </div>
             </div>
 
-            {[
-                { id: 1, name: "Tài liệu học", type: "folder" },
-                { id: 2, name: "Dự án", type: "folder" },
-                { id: 3, name: "Báo cáo.pdf", type: "file", size: "1.2 MB" },
-                { id: 4, name: "Thiết kế.fig", type: "file", size: "4.8 MB" },
-                { id: 5, name: "Ghi chú.txt", type: "file", size: "352 KB" },
-            ].map((item) => (
+            {folders.map((folder) => (
                 <ListRow
-                    key={item.id}
-                    name={item.name}
-                    type={item.type as "file" | "folder"}
-                    size={item.size}
-                    rowId={item.id}
+                    key={folder.id}
+                    name={folder.name}
+                    type="folder"
+                    createdBy={folder.createdBy}
+                    updatedAt={folder.updatedAt}
+                    ownerEmail={folder.ownerEmail}
+                    rowId={folder.id}
                     openMenuId={openMenuId}
                     setOpenMenuId={setOpenMenuId}
                 />

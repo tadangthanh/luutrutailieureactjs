@@ -1,13 +1,14 @@
 import { MoreVertical, Edit, Share, File, Info, Trash, Copy } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
+import { ResourceResponse } from "../types/ResourceResponse";
 
 interface FolderCardProps {
-    name: string;
+    folder: ResourceResponse;
     layout: "grid" | "list";
     onActionClick?: (e: React.MouseEvent) => void;
 }
 
-const FolderCard: React.FC<FolderCardProps> = ({ name, layout, onActionClick }) => {
+const FolderCard: React.FC<FolderCardProps> = ({ folder, layout, onActionClick }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement | null>(null); // Tham chiếu menu
     const handleMenuClick = (e: React.MouseEvent) => {
@@ -31,7 +32,7 @@ const FolderCard: React.FC<FolderCardProps> = ({ name, layout, onActionClick }) 
     }, []);
 
     const handleAction = (action: string) => {
-        console.log(`Action: ${action} for ${name}`);
+        console.log(`Action: ${action} for ${folder.name}`);
         setIsMenuOpen(false); // Đóng menu sau khi thực hiện hành động
     };
 
@@ -49,7 +50,7 @@ const FolderCard: React.FC<FolderCardProps> = ({ name, layout, onActionClick }) 
             </button>
 
             <div className="font-semibold text-gray-800 dark:text-white">
-                📁 {name}
+                📁 {folder.name}
             </div>
 
             {/* Menu */}
