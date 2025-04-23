@@ -56,30 +56,23 @@ const DocumentQA: React.FC = () => {
             }
         }
         setFilesInput((prev) => [...prev, ...fileList]);
-        // setFilesSelected((prev) => [...prev, ...fileList]);
         e.target.value = "";
     };
 
     const handleRemoveFileSelected = (file: File) => {
-        // setFilesSelected((prev) => prev.filter((f) => f !== file));
         setFilesInput((prev) => prev.filter((f) => f !== file));
         if (filesInputRef.current) filesInputRef.current.value = "";
     };
-
-    // const clearInputQuestion = () => setTextAreaValue("");
 
     const clearInputFiles = () => {
         filesInputRef.current && (filesInputRef.current.value = "")
         setFilesInput([]);
     };
 
-
-
     // ====== CONVERSATION ======
     const generateContentTimeSecond = async (answer: string) => {
         let index = 0;
         let newText = "";
-
         const typeInterval = setInterval(() => {
             if (index < answer.length) {
                 newText += answer[index++];
@@ -160,8 +153,8 @@ const DocumentQA: React.FC = () => {
         setConversations([]);
         setFilesUploaded([]);
         setFilesInput([]);
-        // setFilesSelected([]);
         setQuestion("");
+        setTextAreaValue("");
         setShowUploadedFiles(false);
         setLoading(false);
     };
@@ -233,9 +226,6 @@ const DocumentQA: React.FC = () => {
             console.error(err);
             toast.error("Đã xảy ra lỗi trong quá trình khởi tạo cuộc trò chuyện.");
         } finally {
-            // setFilesSelected([]);
-            // setFilesInput([]);
-            // setTextAreaValue("");
             setLoading(false);
         }
     };
