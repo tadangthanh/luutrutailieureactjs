@@ -80,10 +80,14 @@ api.interceptors.response.use(
             try {
                 const res = await axios.post<TokenResponse>(
                     `${process.env.REACT_APP_BASE_API}/auth/refresh-token`,
-                    { refreshToken },
-                    { withCredentials: true }
+                    {},
+                    {
+                        headers: {
+                            "X-Refresh-Token": refreshToken,
+                        },
+                        withCredentials: true,
+                    }
                 );
-
                 const { accessToken, refreshToken: newRefreshToken } = res.data;
 
                 localStorage.setItem("accessToken", accessToken);

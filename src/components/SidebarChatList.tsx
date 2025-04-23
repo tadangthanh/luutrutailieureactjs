@@ -88,10 +88,12 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
             <div className={`flex justify-${isCollapsed ? "center" : "end"} mb-2`}>
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="p-2 bg-primary text-black rounded-full shadow-md hover:scale-105 transition transform hover:shadow-lg"
+                    className="p-2 sm:p-2.5 rounded-2xl border border-primary bg-white dark:bg-neutral-900 text-primary hover:bg-primary hover:text-white transition-all shadow-sm hover:shadow-md"
+                    title={isCollapsed ? "Mở rộng" : "Thu gọn"}
                 >
-                    {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                    {isCollapsed ? <ChevronRight size={22} /> : <ChevronLeft size={22} />}
                 </button>
+
             </div>
 
 
