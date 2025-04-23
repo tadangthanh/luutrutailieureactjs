@@ -2,7 +2,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { GoogleGenAI } from "@google/genai";
 import { toast } from "sonner";
 import ReactMarkdown from "react-markdown";
-import { ChevronDown, FileText, Plus, SendHorizonalIcon, X } from "lucide-react";
+import { ArrowDown, ChevronDown, FileText, Plus, SendHorizonalIcon, X } from "lucide-react";
 import { SidebarChatList } from "../components/SidebarChatList";
 import { AssistantFile } from "../types/AssistantFile";
 import { addAssistantFiles, getAssistantFilesByChatSessionId } from "../services/AssistantFileApi";
@@ -424,6 +424,31 @@ const DocumentQA: React.FC = () => {
             }
         }
     };
+    const [showScrollButton, setShowScrollButton] = useState(false);
+    const containerRef = useRef<HTMLDivElement>(null);
+    const handleScroll = () => {
+        if (!containerRef.current) return;
+
+        const { scrollTop, scrollHeight, clientHeight } = containerRef.current;
+
+        const isNearBottom = scrollTop + clientHeight >= scrollHeight - 10;
+
+        // Hiện nút nếu không còn ở gần đáy
+        setShowScrollButton(!isNearBottom);
+    };
+
+
+    const scrollToBottom = () => {
+        if (containerRef.current) {
+            containerRef.current.scrollTo({
+                top: containerRef.current.scrollHeight,
+                behavior: "smooth",
+            });
+        }
+    };
+    useEffect(() => {
+        scrollToBottom(); // Scroll tới cuối khi render hoặc khi có tin nhắn mới
+    }, [conversations, loading]);
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
             {/* Sidebar */}
@@ -445,38 +470,53 @@ const DocumentQA: React.FC = () => {
                         🤖 Trợ lý Tài Liệu Thông Minh
                     </h1>
 
-                    <div className="relative h-[24rem] sm:h-96 overflow-y-auto bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-5 rounded-xl space-y-4 border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar">
-                        {conversations.map((conv) => (
-                            <div key={conv.id} className="space-y-4">
-                                {/* User question */}
-                                <div className="flex justify-end">
-                                    <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-primary text-white rounded-br-none">
-                                        <ReactMarkdown>{conv.question}</ReactMarkdown>
-                                    </div>
-                                </div>
-
-                                {/* Assistant answer */}
-                                {conv.answer && (
-                                    <div className="flex justify-start">
-                                        <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
-                                            <ReactMarkdown>{conv.answer}</ReactMarkdown>
+                    <div className="relative"> {/* Container chính, chứa toàn bộ */}
+                        <div
+                            onScroll={handleScroll}
+                            ref={containerRef}
+                            className="h-[24rem] sm:h-96 overflow-y-auto bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-5 rounded-xl space-y-4 border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar"
+                        >
+                            {conversations.map((conv) => (
+                                <div key={conv.id} className="space-y-4">
+                                    <div className="flex justify-end">
+                                        <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-primary text-white rounded-br-none">
+                                            <ReactMarkdown>{conv.question}</ReactMarkdown>
                                         </div>
                                     </div>
-                                )}
-                            </div>
-                        ))}
-                        {loading && (
-                            <div className="flex justify-start">
-                                <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
-                                    <TypingIndicator />
+
+                                    {conv.answer && (
+                                        <div className="flex justify-start">
+                                            <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
+                                                <ReactMarkdown>{conv.answer}</ReactMarkdown>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
-                            </div>
+                            ))}
+
+                            {loading && (
+                                <div className="flex justify-start">
+                                    <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
+                                        <TypingIndicator />
+                                    </div>
+                                </div>
+                            )}
+
+                            <div ref={messagesEndRef} />
+                        </div>
+
+                        {/* Đặt nút scroll ở ngoài khung scroll */}
+                        {showScrollButton && (
+                            <button
+                                onClick={scrollToBottom}
+                                className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-primary-dark transition"
+                                aria-label="Scroll to bottom"
+                            >
+                                <ArrowDown size={20} />
+                            </button>
                         )}
-                        <div ref={messagesEndRef} />
-
-                        {/* Góc dưới bên phải hiển thị danh sách file đã upload */}
-
                     </div>
+
 
                     <div className="space-y-4">
                         {/* Upload tài liệu */}
