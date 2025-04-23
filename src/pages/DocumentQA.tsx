@@ -21,7 +21,7 @@ const DocumentQA: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [chatSelected, setChatSelected] = useState<ChatSessionDto | null>(null);
     const [conversations, setConversations] = useState<Conversation[]>([]);
-    const [filesSelected, setFilesSelected] = useState<File[]>([]);
+    // const [filesSelected, setFilesSelected] = useState<File[]>([]);
     const [filesInput, setFilesInput] = useState<File[]>([]);
     const [filesUploaded, setFilesUploaded] = useState<AssistantFile[]>([]);
     const [showUploadedFiles, setShowUploadedFiles] = useState(false);
@@ -38,7 +38,7 @@ const DocumentQA: React.FC = () => {
     // ====== REF ======
     const filesInputRef = useRef<HTMLInputElement>(null);
     const messagesEndRef = useRef<HTMLDivElement>(null);
-    const textAreaRef = useRef<HTMLTextAreaElement>(null);
+    const textAreaRef = useRef<HTMLTextAreaElement | null>(null);
 
     // ====== GOOGLE GEN AI INSTANCE ======
     const ai = new GoogleGenAI({ apiKey: process.env.REACT_APP_GEMINI_API_KEY });
@@ -56,35 +56,29 @@ const DocumentQA: React.FC = () => {
             }
         }
         setFilesInput((prev) => [...prev, ...fileList]);
-        setFilesSelected((prev) => [...prev, ...fileList]);
+        // setFilesSelected((prev) => [...prev, ...fileList]);
         e.target.value = "";
     };
 
     const handleRemoveFileSelected = (file: File) => {
-        setFilesSelected((prev) => prev.filter((f) => f !== file));
+        // setFilesSelected((prev) => prev.filter((f) => f !== file));
         setFilesInput((prev) => prev.filter((f) => f !== file));
         if (filesInputRef.current) filesInputRef.current.value = "";
     };
 
-    const clearInputQuestion = () => setTextAreaValue("");
+    // const clearInputQuestion = () => setTextAreaValue("");
 
     const clearInputFiles = () => {
         filesInputRef.current && (filesInputRef.current.value = "")
         setFilesInput([]);
     };
 
-    // ====== UI UTILS ======
-    const scrollToBottom = () => {
-        setTimeout(() => {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-        }, 100);
-    };
+
 
     // ====== CONVERSATION ======
     const generateContentTimeSecond = async (answer: string) => {
         let index = 0;
         let newText = "";
-        scrollToBottom();
 
         const typeInterval = setInterval(() => {
             if (index < answer.length) {
@@ -118,7 +112,7 @@ const DocumentQA: React.FC = () => {
             await deleteFileStorageAi(file.name);
         }
     };
-
+    //====== DELETE CHAT SESSION ======
     const handleChatDelete = async (id: number) => {
         const fileUploaded = await getAssistantFilesByChatSessionId(id)
             .then((res) => {
@@ -143,7 +137,7 @@ const DocumentQA: React.FC = () => {
                 if (chatSelected?.id === id) setChatSelected(null);
                 setConversations([]);
                 setFilesUploaded([]);
-                setFilesSelected([]);
+                // setFilesSelected([]);
                 setQuestion("");
                 setShowUploadedFiles(false);
                 setLoading(false);
@@ -166,7 +160,7 @@ const DocumentQA: React.FC = () => {
         setConversations([]);
         setFilesUploaded([]);
         setFilesInput([]);
-        setFilesSelected([]);
+        // setFilesSelected([]);
         setQuestion("");
         setShowUploadedFiles(false);
         setLoading(false);
@@ -179,7 +173,9 @@ const DocumentQA: React.FC = () => {
         try {
             setConversations([{ id: null, question, answer: "", chatSessionId: null }]);            // Upload files
             const assistantFiles: AssistantFile[] = [];
-            for (const file of filesSelected) {
+            const filesWillUpload = [...filesInput];
+            setFilesInput([]);
+            for (const file of filesWillUpload) {
                 const uploaded = await ai.files.upload({ file });
                 if (!uploaded) {
                     toast.error(`Tải lên tệp ${file.name} thất bại.`);
@@ -227,7 +223,7 @@ const DocumentQA: React.FC = () => {
                 setChatSessionPage((prev) => ({ ...prev, items: [newChat, ...prev.items] }));
                 setChatSelected(newChat);
                 setQuestion("");
-                setFilesSelected([]);
+                // setFilesSelected([]);
                 generateContentTimeSecond(conversation.answer);
             } else {
                 toast.error("Lỗi khi khởi tạo cuộc trò chuyện.");
@@ -237,12 +233,13 @@ const DocumentQA: React.FC = () => {
             console.error(err);
             toast.error("Đã xảy ra lỗi trong quá trình khởi tạo cuộc trò chuyện.");
         } finally {
-            setFilesSelected([]);
-            setFilesInput([]);
-            setTextAreaValue("");
+            // setFilesSelected([]);
+            // setFilesInput([]);
+            // setTextAreaValue("");
             setLoading(false);
         }
     };
+    // ====== SAVE FILES UPLOADED GEN AI TO DB======
     const saveGenAiFiles = async (files: AssistantFile[]) => {
         const fileUploaded = await addAssistantFiles(files)
             .then((res) => {
@@ -261,9 +258,8 @@ const DocumentQA: React.FC = () => {
     }
     // ====== ASK ======
     const handleAsk = async () => {
-        clearInputQuestion();
         clearInputFiles();
-        if (!question || (filesSelected.length === 0 && filesUploaded.length === 0)) return;
+        if (!question || (filesInput.length === 0 && filesUploaded.length === 0)) return;
 
         if (!chatSelected) {
             await initChatSession();
@@ -277,7 +273,9 @@ const DocumentQA: React.FC = () => {
         try {
             setConversations((prev) => [...prev, { id: null, question, answer: "", chatSessionId: chatSelected.id }]);
             const genAiFiles: AssistantFile[] = [];
-            for (const file of filesSelected) {
+            const filesWillUpload = [...filesInput];
+            setFilesInput([]);
+            for (const file of filesWillUpload) {
                 const uploaded = await ai.files.upload({ file });
                 if (!uploaded) {
                     toast.error(`Tải lên tệp ${file.name} thất bại.`);
@@ -338,8 +336,7 @@ const DocumentQA: React.FC = () => {
             console.error(err);
             toast.error("Đã xảy ra lỗi trong quá trình khởi tạo cuộc trò chuyện.");
         } finally {
-            setFilesInput([]);
-            setTextAreaValue("");
+            // setTextAreaValue("");
             setLoading(false);
         }
     }
@@ -401,13 +398,32 @@ const DocumentQA: React.FC = () => {
     const handleChangeChatSession = () => {
         setFilesUploaded([]);
         setFilesInput([]);
-        setFilesSelected([]);
+        // setFilesSelected([]);
         setQuestion("");
         setShowUploadedFiles(false);
         setLoading(false);
         setConversations([]);
     }
-
+    // Auto resize textarea
+    useEffect(() => {
+        if (textAreaRef.current) {
+            textAreaRef.current.style.height = "auto"; // Reset height
+            textAreaRef.current.style.height = `${Math.min(textAreaRef.current.scrollHeight, 200)}px`; // 200px là chiều cao tối đa
+        }
+    }, [textAreaValue]);
+    const handleKeyDown = (e: any) => {
+        if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            if ((filesUploaded.length === 0 && filesInput.length === 0) || !question || loading) {
+                toast.error("Vui lòng chọn tệp hoặc nhập câu hỏi.");
+                return;
+            }
+            if (textAreaValue.trim() !== "") {
+                handleAsk();
+                setTextAreaValue("");
+            }
+        }
+    };
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
             {/* Sidebar */}
@@ -514,13 +530,14 @@ const DocumentQA: React.FC = () => {
                             <textarea
                                 ref={textAreaRef}
                                 value={textAreaValue}
+                                onKeyDown={handleKeyDown}
                                 onChange={(e) => {
                                     setQuestion(e.target.value);
                                     setTextAreaValue(e.target.value);
                                 }}
+                                rows={1}
                                 placeholder="Hỏi bất kỳ điều gì"
-                                rows={3}
-                                className="w-full resize-none bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
+                                className="custom-scrollbar w-full resize-none max-h-[200px] overflow-auto bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
                             />
                         </div>
                         <div className=" bottom-4 right-20">
@@ -560,8 +577,8 @@ const DocumentQA: React.FC = () => {
                     <div className="flex justify-end">
                         <button
                             onClick={handleAsk}
-                            disabled={(filesUploaded.length === 0 && filesSelected.length === 0) || !question || loading}
-                            className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${(filesUploaded.length === 0 && filesSelected.length === 0) || !question || loading
+                            disabled={(filesUploaded.length === 0 && filesInput.length === 0) || !question || loading}
+                            className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${(filesUploaded.length === 0 && filesInput.length === 0) || !question || loading
                                 ? "bg-primary/50 cursor-not-allowed"
                                 : "bg-primary hover:bg-primary-dark"
                                 }`}
