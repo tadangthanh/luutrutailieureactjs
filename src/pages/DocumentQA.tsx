@@ -452,7 +452,7 @@ const DocumentQA: React.FC = () => {
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
             {/* Sidebar */}
-            <div className="w-full md:w-64 md:mt-20 dark:bg-gray-900 flex-shrink-0">
+            <div className="md:w-auto md:mt-20 dark:bg-gray-900 flex-shrink-0">
                 <SidebarChatList
                     chatSelected={chatSelected}
                     onChatSelect={handleChatSelect}
