@@ -1,13 +1,15 @@
 import { ReactNode, useState, useCallback, useEffect } from "react";
-import Header from "../components/Header";
-import Sidebar from "../components/Sidebar";
 import { toast } from "sonner";
 import api from "../utils/api";
 import webSocketService from "../services/WebSocketService";
+import { Sidebar } from "../components/Sidebar";
+import { Header } from "../components/Header";
+
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
     const [isDragging, setIsDragging] = useState(false);
     const [uploadId, setUploadId] = useState<string | null>(null);
+    const [activeMenu, setActiveMenu] = useState<string>("Tài liệu của tôi");
     const [uploadProgress, setUploadProgress] = useState<{
         fileName: string;
         percent: number;
@@ -128,9 +130,13 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
 
     return (
         <div className="flex h-screen relative ">
-            <Sidebar />
+            <Sidebar
+                setActiveMenu={setActiveMenu}
+            />
             <div className="flex flex-col flex-1 overflow-hidden">
-                <Header />
+                <Header
+                    activeMenu={activeMenu}
+                />
                 <main className="flex-1 overflow-y-auto p-4 bg-gray-50 dark:bg-gray-900 relative custom-scrollbar">
                     {children}
                     {isDragging && (

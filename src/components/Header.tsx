@@ -2,8 +2,10 @@
 import { Link } from "react-router-dom";
 import Dropdown from "./Dropdown";
 import { Settings } from "lucide-react";
-
-const Header = () => {
+interface HeaderProps {
+    activeMenu: string;
+}
+export const Header: React.FC<HeaderProps> = ({ activeMenu }) => {
     // Lấy thông tin người dùng từ localStorage
     const fullName = localStorage.getItem("fullName");
     const email = localStorage.getItem("email");
@@ -23,7 +25,7 @@ const Header = () => {
     };
     return (
         <header className="bg-white dark:bg-gray-800 shadow px-4 py-2 flex justify-between items-center">
-            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">Tài liệu của tôi</h1>
+            <h1 className="text-lg font-semibold text-gray-800 dark:text-white">{activeMenu}</h1>
 
             <div className="flex items-center gap-3">
                 <button className="bg-primary text-white px-4 py-2 rounded-xl hover:bg-primary-dark">
@@ -83,5 +85,3 @@ const Header = () => {
         </header>
     );
 };
-
-export default Header;
