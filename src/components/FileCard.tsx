@@ -1,13 +1,14 @@
 import { MoreVertical, Edit, Share, File, Info, Trash, Download, Copy } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
+import { ResourceResponse } from "../types/ResourceResponse";
 
 interface FileCardProps {
-    name: string;
+    doc: ResourceResponse
     layout: "grid" | "list";
     onActionClick?: (e: React.MouseEvent) => void;
 }
 
-const FileCard: React.FC<FileCardProps> = ({ name, layout, onActionClick }) => {
+const FileCard: React.FC<FileCardProps> = ({ layout, onActionClick, doc }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement | null>(null); // Tham chiếu menu
 
@@ -32,7 +33,7 @@ const FileCard: React.FC<FileCardProps> = ({ name, layout, onActionClick }) => {
     }, []);
 
     const handleAction = (action: string) => {
-        console.log(`Action: ${action} for ${name}`);
+        console.log(`Action: ${action} for ${doc.name}`);
         setIsMenuOpen(false); // Đóng menu sau khi thực hiện hành động
     };
 
@@ -50,7 +51,7 @@ const FileCard: React.FC<FileCardProps> = ({ name, layout, onActionClick }) => {
             </button>
 
             <div className="text-gray-800 dark:text-white">
-                📄 {name}
+                📄 {doc.name}
             </div>
 
             {/* Menu */}

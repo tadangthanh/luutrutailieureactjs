@@ -6,12 +6,14 @@ interface DashboardListViewProps {
     openMenuId: number | null;
     setOpenMenuId: (id: number | null) => void;
     folders: ResourceResponse[];
+    documents: ResourceResponse[];
 }
 
 const DashboardListView: React.FC<DashboardListViewProps> = ({
     openMenuId,
     setOpenMenuId,
-    folders
+    folders,
+    documents
 }) => {
 
     return (
@@ -40,6 +42,19 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
                     updatedAt={folder.updatedAt}
                     ownerEmail={folder.ownerEmail}
                     rowId={folder.id}
+                    openMenuId={openMenuId}
+                    setOpenMenuId={setOpenMenuId}
+                />
+            ))}
+            {documents.map((document) => (
+                <ListRow
+                    key={document.id}
+                    name={document.name}
+                    type="file"
+                    createdBy={document.createdBy}
+                    updatedAt={document.updatedAt}
+                    ownerEmail={document.ownerEmail}
+                    rowId={document.id}
                     openMenuId={openMenuId}
                     setOpenMenuId={setOpenMenuId}
                 />

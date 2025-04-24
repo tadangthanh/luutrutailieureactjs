@@ -1,10 +1,8 @@
-export interface ResourceResponse {
+import { BaseDto } from "./BaseDto";
+
+export interface ResourceResponse extends BaseDto {
     id: number;
     name: string;
-    createdBy: string;
-    createdAt: string;
-    updatedBy: string;
-    updatedAt: string;
     parentId: number | null;
     description: string;
     ownerName: string;
