@@ -4,6 +4,7 @@
   "private": true,
   "dependencies": {
     "@google/genai": "^0.9.0",
+    "@onlyoffice/document-editor-react": "^1.6.0",
     "@react-oauth/google": "^0.12.1",
     "@stomp/stompjs": "^7.1.1",
     "@testing-library/dom": "^10.4.0",

@@ -7,6 +7,7 @@ import { FolderResponse } from "../types/FolderResponse";
 import { getFolderPage } from "../services/FolderApi";
 import { toast } from "sonner";
 import FullScreenLoader from "../components/FullScreenLoader";
+import OnlyOfficeEditor from "../components/OnlyOfficeEditor";
 
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -23,9 +24,10 @@ const DashboardPage = () => {
         totalItems: 0,
         items: [],
     });
+
     useEffect(() => {
         setIsLoading(true);
-        try{
+        try {
             getFolderPage(folderPageNo, folderPageSize, []).then((response) => {
                 if (response.status === 200) {
                     setFolderPageResponse(response.data);
@@ -33,13 +35,23 @@ const DashboardPage = () => {
                     toast.error(response.message);
                 }
             })
-        }catch (error) {
+        } catch (error) {
             toast.error("Failed to fetch folder");
-        }finally{
+        } finally {
             setIsLoading(false);
         }
     }, [folderPageNo, folderPageSize]);
-
+    const fileUrl = "https://tathanhmycv.blob.core.windows.net/luu-tru-tai-lieu/3f19387a-c017-45ac-bf91-d89e657ca14a_motadetai.docx?sp=r&st=2025-04-24T01:09:49Z&se=2025-05-10T09:09:49Z&sv=2024-11-04&sr=b&sig=rYZObMUkkiQj3VahYwLiewgt9YCIHfF43wYfgNYJskE%3D";
+    // Hàm tạo chuỗi ngẫu nhiên
+    const generateRandomString = (length = 10) => {
+        const characters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+        let result = '';
+        const charactersLength = characters.length;
+        for (let i = 0; i < length; i++) {
+            result += characters.charAt(Math.floor(Math.random() * charactersLength));
+        }
+        return result;
+    };
 
     return (
         <div className="relative">
@@ -53,16 +65,24 @@ const DashboardPage = () => {
 
             {layout === "list" ? (
                 <DashboardListView
-                 openMenuId={openMenuId} 
-                 folders={folderPageResponse.items}
-                 setOpenMenuId={setOpenMenuId}
-                  />
+                    openMenuId={openMenuId}
+                    folders={folderPageResponse.items}
+                    setOpenMenuId={setOpenMenuId}
+                />
             ) : (
                 <DashboardGridView
-                 layout={layout} 
-                        folders={folderPageResponse.items}
-                 />
+                    layout={layout}
+                    folders={folderPageResponse.items}
+                />
             )}
+            <div className="fixed inset-0 z-50 bg-white">
+                <OnlyOfficeEditor
+                    documentUrl={fileUrl}
+                    documentKey={generateRandomString(10)}
+                    documentTitle="Mo ta de tai.docx"
+                    user={{ id: "user-id-abc", name: "Tạ Thành" }}
+                />
+            </div>
         </div>
     );
 };

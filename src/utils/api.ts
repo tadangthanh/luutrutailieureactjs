@@ -51,10 +51,11 @@ const processQueue = (error: unknown, token: string | null) => {
 };
 
 api.interceptors.response.use(
-    (response: AxiosResponse) => response,
+    (response: AxiosResponse) => {
+        return response;
+    },
     async (error: AxiosError) => {
         const originalRequest = error.config as AxiosRequestConfigWithRetry;
-
         if (error.response?.status === 401 && !originalRequest._retry) {
             originalRequest._retry = true;
 

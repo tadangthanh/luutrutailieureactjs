@@ -5,7 +5,7 @@ import { apiUrl } from "../utils/ApiUtil";
 
 export const getFolderPage = async (page = 0, size = 10, folders: string[]) => {
     try {
-        return (await api.get(`${apiUrl}/folders?page${page}?size=${size}&folders=${folders}`,)).data;
+        return (await api.get(`${apiUrl}/folders?page${page}&size=${size}&folders=${folders}`,)).data;
     } catch (error) {
         toast.error("Failed to fetch folder page.");
     }
