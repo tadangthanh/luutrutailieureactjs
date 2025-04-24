@@ -40,6 +40,9 @@ const OnlyOfficeEditor: React.FC<OnlyOfficeEditorProps> = ({
                     mode: "edit",
                     user: user,
                     callbackUrl: "https://3566-58-186-78-141.ngrok-free.app/api/v1/documents/save-editor",
+                    customization:{
+                        forcesave: true,
+                    }
                 }
             }}
         />
