@@ -75,14 +75,14 @@ const DashboardPage = () => {
                     folders={folderPageResponse.items}
                 />
             )}
-            <div className="fixed inset-0 z-50 bg-white">
+            {/* <div className="fixed inset-0 z-50 bg-white">
                 <OnlyOfficeEditor
                     documentUrl={fileUrl}
                     documentKey={generateRandomString(10)}
                     documentTitle="Mo ta de tai.docx"
                     user={{ id: "user-id-abc", name: "Tạ Thành" }}
                 />
-            </div>
+            </div> */}
         </div>
     );
 };
