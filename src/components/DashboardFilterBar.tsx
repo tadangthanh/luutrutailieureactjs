@@ -3,6 +3,7 @@ import { DashboardDropdown } from "./DashboarDropdown";
 import { on } from "events";
 import { useEffect, useState } from "react";
 import { m } from "framer-motion";
+import UserDropdown from "./UserDropdown";
 
 interface DashboardFilterBarProps {
     layout: "grid" | "list";
@@ -40,13 +41,9 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                     isOpen={openDropdownId === 1}
                     setOpenId={setOpenDropdownId}
                 />
-                <DashboardDropdown
-                    onChange={onChangeType}
-                    id={2}
-                    label="Người"
-                    options={typeOptions}
-                    isOpen={openDropdownId === 2}
-                    setOpenId={setOpenDropdownId}
+                <UserDropdown
+                    emails={["user1@gmail.com", "user2@example.com", "someone@abc.com"]}
+                    onSelect={(email) => console.log("Selected email:", email)}
                 />
                 <DashboardDropdown
                     id={3}
