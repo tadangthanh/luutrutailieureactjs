@@ -4,14 +4,16 @@ import React, { useEffect, useRef, useState } from "react";
 interface DashboardDropdownProps {
     id: number;
     label: string;
-    options: string[];
+    options: Map<string, string>;
     isOpen: boolean;
     setOpenId: (id: number | null) => void;
+    onChange(value: string): void;
 }
 
 export const DashboardDropdown: React.FC<DashboardDropdownProps> = ({
     id,
     label,
+    onChange,
     options,
     isOpen,
     setOpenId,
@@ -19,8 +21,9 @@ export const DashboardDropdown: React.FC<DashboardDropdownProps> = ({
     const [selectedOption, setSelectedOption] = useState<string>(label);
     const dropdownRef = useRef<HTMLDivElement>(null);
 
-    const handleSelect = (option: string) => {
-        setSelectedOption(option);
+    const handleSelect = (key: string) => {
+        setSelectedOption(key);
+        onChange(options.get(key) || "");
         setOpenId(null);
     };
 
@@ -57,15 +60,16 @@ export const DashboardDropdown: React.FC<DashboardDropdownProps> = ({
 
             {isOpen && (
                 <ul className="absolute bg-white dark:bg-neutral-dark border dark:border-gray-700 rounded shadow-md w-40 z-50">
-                    {options.map((opt, idx) => (
+                    {Array.from(options.entries()).map(([key, value], idx) => (
                         <li
-                            key={idx}
-                            onClick={() => handleSelect(opt)}
+                            key={key} // nên dùng key thật thay vì index nếu có thể
+                            onClick={() => handleSelect(key)}
                             className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                         >
-                            {opt}
+                            {key}
                         </li>
                     ))}
+
                 </ul>
             )}
         </div>

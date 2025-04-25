@@ -14,7 +14,8 @@ const DashboardPage = () => {
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
     const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
     const [pageNo, setPageNo] = useState<number>(0);
-    const [pageSize, setPageSize] = useState<number>(10);
+    const [pageSize, setPageSize] = useState<number>(1);
+    const [items, setItems] = useState<string[]>([]);
     const [itemPage, setItemPage] = useState<PageResponse<ItemResponse>>({
         pageNo: 0,
         pageSize: 10,
@@ -32,7 +33,7 @@ const DashboardPage = () => {
 
     useEffect(() => {
         setIsLoading(true);
-        getItems(pageNo, pageSize, [])
+        getItems(pageNo, pageSize,items)
             .then((response) => {
                 if (response.status === 200) {
                     const newItems = response.data.items;
@@ -46,12 +47,31 @@ const DashboardPage = () => {
             })
             .catch(() => toast.error("Lỗi khi lấy dữ liệu"))
             .finally(() => setIsLoading(false));
-    }, [pageNo, pageSize]);
-
+    }, [pageNo, pageSize,items]);
+    useEffect(() => {
+        setPageNo(0);
+        setItemPage({
+            pageNo: 0,
+            pageSize: 10,
+            totalPage: 0,
+            hasNext: false,
+            totalItems: 0,
+            items: [],
+        });
+    }, [items]);
+    const handleFilter = (type: string) => {
+        setPageNo(0);
+        if (type === "ALL") {
+            setItems([]);
+            return;
+        }
+        setItems([`itemType:${type}`]);
+    }
     return (
         <div className="relative">
             {isLoading && <FullScreenLoader />}
             <DashboardFilterBar
+                onChangeType={handleFilter}
                 layout={layout}
                 setLayout={setLayout}
                 openDropdownId={openDropdownId}
@@ -80,6 +100,7 @@ const DashboardPage = () => {
                     </button>
                 </div>
             )}
+
         </div>
     );
 };
