@@ -16,7 +16,7 @@ const DashboardPage = () => {
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
     const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
     const [pageNo, setPageNo] = useState<number>(0);
-    const [pageSize, setPageSize] = useState<number>(10);
+    const [pageSize, setPageSize] = useState<number>(1);
     const [folderPageResponse, setFolderPageResponse] = useState<PageResponse<FolderResponse>>({
         pageNo: 0,
         pageSize: 10,
@@ -36,27 +36,33 @@ const DashboardPage = () => {
 
     useEffect(() => {
         setIsLoading(true);
-        try {
-            getFolderPage(pageNo, pageSize, []).then((response) => {
-                if (response.status === 200) {
-                    setFolderPageResponse(response.data);
+        Promise.all([
+            getFolderPage(pageNo, pageSize, []),
+            getDocumentPage(pageNo, pageSize, [])
+        ])
+            .then(([folderRes, docRes]) => {
+                if (folderRes.status === 200) {
+                    setFolderPageResponse((prev) => ({
+                        ...folderRes.data,
+                        items: [...prev.items, ...folderRes.data.items],
+                    }));
                 } else {
-                    toast.error(response.message);
+                    toast.error(folderRes.message);
+                }
+
+                if (docRes.status === 200) {
+                    setDocumentPageResponse((prev) => ({
+                        ...docRes.data,
+                        items: [...prev.items, ...docRes.data.items],
+                    }));
+                } else {
+                    toast.error(docRes.message);
                 }
             })
-            getDocumentPage(pageNo, pageSize, []).then((response) => {
-                if (response.status === 200) {
-                    setDocumentPageResponse(response.data);
-                } else {
-                    toast.error(response.message);
-                }
-            })
-        } catch (error) {
-            toast.error("Failed to fetch folder");
-        } finally {
-            setIsLoading(false);
-        }
+            .catch(() => toast.error("Failed to fetch folder/document"))
+            .finally(() => setIsLoading(false));
     }, [pageNo, pageSize]);
+
 
     return (
         <div className="relative">
@@ -82,7 +88,20 @@ const DashboardPage = () => {
                     folders={folderPageResponse.items}
                 />
             )}
+            {(folderPageResponse.hasNext || documentPageResponse.hasNext) && (
+                <div className="absolute bottom-4 left-4">
+                    <button
+                        onClick={() => setPageNo((prev) => prev + 1)}
+                        className="text-primary hover:underline hover:cursor-pointer font-medium"
+                    >
+                        Xem thêm
+                    </button>
+                </div>
+            )}
+
+
         </div>
+
     );
 };
 
