@@ -1,19 +1,17 @@
-import { ResourceResponse } from "../types/ResourceResponse";
+import { ItemResponse } from "../types/ItemResponse";
 import ListRow from "./ListRow";
 import { MoreHorizontal } from "lucide-react";
 
 interface DashboardListViewProps {
     openMenuId: number | null;
     setOpenMenuId: (id: number | null) => void;
-    folders: ResourceResponse[];
-    documents: ResourceResponse[];
+    items: ItemResponse[];
 }
 
 const DashboardListView: React.FC<DashboardListViewProps> = ({
     openMenuId,
     setOpenMenuId,
-    folders,
-    documents
+    items
 }) => {
 
     return (
@@ -33,28 +31,15 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
                 </div>
             </div>
 
-            {folders.map((folder) => (
+            {items.map((item) => (
                 <ListRow
-                    key={folder.id}
-                    name={folder.name}
-                    type="folder"
-                    createdBy={folder.createdBy}
-                    updatedAt={folder.updatedAt}
-                    ownerEmail={folder.ownerEmail}
-                    rowId={folder.id}
-                    openMenuId={openMenuId}
-                    setOpenMenuId={setOpenMenuId}
-                />
-            ))}
-            {documents.map((document) => (
-                <ListRow
-                    key={document.id}
-                    name={document.name}
-                    type="file"
-                    createdBy={document.createdBy}
-                    updatedAt={document.updatedAt}
-                    ownerEmail={document.ownerEmail}
-                    rowId={document.id}
+                    key={item.id}
+                    name={item.name}
+                    type={item.itemType}
+                    createdBy={item.createdBy}
+                    updatedAt={item.updatedAt}
+                    ownerEmail={item.ownerEmail}
+                    rowId={item.id}
                     openMenuId={openMenuId}
                     setOpenMenuId={setOpenMenuId}
                 />

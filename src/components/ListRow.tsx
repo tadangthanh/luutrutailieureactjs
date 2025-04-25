@@ -6,7 +6,7 @@ import {
 interface ListRowProps {
     rowId: number;
     name: string;
-    type: "file" | "folder";
+    type: "DOCUMENT" | "FOLDER";
     createdBy: string;
     updatedAt: string;
     ownerEmail: string;
@@ -52,7 +52,7 @@ const ListRow: React.FC<ListRowProps> = ({
         setOpenMenuId(null);
     };
 
-    const renderIcon = () => type === "folder"
+    const renderIcon = () => type === "FOLDER"
         ? <Folder size={16} className="mr-2" />
         : <FileText size={16} className="mr-2" />;
     function formatDate(dateString: string): string {
@@ -78,7 +78,7 @@ const ListRow: React.FC<ListRowProps> = ({
             </div>
             <div className="col-span-1">{formatOwner(ownerEmail)}</div>
             <div className="col-span-1">{formatDate(updatedAt)}</div>
-            <div className="col-span-1">{type === "folder" ? "--" : size}</div>
+            <div className="col-span-1">{type === "FOLDER" ? "--" : size}</div>
             <div className="col-span-1 flex justify-end relative">
                 <button
                     onClick={handleMenuClick}

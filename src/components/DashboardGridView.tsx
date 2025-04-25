@@ -1,14 +1,13 @@
-import { ResourceResponse } from "../types/ResourceResponse";
+import { ItemResponse } from "../types/ItemResponse";
 import FileCard from "./FileCard";
 import FolderCard from "./FolderCard";
 
 interface DashboardGridViewProps {
     layout: "grid" | "list";
-    folders: ResourceResponse[];
-    documents: ResourceResponse[];
+    items: ItemResponse[]
 }
 
-const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, folders, documents }) => {
+const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items }) => {
     const layoutClass =
         layout === "grid"
             ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
@@ -16,28 +15,17 @@ const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, folders, 
 
     return (
         <div className={`${layoutClass} gap-4`}>
-            {folders.map((folder) => (
-                <FolderCard
-                    key={folder.id}
-                    folder={folder}
-                    layout={layout}
-                    onActionClick={() => console.log(`Action for ${folder.name}`)}
-                />
-            ))}
-            {
-                documents.map((document) => (
-                    <FileCard
-                        key={document.id}
-                        doc={document}
-                        layout={layout}
-                        onActionClick={() => console.log(`Action for ${document.name}`)}
-                    />
-                ))
-            }
-            {/* <FolderCard name="Dự án" layout={layout} /> */}
-            {/* <FileCard name="Báo cáo.pdf" layout={layout} />
-            <FileCard name="Thiết kế.fig" layout={layout} />
-            <FileCard name="Ghi chú.txt" layout={layout} /> */}
+            {items.map((item) => {
+                if (item.itemType === "FOLDER") {
+                    return <FolderCard
+                        key={item.id}
+                        folder={item}
+                        layout={layout} />;
+                } else {
+                    return <FileCard key={item.id} doc={item} layout={layout} />;
+                }
+            })}
+
         </div>
     );
 };

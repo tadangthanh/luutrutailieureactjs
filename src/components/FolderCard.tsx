@@ -1,9 +1,9 @@
 import { MoreVertical, Edit, Share, File, Info, Trash, Copy } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
-import { ResourceResponse } from "../types/ResourceResponse";
+import { ItemResponse } from "../types/ItemResponse";
 
 interface FolderCardProps {
-    folder: ResourceResponse;
+    folder: ItemResponse;
     layout: "grid" | "list";
     onActionClick?: (e: React.MouseEvent) => void;
 }
