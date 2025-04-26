@@ -14,7 +14,6 @@ const DashboardPage = () => {
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
     const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
     const [pageNo, setPageNo] = useState<number>(0);
-    const [pageSize, setPageSize] = useState<number>(10);
     const [items, setItems] = useState<string[]>([]);
     const [itemPage, setItemPage] = useState<PageResponse<ItemResponse>>({
         pageNo: 0,
@@ -34,7 +33,7 @@ const DashboardPage = () => {
     useEffect(() => {
         setIsLoading(true);
         console.log("items", items);
-        getItems(pageNo, pageSize, items)
+        getItems(pageNo, 10, items)
             .then((response) => {
                 if (response.status === 200) {
                     const newItems = response.data.items;
@@ -48,7 +47,7 @@ const DashboardPage = () => {
             })
             .catch(() => toast.error("Lỗi khi lấy dữ liệu"))
             .finally(() => setIsLoading(false));
-    }, [pageNo, pageSize, items]);
+    }, [pageNo, items]);
     useEffect(() => {
         setPageNo(0);
         setItemPage({

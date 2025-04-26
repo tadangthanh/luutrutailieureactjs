@@ -1,12 +1,11 @@
 import { LayoutGrid, List, Search } from "lucide-react";
 import { DashboardDropdown } from "./DashboarDropdown";
-import { on } from "events";
 import { useEffect, useState } from "react";
-import { m } from "framer-motion";
 import UserDropdown from "./UserDropdown";
 import { getEmailsShared } from "../services/ItemApi";
 import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
+import { DashboardDateRangeDropdown } from "./DashboardDateRangeDropdown";
 
 interface DashboardFilterBarProps {
     layout: "grid" | "list";
@@ -36,11 +35,12 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
     const [updateAtOptions, setUpdateAtOptions] = useState(new Map());
     useEffect(() => {
         setUpdateAtOptions(() => {
-            const map = new Map<string, Date|null>();
+            const map = new Map<string, Date | null>();
             map.set("Tất cả", null);
             map.set("Hôm nay", new Date(Date.now() - 24 * 60 * 60 * 1000));
             map.set("7 ngày qua", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
             map.set("30 ngày qua", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+            map.set("Ngày tùy chỉnh", null); // 🔥 Thêm dòng này để hiện option
             return map;
         });
     }, [])
@@ -100,23 +100,19 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         });
     };
 
-    const handleChangeUpdateAt = (date: Date | null) => {
+    const handleChangeUpdateAt = (fromDate: Date | null, toDate: Date | null = new Date()) => {
         setItems((prev: string[]) => {
-            // Xoá các điều kiện updatedAt cũ
             const filteredItems = prev.filter(item => !item.startsWith("updatedAt:"));
+            if (!fromDate || !toDate) return filteredItems;
 
-            // Nếu không chọn ngày thì coi như "tất cả" => xoá là xong
-            if (!date) return filteredItems;
-
-            // Format YYYY-MM-DD
             const formatDate = (d: Date) => d.toISOString().split("T")[0];
+            const from = formatDate(fromDate);
+            const to = formatDate(toDate);
 
-            const fromDate = formatDate(date);
-            const toDate = formatDate(new Date()); // ngày hiện tại
-
-            return [...filteredItems, `updatedAt:${fromDate}..${toDate}`];
+            return [...filteredItems, `updatedAt:${from}..${to}`];
         });
     };
+
 
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -135,7 +131,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                     emailPage={emailPage}
                     onSelect={handleSelectEmail}
                 />
-                <DashboardDropdown
+                <DashboardDateRangeDropdown
                     id={3}
                     onChange={handleChangeUpdateAt}
                     label="Sửa đổi gần đây"
