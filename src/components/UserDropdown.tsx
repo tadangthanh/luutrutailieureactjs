@@ -4,11 +4,12 @@ import { ChevronDown } from "lucide-react";
 interface UserDropdownProps {
     emails: string[]; // danh sách tất cả email
     onSelect: (email: string) => void;
+    onSearch(keyword: string): void;
 }
 
 const MAX_VISIBLE = 5;
 
-const UserDropdown: React.FC<UserDropdownProps> = ({ emails, onSelect }) => {
+const UserDropdown: React.FC<UserDropdownProps> = ({ emails, onSelect, onSearch }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [filter, setFilter] = useState("");
     const [filteredEmails, setFilteredEmails] = useState<string[]>(emails);
@@ -52,7 +53,18 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ emails, onSelect }) => {
                         type="text"
                         placeholder="Tìm email..."
                         value={filter}
-                        onChange={(e) => setFilter(e.target.value)}
+                        onChange={(e) => {
+                            setFilter(e.target.value);
+                            if (e.target.value.trim() === "") {
+                                onSearch(filter.trim());
+                            }
+                        }}
+                        onKeyDown={(e) => {
+                            if (e.key === "Enter") {
+                                e.preventDefault();
+                                onSearch(filter.trim());
+                            }
+                        }}
                         className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                     />
                     <ul className="max-h-60 overflow-y-auto">

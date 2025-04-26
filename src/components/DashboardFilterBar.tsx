@@ -4,6 +4,9 @@ import { on } from "events";
 import { useEffect, useState } from "react";
 import { m } from "framer-motion";
 import UserDropdown from "./UserDropdown";
+import { getEmailsShared } from "../services/ItemApi";
+import { PageResponse } from "../types/PageResponse";
+import { toast } from "sonner";
 
 interface DashboardFilterBarProps {
     layout: "grid" | "list";
@@ -30,6 +33,29 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
             return map;
         });
     }, [])
+    const [pageNo, setPageNo] = useState<number>(0);
+    const [emailPage, setEmailPage] = useState<PageResponse<string>>({
+        pageNo: 0,
+        pageSize: 10,
+        totalPage: 0,
+        hasNext: false,
+        totalItems: 0,
+        items: [],
+    })
+    const [keyword, setKeyword] = useState<string>("");
+    useEffect(() => {
+        getEmailsShared(pageNo, 10, keyword).then((response) => {
+            if (response.status === 200) {
+                setEmailPage(response.data);
+            } else {
+                toast.error(response.message);
+            }
+        })
+    }, [pageNo, keyword])
+    const handleOnSearchEmail = (keyword: string) => {
+        setKeyword(keyword);
+        setPageNo(0);
+    }
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             <div className="flex flex-wrap gap-2 items-center text-sm text-gray-800 dark:text-gray-200">
@@ -42,7 +68,8 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                     setOpenId={setOpenDropdownId}
                 />
                 <UserDropdown
-                    emails={["user1@gmail.com", "user2@example.com", "someone@abc.com"]}
+                    onSearch={handleOnSearchEmail}
+                    emails={emailPage.items}
                     onSelect={(email) => console.log("Selected email:", email)}
                 />
                 <DashboardDropdown

@@ -9,3 +9,10 @@ export const getItems = async (page = 0, size = 10, items: string[]) => {
         toast.error("Failed to fetch folder items.");
     }
 }
+export const getEmailsShared = async (page = 0, size = 10, keyword: string) => {
+    try {
+        return (await api.get(`${apiUrl}/items/emails?page=${page}&size=${size}&keyword=${keyword}`,)).data;
+    } catch (error) {
+        toast.error("Failed to fetch emails.");
+    }
+}
