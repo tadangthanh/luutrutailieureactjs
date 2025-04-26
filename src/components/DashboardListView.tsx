@@ -6,12 +6,26 @@ interface DashboardListViewProps {
     openMenuId: number | null;
     setOpenMenuId: (id: number | null) => void;
     items: ItemResponse[];
+    handleOpen(id: number): void;
+    handleRename(id: number): void;
+    handleDownload(id: number): void;
+    handleShare(id: number): void;
+    handleInfo(id: number): void;
+    handleCopy(id: number): void;
+    handleMoveToTrash(id: number): void;
 }
 
 const DashboardListView: React.FC<DashboardListViewProps> = ({
     openMenuId,
     setOpenMenuId,
-    items
+    items,
+    handleOpen,
+    handleRename,
+    handleDownload,
+    handleShare,
+    handleInfo,
+    handleCopy,
+    handleMoveToTrash,
 }) => {
 
     return (
@@ -34,14 +48,16 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
             {items.map((item) => (
                 <ListRow
                     key={item.id}
-                    name={item.name}
-                    type={item.itemType}
-                    updatedAt={item.updatedAt}
-                    ownerEmail={item.ownerEmail}
-                    rowId={item.id}
-                    size={item.size}
+                    item={item}
                     openMenuId={openMenuId}
                     setOpenMenuId={setOpenMenuId}
+                    handleCopy={handleCopy}
+                    handleDownload={handleDownload}
+                    handleInfo={handleInfo}
+                    handleMoveToTrash={handleMoveToTrash}
+                    handleOpen={handleOpen}
+                    handleRename={handleRename}
+                    handleShare={handleShare}
                 />
             ))}
         </div>

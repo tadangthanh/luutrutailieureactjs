@@ -6,9 +6,10 @@ import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
 import FullScreenLoader from "../components/FullScreenLoader";
 import { ItemResponse } from "../types/ItemResponse";
-import { getItems } from "../services/ItemApi";
+import { getItems, updateItem } from "../services/ItemApi";
 import api from "../utils/api";
 import webSocketService from "../services/WebSocketService";
+import ResizableSlidePanel from "../components/ResizableSlidePanel";
 
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -19,6 +20,8 @@ const DashboardPage = () => {
     const [items, setItems] = useState<string[]>([]);
     const [uploadId, setUploadId] = useState<string | null>(null);
     const [isDragging, setIsDragging] = useState(false);
+    const [renamingItemId, setRenamingItemId] = useState<number | null>(null); // ID của item đang rename
+    const [newName, setNewName] = useState<string>(""); // Giá trị tên mới
     const [uploadProgress, setUploadProgress] = useState<{
         fileName: string;
         percent: number;
@@ -175,6 +178,70 @@ const DashboardPage = () => {
         });
     }, [items]);
 
+    const handleOpen = (id: number) => {
+        console.log(`Opening item with id: ${id}`);
+    }
+    const handleRename = (id: number) => {
+        setRenamingItemId(id);
+        console.log()
+        setNewName(itemPage.items.find(item => item.id === id)?.name || "");
+    };
+
+    const handleDownload = (id: number) => {
+        console.log(`Downloading item with id: ${id}`);
+    }
+    const handleShare = (id: number) => {
+        console.log(`Sharing item with id: ${id}`);
+    }
+    function formatDateTime(dateString: string): string {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');     // Ngày
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng (getMonth() trả về từ 0-11)
+        const year = date.getFullYear();                         // Năm
+        const hours = String(date.getHours()).padStart(2, '0');   // Giờ
+        const minutes = String(date.getMinutes()).padStart(2, '0'); // Phút
+
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+    const [infoItem, setInfoItem] = useState<ItemResponse | null>(null);
+    const [isInfoLoading, setIsInfoLoading] = useState(false);
+    const handleInfo = (id: number) => {
+        setIsInfoLoading(true);
+        // Gọi API nếu cần fetch thêm info
+        // const detail = await fetchItemInfo(item.id); // <-- API của bạn
+        setInfoItem(itemPage.items.find(item => item.id === id) || null);
+        setIsInfoLoading(false);
+    }
+    const handleCopy = (id: number) => {
+        console.log(`Copying item with id: ${id}`);
+    }
+    const handleMoveToTrash = (id: number) => {
+        console.log(`Moving item with id: ${id} to trash`);
+    }
+    const handleConfirmRename = async () => {
+        try {
+            const isChangeName = newName.trim() !== itemPage.items.find(item => item.id === renamingItemId)?.name;
+            if (!renamingItemId || !isChangeName) return;
+            updateItem(renamingItemId, { name: newName }).then((res) => {
+                if (res.status === 200) {
+                    setItemPage(prev => ({
+                        ...prev,
+                        items: prev.items.map(item => item.id === renamingItemId ? { ...item, name: newName } : item)
+                    }));
+                } else {
+                    toast.error("Đổi tên thất bại.");
+                }
+            })
+        } catch (error) {
+            toast.error("Đổi tên thất bại.");
+        } finally {
+            setRenamingItemId(null);
+            setNewName("");
+        }
+    };
+
+
+
     return (
         <div className="relative width-full h-full flex flex-col gap-4 p-4">
             {isLoading && <FullScreenLoader />}
@@ -190,11 +257,25 @@ const DashboardPage = () => {
                     items={itemPage.items}
                     openMenuId={openMenuId}
                     setOpenMenuId={setOpenMenuId}
+                    handleCopy={handleCopy}
+                    handleDownload={handleDownload}
+                    handleInfo={handleInfo}
+                    handleMoveToTrash={handleMoveToTrash}
+                    handleOpen={handleOpen}
+                    handleRename={handleRename}
+                    handleShare={handleShare}
                 />
             ) : (
                 <DashboardGridView
                     items={itemPage.items}
                     layout={layout}
+                    handleCopy={handleCopy}
+                    handleDownload={handleDownload}
+                    handleInfo={handleInfo}
+                    handleMoveToTrash={handleMoveToTrash}
+                    handleOpen={handleOpen}
+                    handleRename={handleRename}
+                    handleShare={handleShare}
                 />
             )}
             {itemPage.hasNext && (
@@ -213,6 +294,36 @@ const DashboardPage = () => {
                 <div className="absolute inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center pointer-events-none">
                     <div className="text-white text-2xl font-bold border-4 border-dashed p-10 rounded-lg">
                         Thả tệp vào đây để tải lên
+                    </div>
+                </div>
+            )}
+            {renamingItemId && (
+                <div className="absolute inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-[300px]">
+                        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Đổi tên</h2>
+                        <input
+                            value={newName}
+                            onChange={(e) => setNewName(e.target.value)}
+                            className="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white"
+                            autoFocus
+                        />
+                        <div className="flex justify-end gap-2">
+                            <button
+                                onClick={() => {
+                                    setRenamingItemId(null);
+                                    setNewName("");
+                                }}
+                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white"
+                            >
+                                Hủy
+                            </button>
+                            <button
+                                onClick={() => handleConfirmRename()}
+                                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded"
+                            >
+                                Lưu
+                            </button>
+                        </div>
                     </div>
                 </div>
             )}
@@ -243,6 +354,27 @@ const DashboardPage = () => {
                     </div>
                 </div>
             )}
+            {infoItem && (
+                <ResizableSlidePanel onClose={() => setInfoItem(null)}>
+                    {isInfoLoading ? (
+                        <div className="space-y-4 animate-pulse">
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4" />
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2" />
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-2/3" />
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/4" />
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2" />
+                        </div>
+                    ) : (
+                        <div className="text-sm text-gray-700 dark:text-gray-300 space-y-3">
+                            <div><strong>Tên:</strong> {infoItem.name}</div>
+                            <div><strong>Loại:</strong> {infoItem.itemType === "DOCUMENT" ? "Tài liệu" : "Thư mục"}</div>
+                            <div><strong>Ngày tạo:</strong> {formatDateTime(infoItem.createdAt)}</div>
+                            <div><strong>Ngày sửa:</strong> {formatDateTime(infoItem.updatedAt)}</div>
+                        </div>
+                    )}
+                </ResizableSlidePanel>
+            )}
+
         </div>
     );
 };

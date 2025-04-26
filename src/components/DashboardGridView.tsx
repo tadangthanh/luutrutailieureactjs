@@ -4,10 +4,23 @@ import FolderCard from "./FolderCard";
 
 interface DashboardGridViewProps {
     layout: "grid" | "list";
-    items: ItemResponse[]
+    items: ItemResponse[];
+    handleOpen(id: number): void;
+    handleRename(id: number): void;
+    handleDownload(id: number): void;
+    handleShare(id: number): void;
+    handleInfo(id: number): void;
+    handleCopy(id: number): void;
+    handleMoveToTrash(id: number): void;
 }
 
-const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items }) => {
+const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, handleOpen,
+    handleRename,
+    handleDownload,
+    handleShare,
+    handleInfo,
+    handleCopy,
+    handleMoveToTrash }) => {
     const layoutClass =
         layout === "grid"
             ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6"
@@ -20,9 +33,27 @@ const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items }) 
                     return <FolderCard
                         key={item.id}
                         folder={item}
-                        layout={layout} />;
+                        layout={layout}
+                        handleDownload={handleDownload}
+                        handleInfo={handleInfo}
+                        handleMoveToTrash={handleMoveToTrash}
+                        handleOpen={handleOpen}
+                        handleRename={handleRename}
+                        handleShare={handleShare}
+                    />;
                 } else {
-                    return <FileCard key={item.id} doc={item} layout={layout} />;
+                    return <FileCard
+                        key={item.id}
+                        doc={item}
+                        layout={layout}
+                        handleCopy={handleCopy}
+                        handleDownload={handleDownload}
+                        handleInfo={handleInfo}
+                        handleMoveToTrash={handleMoveToTrash}
+                        handleOpen={handleOpen}
+                        handleRename={handleRename}
+                        handleShare={handleShare}
+                    />;
                 }
             })}
 
