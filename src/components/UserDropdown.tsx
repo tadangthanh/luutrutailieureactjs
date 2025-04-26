@@ -1,29 +1,31 @@
 import React, { useEffect, useRef, useState } from "react";
 import { ChevronDown } from "lucide-react";
+import { PageResponse } from "../types/PageResponse";
 
 interface UserDropdownProps {
-    emails: string[]; // danh sách tất cả email
+    emailPage: PageResponse<string>
     onSelect: (email: string) => void;
+    setPageNoEmail: React.Dispatch<React.SetStateAction<number>>;
     onSearch(keyword: string): void;
 }
 
 const MAX_VISIBLE = 5;
 
-const UserDropdown: React.FC<UserDropdownProps> = ({ emails, onSelect, onSearch }) => {
+const UserDropdown: React.FC<UserDropdownProps> = ({ emailPage, setPageNoEmail: setPageEmail, onSelect, onSearch }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [filter, setFilter] = useState("");
-    const [filteredEmails, setFilteredEmails] = useState<string[]>(emails);
+    const [filteredEmails, setFilteredEmails] = useState<string[]>(emailPage.items);
     const [visibleCount, setVisibleCount] = useState(MAX_VISIBLE);
     const [selectedEmail, setSelectedEmail] = useState<string>(""); // Lưu trữ email đã chọn
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
         const filtered = filter.trim() === ""
-            ? emails
-            : emails.filter(email => email.toLowerCase().includes(filter.toLowerCase()));
+            ? emailPage.items
+            : emailPage.items.filter(email => email.toLowerCase().includes(filter.toLowerCase()));
         setFilteredEmails(filtered);
         setVisibleCount(MAX_VISIBLE); // reset khi filter đổi
-    }, [filter, emails]);
+    }, [filter, emailPage.items]);
 
     const handleClickOutside = (event: MouseEvent) => {
         if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -105,10 +107,10 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ emails, onSelect, onSearch 
                         )}
                     </ul>
 
-                    {canLoadMore && (
+                    {emailPage.hasNext && (
                         <div className="mt-1 text-center">
                             <button
-                                onClick={() => setVisibleCount(prev => prev + MAX_VISIBLE)}
+                                onClick={() => setPageEmail(prev => prev + 1)}
                                 className="text-primary hover:underline text-sm"
                             >
                                 Xem thêm

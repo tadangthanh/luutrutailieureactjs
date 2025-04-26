@@ -33,7 +33,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
             return map;
         });
     }, [])
-    const [pageNo, setPageNo] = useState<number>(0);
+    const [pageNoEmail, setPageNoEmail] = useState<number>(0);
     const [emailPage, setEmailPage] = useState<PageResponse<string>>({
         pageNo: 0,
         pageSize: 10,
@@ -44,17 +44,25 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
     })
     const [keyword, setKeyword] = useState<string>("");
     useEffect(() => {
-        getEmailsShared(pageNo, 10, keyword).then((response) => {
+        getEmailsShared(pageNoEmail, 10, keyword).then((response) => {
             if (response.status === 200) {
-                setEmailPage(response.data);
+                setEmailPage((prev) => {
+                    const existingEmails = new Set(prev.items);
+                    const newItems = response.data.items.filter((email: string) => !existingEmails.has(email));
+
+                    return {
+                        ...response.data,
+                        items: [...prev.items, ...newItems],
+                    };
+                });
+
             } else {
                 toast.error(response.message);
             }
         })
-    }, [pageNo, keyword])
+    }, [pageNoEmail, keyword])
     const handleOnSearchEmail = (keyword: string) => {
         setKeyword(keyword);
-        setPageNo(0);
     }
     const handleSelectEmail = (email: string) => {
         console.log(email);
@@ -69,7 +77,6 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         });
     };
     const handleOnChangeType = (type: string) => {
-        setPageNo(0);
         setItems((prev: string[]) => {
             // Nếu type là "ALL", loại bỏ phần tử "itemType" trong mảng (nếu có)
             if (type === "ALL") {
@@ -94,8 +101,9 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                     setOpenId={setOpenDropdownId}
                 />
                 <UserDropdown
+                    setPageNoEmail={setPageNoEmail}
                     onSearch={handleOnSearchEmail}
-                    emails={emailPage.items}
+                    emailPage={emailPage}
                     onSelect={handleSelectEmail}
                 />
                 <DashboardDropdown
