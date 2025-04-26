@@ -82,7 +82,7 @@ const ListRow: React.FC<ListRowProps> = ({
     }
     return (
         <div className="cursor-pointer grid grid-cols-5 items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700">
-            <div className="col-span-1 flex items-center">
+            <div className="truncate col-span-1 flex items-center">
                 {renderIcon()}
                 {name}
             </div>
