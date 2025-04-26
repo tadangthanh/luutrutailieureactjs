@@ -14,6 +14,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ emails, onSelect, onSearch 
     const [filter, setFilter] = useState("");
     const [filteredEmails, setFilteredEmails] = useState<string[]>(emails);
     const [visibleCount, setVisibleCount] = useState(MAX_VISIBLE);
+    const [selectedEmail, setSelectedEmail] = useState<string>(""); // Lưu trữ email đã chọn
     const dropdownRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -35,6 +36,13 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ emails, onSelect, onSearch 
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, [isOpen]);
 
+    const handleSelectEmail = (email: string) => {
+        setSelectedEmail(email);
+        onSelect(email);
+        setIsOpen(false);
+        setFilter(""); // Xóa filter khi chọn email
+    };
+
     const visibleEmails = filteredEmails.slice(0, visibleCount);
     const canLoadMore = visibleCount < filteredEmails.length;
 
@@ -44,7 +52,7 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ emails, onSelect, onSearch 
                 onClick={() => setIsOpen(prev => !prev)}
                 className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
             >
-                Người <ChevronDown size={16} />
+                {selectedEmail || "Người"} <ChevronDown size={16} />
             </button>
 
             {isOpen && (
@@ -68,15 +76,23 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ emails, onSelect, onSearch 
                         className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                     />
                     <ul className="max-h-60 overflow-y-auto">
+                        {/* Thêm lựa chọn "Tất cả" */}
+                        <li
+                            onClick={() => {
+                                setSelectedEmail(""); // Nếu chọn "Tất cả", reset email đã chọn
+                                onSelect(""); // Trả về giá trị "" cho "Tất cả"
+                                setIsOpen(false);
+                                setFilter(""); // Xóa filter khi chọn "Tất cả"
+                            }}
+                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
+                        >
+                            Tất cả
+                        </li>
                         {visibleEmails.length > 0 ? (
                             visibleEmails.map((email) => (
                                 <li
                                     key={email}
-                                    onClick={() => {
-                                        onSelect(email);
-                                        setIsOpen(false);
-                                        setFilter("");
-                                    }}
+                                    onClick={() => handleSelectEmail(email)}
                                     className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
                                 >
                                     {email}

@@ -33,6 +33,7 @@ const DashboardPage = () => {
 
     useEffect(() => {
         setIsLoading(true);
+        console.log("items", items);
         getItems(pageNo, pageSize, items)
             .then((response) => {
                 if (response.status === 200) {
@@ -59,20 +60,12 @@ const DashboardPage = () => {
             items: [],
         });
     }, [items]);
-    const handleFilter = (type: string) => {
-        setPageNo(0);
-        if (type === "ALL") {
-            setItems([]);
-            return;
-        }
-        setItems([`itemType:${type}`]);
-    }
     return (
         <div className="relative">
             {isLoading && <FullScreenLoader />}
             <DashboardFilterBar
-                onChangeType={handleFilter}
                 layout={layout}
+                setItems={setItems}
                 setLayout={setLayout}
                 openDropdownId={openDropdownId}
                 setOpenDropdownId={setOpenDropdownId}

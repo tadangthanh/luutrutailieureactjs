@@ -12,14 +12,14 @@ interface DashboardFilterBarProps {
     layout: "grid" | "list";
     setLayout: (layout: "grid" | "list") => void;
     openDropdownId: number | null;
-    onChangeType: (type: string) => void;
+    setItems: React.Dispatch<React.SetStateAction<string[]>>;
     setOpenDropdownId: (id: number | null) => void;
 }
 
 const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
     layout,
+    setItems,
     setLayout,
-    onChangeType,
     openDropdownId,
     setOpenDropdownId,
 }) => {
@@ -56,13 +56,39 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         setKeyword(keyword);
         setPageNo(0);
     }
+    const handleSelectEmail = (email: string) => {
+        console.log(email);
+        const fieldSearch = `createdBy~${email}`;
+
+        setItems((prev: string[]) => {
+            // Nếu đã có một `createdBy~email` thì giữ lại giá trị mới, loại bỏ tất cả các giá trị `createdBy~`
+            const filteredItems = prev.filter(item => !item.startsWith("createdBy~"));
+
+            // Thêm giá trị mới vào
+            return [...filteredItems, fieldSearch];
+        });
+    };
+    const handleOnChangeType = (type: string) => {
+        setPageNo(0);
+        setItems((prev: string[]) => {
+            // Nếu type là "ALL", loại bỏ phần tử "itemType" trong mảng (nếu có)
+            if (type === "ALL") {
+                return prev.filter(item => !item.startsWith("itemType:"));
+            }
+            // Nếu có "itemType" trong mảng, thay thế phần tử cũ, nếu không có thì thêm mới
+            const filteredItems = prev.filter(item => !item.startsWith("itemType:"));
+
+            return [...filteredItems, `itemType:${type}`];
+        });
+    };
+
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             <div className="flex flex-wrap gap-2 items-center text-sm text-gray-800 dark:text-gray-200">
                 <DashboardDropdown
                     id={1}
                     label="Loại"
-                    onChange={onChangeType}
+                    onChange={handleOnChangeType}
                     options={typeOptions}
                     isOpen={openDropdownId === 1}
                     setOpenId={setOpenDropdownId}
@@ -70,11 +96,11 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                 <UserDropdown
                     onSearch={handleOnSearchEmail}
                     emails={emailPage.items}
-                    onSelect={(email) => console.log("Selected email:", email)}
+                    onSelect={handleSelectEmail}
                 />
                 <DashboardDropdown
                     id={3}
-                    onChange={onChangeType}
+                    onChange={handleOnChangeType}
                     label="Sửa đổi"
                     options={typeOptions}
                     isOpen={openDropdownId === 3}
