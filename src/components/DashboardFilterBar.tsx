@@ -33,6 +33,17 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
             return map;
         });
     }, [])
+    const [updateAtOptions, setUpdateAtOptions] = useState(new Map());
+    useEffect(() => {
+        setUpdateAtOptions(() => {
+            const map = new Map<string, Date|null>();
+            map.set("Tất cả", null);
+            map.set("Hôm nay", new Date(Date.now() - 24 * 60 * 60 * 1000));
+            map.set("7 ngày qua", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000));
+            map.set("30 ngày qua", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000));
+            return map;
+        });
+    }, [])
     const [pageNoEmail, setPageNoEmail] = useState<number>(0);
     const [emailPage, setEmailPage] = useState<PageResponse<string>>({
         pageNo: 0,
@@ -89,6 +100,24 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         });
     };
 
+    const handleChangeUpdateAt = (date: Date | null) => {
+        setItems((prev: string[]) => {
+            // Xoá các điều kiện updatedAt cũ
+            const filteredItems = prev.filter(item => !item.startsWith("updatedAt:"));
+
+            // Nếu không chọn ngày thì coi như "tất cả" => xoá là xong
+            if (!date) return filteredItems;
+
+            // Format YYYY-MM-DD
+            const formatDate = (d: Date) => d.toISOString().split("T")[0];
+
+            const fromDate = formatDate(date);
+            const toDate = formatDate(new Date()); // ngày hiện tại
+
+            return [...filteredItems, `updatedAt:${fromDate}..${toDate}`];
+        });
+    };
+
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
             <div className="flex flex-wrap gap-2 items-center text-sm text-gray-800 dark:text-gray-200">
@@ -108,9 +137,9 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                 />
                 <DashboardDropdown
                     id={3}
-                    onChange={handleOnChangeType}
-                    label="Sửa đổi"
-                    options={typeOptions}
+                    onChange={handleChangeUpdateAt}
+                    label="Sửa đổi gần đây"
+                    options={updateAtOptions}
                     isOpen={openDropdownId === 3}
                     setOpenId={setOpenDropdownId}
                 />
