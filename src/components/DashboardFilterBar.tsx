@@ -58,6 +58,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         getEmailsShared(pageNoEmail, 10, keyword).then((response) => {
             if (response.status === 200) {
                 setEmailPage((prev) => {
+                    const currentEmail = localStorage.getItem("email");
                     const existingEmails = new Set(prev.items);
                     const newItems = response.data.items.filter((email: string) => !existingEmails.has(email));
 
@@ -76,7 +77,6 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         setKeyword(keyword);
     }
     const handleSelectEmail = (email: string) => {
-        console.log(email);
         const fieldSearch = `createdBy~${email}`;
 
         setItems((prev: string[]) => {

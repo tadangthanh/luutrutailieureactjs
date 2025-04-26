@@ -16,8 +16,8 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
 
     return (
         <div className="w-full border border-gray-200 dark:border-gray-700 rounded-md">
-            <div className="grid grid-cols-5 bg-gray-100 dark:bg-gray-800 px-4 py-2 font-semibold text-sm text-gray-700 dark:text-gray-300">
-                <div>Tên</div>
+            <div className="grid grid-cols-6 bg-gray-100 dark:bg-gray-800 px-4 py-2 font-semibold text-sm text-gray-700 dark:text-gray-300">
+                <div className="col-span-2">Tên</div>
                 <div>Chủ sở hữu</div>
                 <div>Sửa đổi gần nhất</div>
                 <div>Kích cỡ</div>

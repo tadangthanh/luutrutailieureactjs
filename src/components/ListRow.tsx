@@ -80,14 +80,25 @@ const ListRow: React.FC<ListRowProps> = ({
 
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
+    function formatDateTime(dateString: string): string {
+        const date = new Date(dateString);
+        const day = String(date.getDate()).padStart(2, '0');     // Ngày
+        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng (getMonth() trả về từ 0-11)
+        const year = date.getFullYear();                         // Năm
+        const hours = String(date.getHours()).padStart(2, '0');   // Giờ
+        const minutes = String(date.getMinutes()).padStart(2, '0'); // Phút
+
+        return `${day}/${month}/${year} ${hours}:${minutes}`;
+    }
+
     return (
-        <div className="cursor-pointer grid grid-cols-5 items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700">
-            <div className="truncate col-span-1 flex items-center">
+        <div className="cursor-pointer grid grid-cols-6 items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700">
+            <div className="truncate col-span-2 flex items-center" title={name}>
                 {renderIcon()}
                 {name}
             </div>
-            <div className="col-span-1">{formatOwner(ownerEmail)}</div>
-            <div className="col-span-1">{formatDate(updatedAt)}</div>
+            <div className="col-span-1" title={ownerEmail}>{formatOwner(ownerEmail)}</div>
+            <div className="col-span-1" title={formatDateTime(updatedAt)}>{formatDate(updatedAt)}</div>
             <div className="col-span-1">{type === "FOLDER" ? "--" : formatBytes(size)}</div>
             <div className="col-span-1 flex justify-end relative">
                 <button
