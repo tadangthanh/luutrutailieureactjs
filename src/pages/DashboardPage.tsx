@@ -59,7 +59,7 @@ const DashboardPage = () => {
         });
     }, [items]);
     return (
-        <div className="relative">
+        <div className="relative width-full h-full flex flex-col gap-4 p-4">
             {isLoading && <FullScreenLoader />}
             <DashboardFilterBar
                 layout={layout}
