@@ -32,7 +32,6 @@ const DashboardPage = () => {
 
     useEffect(() => {
         setIsLoading(true);
-        console.log("items", items);
         getItems(pageNo, 10, items)
             .then((response) => {
                 if (response.status === 200) {

@@ -7,10 +7,9 @@ interface ListRowProps {
     rowId: number;
     name: string;
     type: "DOCUMENT" | "FOLDER";
-    createdBy: string;
     updatedAt: string;
     ownerEmail: string;
-    size?: string;
+    size: number | null;
     openMenuId: number | null;
     setOpenMenuId: (id: number | null) => void;
 }
@@ -21,7 +20,6 @@ const ListRow: React.FC<ListRowProps> = ({
     type,
     size,
     openMenuId,
-    createdBy,
     updatedAt,
     ownerEmail,
     setOpenMenuId,
@@ -70,6 +68,18 @@ const ListRow: React.FC<ListRowProps> = ({
         }
         return ownerEmail;
     }
+    function formatBytes(bytes: number | null, decimals = 2) {
+        if (!bytes) return '--';
+        if (bytes === 0) return '0 Bytes';
+
+        const k = 1024;
+        const dm = decimals < 0 ? 0 : decimals;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB', 'PB', 'EB', 'ZB', 'YB'];
+
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
+    }
     return (
         <div className="cursor-pointer grid grid-cols-5 items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700">
             <div className="col-span-1 flex items-center">
@@ -78,7 +88,7 @@ const ListRow: React.FC<ListRowProps> = ({
             </div>
             <div className="col-span-1">{formatOwner(ownerEmail)}</div>
             <div className="col-span-1">{formatDate(updatedAt)}</div>
-            <div className="col-span-1">{type === "FOLDER" ? "--" : size}</div>
+            <div className="col-span-1">{type === "FOLDER" ? "--" : formatBytes(size)}</div>
             <div className="col-span-1 flex justify-end relative">
                 <button
                     onClick={handleMenuClick}

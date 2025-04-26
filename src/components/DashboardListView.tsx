@@ -36,10 +36,10 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
                     key={item.id}
                     name={item.name}
                     type={item.itemType}
-                    createdBy={item.createdBy}
                     updatedAt={item.updatedAt}
                     ownerEmail={item.ownerEmail}
                     rowId={item.id}
+                    size={item.size}
                     openMenuId={openMenuId}
                     setOpenMenuId={setOpenMenuId}
                 />
