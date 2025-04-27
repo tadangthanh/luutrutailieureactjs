@@ -16,7 +16,7 @@ interface ShareDialogProps {
 const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => {
     const [email, setEmail] = useState("");
     const [debouncedEmail] = useDebounce(email, 400); // <== thêm debounce
-    const [permission, setPermission] = useState<"VIEWER" | "EDITOR">("VIEWER");
+    const [permission, setPermission] = useState<"viewer" | "editor">("viewer");
 
     const [permissions, setPermissions] = useState<PermissionResponse[]>([]);
     const [suggestUsers, setSuggestUsers] = useState<UserIndexResponse[]>([]);
@@ -73,17 +73,27 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
         console.log("Adding permission", { itemId: idItemToShare, email, permission });
         console.log(userSelected, "userSelected");
         try {
+            if (userSelected) {
+                await addPermission(idItemToShare,{
+                    recipientId: userSelected.id,
+                    permission: permission,
+                }).then((res)=>{
+                    // console.log("res",res)
+                    permissions.push(res.data);
+                })
 
-            setEmail("");
-            setPermission("VIEWER");
-            setUserSelected(null);
-            fetchPermissions();
+            }
         } catch (err) {
             console.error(err);
+        } finally {
+            setEmail("");
+            setPermission("viewer");
+            setUserSelected(null);
+            fetchPermissions();
         }
     };
 
-    const handleChangePermission = async (permissionId: number, newPermission: "VIEWER" | "EDITOR") => {
+    const handleChangePermission = async (permissionId: number, newPermission: "viewer" | "editor") => {
         try {
             // TODO: Gọi API update permission nếu bạn có
         } catch (err) {
@@ -130,10 +140,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                         <select
                             className="p-2 border rounded dark:bg-gray-700 dark:text-white"
                             value={permission}
-                            onChange={(e) => setPermission(e.target.value as "VIEWER" | "EDITOR")}
+                            onChange={(e) => setPermission(e.target.value as "viewer" | "editor")}
                         >
-                            <option value="VIEWER">Người xem</option>
-                            <option value="EDITOR">Người chỉnh sửa</option>
+                            <option value="viewer">Người xem</option>
+                            <option value="editor">Người chỉnh sửa</option>
                         </select>
                         <button
                             className="bg-primary hover:bg-primary-dark text-white p-2 rounded"
@@ -190,10 +200,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                                 <select
                                     className="p-1 border rounded dark:bg-gray-700 dark:text-white"
                                     value={p.permission}
-                                    onChange={(e) => handleChangePermission(p.id, e.target.value as "VIEWER" | "EDITOR")}
+                                    onChange={(e) => handleChangePermission(p.id, e.target.value as "viewer" | "editor")}
                                 >
-                                    <option value="VIEWER">Người xem</option>
-                                    <option value="EDITOR">Người chỉnh sửa</option>
+                                    <option value="viewer">Người xem</option>
+                                    <option value="editor">Người chỉnh sửa</option>
                                 </select>
                                 <button onClick={() => handleRemovePermission(p.id)} className="text-red-500 hover:text-red-700">
                                     <Trash2 size={16} />
