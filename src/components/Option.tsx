@@ -4,7 +4,6 @@ interface OptionProps {
     onClick: (e: React.MouseEvent) => void;
 }
 export const Option: React.FC<OptionProps> = ({ label, icon, onClick }) => {
-
     return (
         <li
             key={label}

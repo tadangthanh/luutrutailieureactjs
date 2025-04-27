@@ -10,6 +10,10 @@ import { getItems, updateItem } from "../services/ItemApi";
 import api from "../utils/api";
 import webSocketService from "../services/WebSocketService";
 import ResizableSlidePanel from "../components/ResizableSlidePanel";
+import ShareDialog from "../components/ShareDialog";
+import { User } from "../types/User";
+import { PermissionResponse } from "../types/PermissionResponse";
+import { getPagePermissionByItemId } from "../services/PermissionApi";
 
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -183,15 +187,18 @@ const DashboardPage = () => {
     }
     const handleRename = (id: number) => {
         setRenamingItemId(id);
-        console.log()
         setNewName(itemPage.items.find(item => item.id === id)?.name || "");
     };
 
     const handleDownload = (id: number) => {
         console.log(`Downloading item with id: ${id}`);
     }
+    const [openShareDialog, setOpenShareDialog] = useState(false);
+   const[idItemToShare,setIdItemToShare]= useState<number|null>(null); // ID của item đang chia sẻ
     const handleShare = (id: number) => {
-        console.log(`Sharing item with id: ${id}`);
+        setOpenMenuId(null);
+        setIdItemToShare(id);
+        setOpenShareDialog(true);
     }
     function formatDateTime(dateString: string): string {
         const date = new Date(dateString);
@@ -353,6 +360,12 @@ const DashboardPage = () => {
                         )}
                     </div>
                 </div>
+            )}
+            {openShareDialog && (
+                <ShareDialog
+                    onClose={() => setOpenShareDialog(false)}
+                    idItemToShare={idItemToShare}
+                />
             )}
             {infoItem && (
                 <ResizableSlidePanel onClose={() => setInfoItem(null)}>

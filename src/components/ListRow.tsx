@@ -1,10 +1,10 @@
 import React, { useEffect, useRef } from "react";
 import {
-    MoreHorizontal, Download, Edit, Share, File, Info, Trash, Copy, Folder, FileText,
+    MoreHorizontal, Download, Edit, File, Info, Trash, Copy, Folder, FileText,
     UserPlus,
 } from "lucide-react";
-import { Option } from "./Option";
 import { ItemResponse } from "../types/ItemResponse";
+import { Option } from "./Option";
 
 interface ListRowProps {
     item: ItemResponse
