@@ -17,6 +17,7 @@ interface ListRowProps {
     handleInfo(id: number): void;
     handleCopy(id: number): void;
     handleMoveToTrash(id: number): void;
+    onClick: (item: ItemResponse) => void;
 }
 
 const ListRow: React.FC<ListRowProps> = ({
@@ -30,6 +31,7 @@ const ListRow: React.FC<ListRowProps> = ({
     handleInfo,
     handleCopy,
     handleMoveToTrash,
+    onClick
 }) => {
     const menuRef = useRef<HTMLDivElement | null>(null);
     const isMenuOpen = openMenuId === item.id;
@@ -94,7 +96,9 @@ const ListRow: React.FC<ListRowProps> = ({
         return `${day}/${month}/${year} ${hours}:${minutes}`;
     }
     return (
-        <div className="cursor-pointer grid grid-cols-6 items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700">
+        <div
+            onClick={() => onClick(item)}
+            className="cursor-pointer grid grid-cols-6 items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700">
             <div className="truncate col-span-2 flex items-center" title={item.name}>
                 {renderIcon()}
                 {item.name}

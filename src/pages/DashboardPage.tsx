@@ -11,9 +11,7 @@ import api from "../utils/api";
 import webSocketService from "../services/WebSocketService";
 import ResizableSlidePanel from "../components/ResizableSlidePanel";
 import ShareDialog from "../components/ShareDialog";
-import { User } from "../types/User";
-import { PermissionResponse } from "../types/PermissionResponse";
-import { getPagePermissionByItemId } from "../services/PermissionApi";
+import Breadcrumbs from "../components/Breadcrumbs";
 
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -26,6 +24,7 @@ const DashboardPage = () => {
     const [isDragging, setIsDragging] = useState(false);
     const [renamingItemId, setRenamingItemId] = useState<number | null>(null); // ID của item đang rename
     const [newName, setNewName] = useState<string>(""); // Giá trị tên mới
+    const [folderId, setFolderId] = useState<number | null>(null);// id của thư mục sẽ upload vào
     const [uploadProgress, setUploadProgress] = useState<{
         fileName: string;
         percent: number;
@@ -194,7 +193,7 @@ const DashboardPage = () => {
         console.log(`Downloading item with id: ${id}`);
     }
     const [openShareDialog, setOpenShareDialog] = useState(false);
-   const[idItemToShare,setIdItemToShare]= useState<number|null>(null); // ID của item đang chia sẻ
+    const [idItemToShare, setIdItemToShare] = useState<number | null>(null); // ID của item đang chia sẻ
     const handleShare = (id: number) => {
         setOpenMenuId(null);
         setIdItemToShare(id);
@@ -247,8 +246,34 @@ const DashboardPage = () => {
         }
     };
 
-
-
+    const [path, setPath] = useState<{ id: number, name: string }[]>([
+    ]);
+    const handleBreadCrumbsClick = (id: number) => {
+        if (id === 0) {
+            setPath([]);
+            setItems((prev: string[]) => {
+                const filteredItems = prev.filter(item => !item.startsWith("parent.id:"));
+                return filteredItems;
+            })
+        } else {
+            setItems([...items, `parent.id:${id}`])
+        }
+    }
+    const handleItemClick = (item: ItemResponse) => {
+        if (item.itemType === "FOLDER") {
+            setFolderId(item.id);
+            setItems([...items, `parent.id:${item.id}`])
+            if (path.length === 0) {
+                setPath((prev: any) => {
+                    return [...prev, { id: 0, name: "Trang chủ" }, { id: item.id, name: item.name }];
+                });
+            } else {
+                setPath((prev: any) => {
+                    return [...prev, { id: item.id, name: item.name }];
+                });
+            }
+        }
+    }
     return (
         <div className="relative width-full h-full flex flex-col gap-4 p-4">
             {isLoading && <FullScreenLoader />}
@@ -259,8 +284,17 @@ const DashboardPage = () => {
                 openDropdownId={openDropdownId}
                 setOpenDropdownId={setOpenDropdownId}
             />
+            <div>
+                {path && path.length > 1 && (
+                    <Breadcrumbs
+                        initialPath={path}
+                        onClick={handleBreadCrumbsClick} // Cập nhật path khi click vào link
+                    />
+                )}
+            </div>
             {layout === "list" ? (
                 <DashboardListView
+                    onClick={handleItemClick}
                     items={itemPage.items}
                     openMenuId={openMenuId}
                     setOpenMenuId={setOpenMenuId}
@@ -298,11 +332,12 @@ const DashboardPage = () => {
 
             {/* Drag Overlay */}
             {isDragging && (
-                <div className="absolute inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center pointer-events-none">
-                    <div className="text-white text-2xl font-bold border-4 border-dashed p-10 rounded-lg">
+                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center pointer-events-none animate-fadeIn">
+                    <div className="text-white text-2xl font-bold border-4 border-dashed border-white p-10 rounded-2xl animate-zoomIn">
                         Thả tệp vào đây để tải lên
                     </div>
                 </div>
+
             )}
             {renamingItemId && (
                 <div className="absolute inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">

@@ -13,6 +13,7 @@ interface DashboardListViewProps {
     handleInfo(id: number): void;
     handleCopy(id: number): void;
     handleMoveToTrash(id: number): void;
+    onClick: (item:ItemResponse) => void;
 }
 
 const DashboardListView: React.FC<DashboardListViewProps> = ({
@@ -26,6 +27,7 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
     handleInfo,
     handleCopy,
     handleMoveToTrash,
+    onClick
 }) => {
 
     return (
@@ -47,6 +49,7 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
 
             {items.map((item) => (
                 <ListRow
+                onClick={onClick}
                     key={item.id}
                     item={item}
                     openMenuId={openMenuId}
