@@ -10,9 +10,17 @@ export const getPagePermissionByItemId = async (itemId: number, page = 0, size =
         toast.error("Failed to fetch permission items.");
     }
 }
+
 export const addPermission = async (itemId: number, permissionRequest: PermissionRequest) => {
     try {
         return (await api.post(`${apiUrl}/permissions/item/${itemId}`, permissionRequest)).data;
+    } catch (error) {
+        toast.error("Failed to add permission.");
+    }
+};
+export const saveOrUpdateBatch = async (itemId: number, permissionsRequest: PermissionRequest[]) => {
+    try {
+        return (await api.post(`${apiUrl}/permissions/item/${itemId}/batch`, permissionsRequest)).data;
     } catch (error) {
         toast.error("Failed to add permission.");
     }
