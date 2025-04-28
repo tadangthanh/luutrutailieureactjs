@@ -7,6 +7,8 @@ import { addPermission, getPagePermissionByItemId } from "../services/Permission
 import { searchUser } from "../services/UserSearchApi";
 import { useDebounce } from "use-debounce"; // <== thêm
 import { User } from "../types/User";
+import { toast } from "sonner";
+import Pagination from "./Pagination";
 
 interface ShareDialogProps {
     onClose: () => void;
@@ -37,22 +39,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
     const [loadingPermissions, setLoadingPermissions] = useState(false);
     const [userSelected, setUserSelected] = useState<User | null>(null);
     const [pendingPermissions, setPendingPermissions] = useState<PendingPermission[]>([]);
-    useEffect(() => {
-        if (!idItemToShare) return;
-        fetchPermissions();
-    }, [idItemToShare]);
+    const [pageNoPermission, setPageNoPermission] = useState(0);
+    const [pageNoSuggest, setPageNoSuggest] = useState(0);
 
-    const fetchPermissions = async () => {
-        try {
-            setLoadingPermissions(true);
-            const res = await getPagePermissionByItemId(idItemToShare!, 0, 50);
-            setPermissionPage(res.data);
-        } catch (err) {
-            console.error(err);
-        } finally {
-            setLoadingPermissions(false);
-        }
-    };
+
 
     useEffect(() => {
         if (!debouncedEmail || userSelected) {
@@ -72,7 +62,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
     const fetchSuggestUsers = async (query: string) => {
         try {
             setLoadingSuggest(true);
-            const res = await searchUser(query);
+            const res = await searchUser(query, pageNoSuggest, 50);
 
             // Lấy danh sách userId đã có trong permissionPage và pendingPermissions
             const existingUserIds = new Set([
@@ -85,10 +75,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                 !existingUserIds.has(Number(user.user.id))
             );
 
-            setSuggestUserPage({
-                ...res?.data,
-                items: filteredItems,
-            });
+            setSuggestUserPage(prev => ({
+                ...res.data,
+                items: [...prev.items, ...filteredItems], // nối thêm item mới
+            }));
 
         } catch (error) {
             console.error(error);
@@ -97,6 +87,28 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
         }
     };
 
+    useEffect(() => {
+        if (!idItemToShare) return;
+        try {
+            setLoadingPermissions(true);
+            getPagePermissionByItemId(idItemToShare, pageNoPermission, 10)
+                .then(res => {
+                    if (res.status === 200) {
+                        setPermissionPage(res.data);
+                    } else {
+                        toast.error(res.message);
+                    }
+
+                })
+        } catch (err) {
+            console.error(err);
+        } finally {
+            setLoadingPermissions(false);
+        }
+    }, [pageNoPermission, idItemToShare])
+    useEffect(() => {
+        fetchSuggestUsers(email);
+    }, [pageNoSuggest])
 
 
     const handleSelectUser = (user: UserIndexResponse) => {
@@ -130,7 +142,6 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
             setEmail("");
             setPermission("viewer");
             setUserSelected(null);
-            fetchPermissions();
         }
     };
 
@@ -196,7 +207,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
 
                     {/* Suggest user list */}
                     {suggestUserPage.items.length > 0 && (
-                        <div className="custom-scrollbar absolute top-full mt-1 left-0 w-full bg-white dark:bg-gray-700 border rounded shadow z-50 max-h-60 overflow-auto">
+                        <div className="custom-scrollbar absolute top-full mt-1 left-0 w-full bg-white dark:bg-gray-700 border rounded shadow z-50 max-h-60 overflow-y-auto">
                             {suggestUserPage.items.map((user, index) => (
                                 <div
                                     key={index}
@@ -224,8 +235,19 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                                     </div>
                                 </div>
                             ))}
+
+                            {/* Nút xem thêm */}
+                            {suggestUserPage.hasNext && (
+                                <div
+                                    className="text-primary text-center py-2 cursor-pointer hover:underline"
+                                    onClick={() => setPageNoSuggest((pre) => pre + 1)} // Hàm này sẽ load thêm user
+                                >
+                                    Xem thêm
+                                </div>
+                            )}
                         </div>
                     )}
+
                 </div>
 
                 {/* Danh sách đã chia sẻ */}
@@ -252,6 +274,14 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                             </div>
                         ))
                     )}
+                    <Pagination
+                        currentPage={pageNoPermission + 1}
+                        totalPages={permissionPage.totalPage}
+                        onPageChange={(page) => {
+                            setPageNoPermission(page - 1); // lưu ý mình đang dùng pageNo (bắt đầu từ 0)
+                        }}
+                    />
+
                 </div>
             </div>
         </div>
