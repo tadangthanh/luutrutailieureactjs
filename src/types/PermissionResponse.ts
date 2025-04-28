@@ -1,6 +1,6 @@
 export interface PermissionResponse {
     id: number;
-    permission: "VIEWER" | "EDITOR";
+    permission: "viewer" | "editor";
     email: string;
     userId: number;
 }

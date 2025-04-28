@@ -17,13 +17,26 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
     const [email, setEmail] = useState("");
     const [debouncedEmail] = useDebounce(email, 400); // <== thêm debounce
     const [permission, setPermission] = useState<"viewer" | "editor">("viewer");
-
-    const [permissions, setPermissions] = useState<PermissionResponse[]>([]);
-    const [suggestUsers, setSuggestUsers] = useState<UserIndexResponse[]>([]);
+    const [permissionPage, setPermissionPage] = useState<PageResponse<PermissionResponse>>({
+        pageNo: 0,
+        pageSize: 10,
+        totalPage: 0,
+        hasNext: false,
+        totalItems: 0,
+        items: [],
+    });
+    const [suggestUserPage, setSuggestUserPage] = useState<PageResponse<UserIndexResponse>>({
+        pageNo: 0,
+        pageSize: 10,
+        totalPage: 0,
+        hasNext: false,
+        totalItems: 0,
+        items: [],
+    });
     const [loadingSuggest, setLoadingSuggest] = useState(false);
     const [loadingPermissions, setLoadingPermissions] = useState(false);
     const [userSelected, setUserSelected] = useState<User | null>(null);
-
+    const [pendingPermissions, setPendingPermissions] = useState<PendingPermission[]>([]);
     useEffect(() => {
         if (!idItemToShare) return;
         fetchPermissions();
@@ -33,7 +46,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
         try {
             setLoadingPermissions(true);
             const res = await getPagePermissionByItemId(idItemToShare!, 0, 50);
-            setPermissions(res.data.items);
+            setPermissionPage(res.data);
         } catch (err) {
             console.error(err);
         } finally {
@@ -43,7 +56,14 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
 
     useEffect(() => {
         if (!debouncedEmail || userSelected) {
-            setSuggestUsers([]);
+            setSuggestUserPage({
+                pageNo: 0,
+                pageSize: 10,
+                totalPage: 0,
+                hasNext: false,
+                totalItems: 0,
+                items: [],
+            });
             return;
         }
         fetchSuggestUsers(debouncedEmail);
@@ -53,7 +73,23 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
         try {
             setLoadingSuggest(true);
             const res = await searchUser(query);
-            setSuggestUsers(res?.data.items || []);
+
+            // Lấy danh sách userId đã có trong permissionPage và pendingPermissions
+            const existingUserIds = new Set([
+                ...permissionPage.items.map(p => p.userId),
+                ...pendingPermissions.map(p => p.recipientId)
+            ]);
+
+            // Lọc ra những user chưa có trong existingUserIds
+            const filteredItems = (res?.data.items || []).filter((user: any) =>
+                !existingUserIds.has(Number(user.user.id))
+            );
+
+            setSuggestUserPage({
+                ...res?.data,
+                items: filteredItems,
+            });
+
         } catch (error) {
             console.error(error);
         } finally {
@@ -61,28 +97,33 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
         }
     };
 
+
+
     const handleSelectUser = (user: UserIndexResponse) => {
         setEmail(user.user.email);
         const userSelected = { ...user.user, id: +user.user.id }
         setUserSelected(userSelected);
-        setSuggestUsers([]);
+        setSuggestUserPage({
+            pageNo: 0,
+            pageSize: 10,
+            totalPage: 0,
+            hasNext: false,
+            totalItems: 0,
+            items: [],
+        });
     };
 
     const handleAddPermission = async () => {
-        if (!idItemToShare || !email) return;
-        console.log("Adding permission", { itemId: idItemToShare, email, permission });
-        console.log(userSelected, "userSelected");
+        if (!idItemToShare || !userSelected) return;
         try {
-            if (userSelected) {
-                await addPermission(idItemToShare,{
+            setPendingPermissions((prev) => [
+                ...prev,
+                {
                     recipientId: userSelected.id,
                     permission: permission,
-                }).then((res)=>{
-                    // console.log("res",res)
-                    permissions.push(res.data);
-                })
-
-            }
+                    isNew: true,
+                }
+            ]);
         } catch (err) {
             console.error(err);
         } finally {
@@ -154,9 +195,9 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                     </div>
 
                     {/* Suggest user list */}
-                    {suggestUsers.length > 0 && (
+                    {suggestUserPage.items.length > 0 && (
                         <div className="custom-scrollbar absolute top-full mt-1 left-0 w-full bg-white dark:bg-gray-700 border rounded shadow z-50 max-h-60 overflow-auto">
-                            {suggestUsers.map((user, index) => (
+                            {suggestUserPage.items.map((user, index) => (
                                 <div
                                     key={index}
                                     onClick={() => handleSelectUser(user)}
@@ -191,10 +232,10 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                 <div className="max-h-60 overflow-y-auto space-y-2">
                     {loadingPermissions ? (
                         <p className="text-gray-600 dark:text-gray-300">Đang tải...</p>
-                    ) : permissions.length === 0 ? (
+                    ) : permissionPage.items.length === 0 ? (
                         <p className="text-gray-600 dark:text-gray-300">Chưa chia sẻ với ai</p>
                     ) : (
-                        permissions.map((p) => (
+                        permissionPage.items.map((p) => (
                             <div key={p.id} className="flex items-center justify-between p-2 border rounded dark:border-gray-700">
                                 <span className="text-gray-800 dark:text-white truncate">{p.email}</span>
                                 <select
