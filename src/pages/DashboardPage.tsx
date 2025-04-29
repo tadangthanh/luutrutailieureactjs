@@ -269,8 +269,8 @@ const DashboardPage = () => {
         }
     }
     const handleItemClick = (item: ItemResponse) => {
+        console.log("asdas")
         if (item.itemType === "FOLDER") {
-            console.log("item id select", item.id)
             setFolderId(item.id);
             setItems([...items, `parent.id:${item.id}`])
             if (path.length === 0) {
