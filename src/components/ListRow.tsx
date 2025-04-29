@@ -1,7 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import {
-    MoreHorizontal, Download, Edit, File, Info, Trash, Copy, Folder, FileText,
+    MoreHorizontal, Download, Edit, File, Info, Trash, Copy, FileText,
     UserPlus,
+    FolderClosed,
 } from "lucide-react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
@@ -57,7 +58,7 @@ const ListRow: React.FC<ListRowProps> = ({
 
 
     const renderIcon = () => item.itemType === "FOLDER"
-        ? <Folder size={16} className="mr-2" />
+        ? <FolderClosed size={16} className="mr-2" />
         : <FileText size={16} className="mr-2" />;
     function formatDate(dateString: string): string {
         const date = new Date(dateString);

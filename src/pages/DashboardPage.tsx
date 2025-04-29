@@ -14,8 +14,10 @@ import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { copyDocument, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
 import BottomLeftNotification from "../components/BottomLeftNotification";
-import { downloadFolder } from "../services/FolderApi";
+import { createFolder, downloadFolder } from "../services/FolderApi";
 import { AnimatePresence, motion } from "framer-motion";
+import { EmptyAreaContextMenu } from "../components/EmptyAreaContextMenu";
+import TextInputModal from "../components/TextInputModal";
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
     const [isLoading, setIsLoading] = useState(false);
@@ -31,12 +33,20 @@ const DashboardPage = () => {
     const folderIdRef = useRef<number | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [messageProcessing, setMessageProcessing] = useState<string | null>(null);
+    const [path, setPath] = useState<{ id: number, name: string }[]>([
+    ]);
     const onCancelRef = useRef<() => void>(() => {
     });
     const downloadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const onCancelNotificationBottomLeft = () => {
         onCancelRef.current();
     };
+    const [contextMenu, setContextMenu] = useState<{
+        visible: boolean;
+        x: number;
+        y: number;
+    }>({ visible: false, x: 0, y: 0 });
+
     useEffect(() => {
         folderIdRef.current = folderId;
     }, [folderId]);
@@ -79,7 +89,7 @@ const DashboardPage = () => {
         setIsDragging(false);
     }, []);
 
-    const handleDrop = useCallback(async (e: DragEvent) => {
+    const handleDrop = useCallback(async (e: any) => {
         e.preventDefault();
         setIsDragging(false);
 
@@ -112,7 +122,6 @@ const DashboardPage = () => {
             toast.error("Tải tệp thất bại.");
             webSocketService.unsubscribeUploadProgress();
             webSocketService.unsubscribeUploadCompleted();
-            console.error(err);
         }
     }, [handleMessage]);
 
@@ -137,7 +146,6 @@ const DashboardPage = () => {
             toast.warning("Upload đã bị huỷ.");
         } else {
             toast.success("Tải lên hoàn tất!");
-
             if (msg.documents && Array.isArray(msg.documents)) {
                 setItemPage(prev => ({
                     ...prev,
@@ -321,8 +329,7 @@ const DashboardPage = () => {
         }
     };
 
-    const [path, setPath] = useState<{ id: number, name: string }[]>([
-    ]);
+
     const handleBreadCrumbsClick = (id: number) => {
         if (id === 0) {
             setPath([]);
@@ -349,8 +356,66 @@ const DashboardPage = () => {
             }
         }
     }
+
+    const [isCreateFolder, setIsCreateFolder] = useState<boolean>(false);
+    const openCreateFolderModal = () => {
+        setIsCreateFolder(true);
+    };
+    const [newFolderName, setNewFolderName] = useState<string>(""); // Tên thư mục mới
+    const handleCreateFolder = () => {
+        // console.log("create folder", newFolderName);
+        createFolder({ name: newFolderName, folderParentId: folderIdRef.current }).then((res) => {
+            if (res.status === 201) {
+                setItemPage(prev => ({
+                    ...prev,
+                    items: [{ ...res.data }, ...prev.items], // thêm vào đầu danh sách
+                    totalItems: prev.totalItems + 1
+                }));
+            }
+        }).catch(err => {
+            toast.error("Tạo thư mục thất bại.");
+        }).finally(() => {
+            setIsCreateFolder(false);
+            setNewFolderName("");
+        });
+
+    }
     return (
-        <div className="relative width-full h-full flex flex-col gap-4 p-4">
+        <div
+            onContextMenu={(e) => {
+                e.preventDefault();
+                // Check nếu click vào vùng rỗng (not item)
+                if (e.target === e.currentTarget) {
+                    setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
+                }
+            }}
+            onClick={() => contextMenu.visible && setContextMenu({ ...contextMenu, visible: false })}
+            className="relative width-full h-full flex flex-col gap-4 p-4">
+            {contextMenu.visible && (
+                <EmptyAreaContextMenu
+                    x={contextMenu.x}
+                    y={contextMenu.y}
+                    onSelect={(action: any) => {
+                        if (action === "newFolder") openCreateFolderModal();
+                        // else if (action === "uploadFile") triggerFileUpload();
+                        setContextMenu({ ...contextMenu, visible: false });
+                    }}
+                />
+            )}
+            {isCreateFolder && (
+                <TextInputModal
+                    title="Tạo thư mục mới"
+                    inputValue={newFolderName}
+                    setInputValue={setNewFolderName}
+                    onCancel={() => {
+                        setIsCreateFolder(false);
+                        setNewFolderName("");
+                    }}
+                    onConfirm={handleCreateFolder}
+                    confirmText="Lưu"
+                    placeholder="Nhập tên thư mục"
+                />
+            )}
             {isLoading && <FullScreenLoader />}
             <DashboardFilterBar
                 layout={layout}
@@ -426,35 +491,20 @@ const DashboardPage = () => {
 
             )}
             {renamingItemId && (
-                <div className="absolute inset-0 bg-black bg-opacity-30 z-50 flex items-center justify-center">
-                    <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-[300px]">
-                        <h2 className="text-lg font-semibold mb-4 text-gray-900 dark:text-white">Đổi tên</h2>
-                        <input
-                            value={newName}
-                            onChange={(e) => setNewName(e.target.value)}
-                            className="w-full p-2 border rounded mb-4 dark:bg-gray-700 dark:text-white"
-                            autoFocus
-                        />
-                        <div className="flex justify-end gap-2">
-                            <button
-                                onClick={() => {
-                                    setRenamingItemId(null);
-                                    setNewName("");
-                                }}
-                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 rounded text-gray-700 dark:bg-gray-600 dark:hover:bg-gray-500 dark:text-white"
-                            >
-                                Hủy
-                            </button>
-                            <button
-                                onClick={() => handleConfirmRename()}
-                                className="px-4 py-2 bg-primary hover:bg-primary-dark text-white rounded"
-                            >
-                                Lưu
-                            </button>
-                        </div>
-                    </div>
-                </div>
+                <TextInputModal
+                    title="Đổi tên"
+                    inputValue={newName}
+                    setInputValue={setNewName}
+                    onCancel={() => {
+                        setRenamingItemId(null);
+                        setNewName("");
+                    }}
+                    onConfirm={handleConfirmRename}
+                    confirmText="Lưu"
+                    placeholder="Nhập tên mới"
+                />
             )}
+
 
             {/* Upload Progress */}
             {uploadProgress && (
