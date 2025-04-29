@@ -1,7 +1,7 @@
 import { ItemResponse } from "../types/ItemResponse";
 import FileCard from "./FileCard";
 import FolderCard from "./FolderCard";
-
+import { motion } from "framer-motion";
 interface DashboardGridViewProps {
     layout: "grid" | "list";
     items: ItemResponse[];
@@ -30,36 +30,52 @@ const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, ha
 
     return (
         <div className={`${layoutClass} gap-4`} >
-            {items.map((item) => {
-                if (item.itemType === "FOLDER") {
-                    return <FolderCard
-                        onClick={onClick}
+            {items.map((item, index) => {
+                const delay = index * 0.03;
+
+                const MotionCard = (
+                    item.itemType === "FOLDER" ? (
+                        <FolderCard
+                            onClick={onClick}
+                            key={item.id}
+                            folder={item}
+                            layout={layout}
+                            handleDownload={handleDownload}
+                            handleInfo={handleInfo}
+                            handleMoveToTrash={handleMoveToTrash}
+                            handleOpen={handleOpen}
+                            handleRename={handleRename}
+                            handleShare={handleShare}
+                        />
+                    ) : (
+                        <FileCard
+                            onClick={onClick}
+                            key={item.id}
+                            doc={item}
+                            layout={layout}
+                            handleCopy={handleCopy}
+                            handleDownload={handleDownload}
+                            handleInfo={handleInfo}
+                            handleMoveToTrash={handleMoveToTrash}
+                            handleOpen={handleOpen}
+                            handleRename={handleRename}
+                            handleShare={handleShare}
+                        />
+                    )
+                );
+
+                return (
+                    <motion.div
                         key={item.id}
-                        folder={item}
-                        layout={layout}
-                        handleDownload={handleDownload}
-                        handleInfo={handleInfo}
-                        handleMoveToTrash={handleMoveToTrash}
-                        handleOpen={handleOpen}
-                        handleRename={handleRename}
-                        handleShare={handleShare}
-                    />;
-                } else {
-                    return <FileCard
-                        onClick={onClick}
-                        key={item.id}
-                        doc={item}
-                        layout={layout}
-                        handleCopy={handleCopy}
-                        handleDownload={handleDownload}
-                        handleInfo={handleInfo}
-                        handleMoveToTrash={handleMoveToTrash}
-                        handleOpen={handleOpen}
-                        handleRename={handleRename}
-                        handleShare={handleShare}
-                    />;
-                }
+                        initial={{ opacity: 0, scale: 0.95 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        transition={{ duration: 0.2, delay }}
+                    >
+                        {MotionCard}
+                    </motion.div>
+                );
             })}
+
 
         </div>
     );

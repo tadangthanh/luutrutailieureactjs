@@ -12,10 +12,10 @@ import webSocketService from "../services/WebSocketService";
 import ResizableSlidePanel from "../components/ResizableSlidePanel";
 import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
-import { copyDocument, downloadDoc, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
+import { copyDocument, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
 import BottomLeftNotification from "../components/BottomLeftNotification";
 import { downloadFolder } from "../services/FolderApi";
-
+import { AnimatePresence, motion } from "framer-motion";
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
     const [isLoading, setIsLoading] = useState(false);
@@ -367,34 +367,44 @@ const DashboardPage = () => {
                     />
                 )}
             </div>
-            {layout === "list" ? (
-                <DashboardListView
-                    onClick={handleItemClick}
-                    items={itemPage.items}
-                    openMenuId={openMenuId}
-                    setOpenMenuId={setOpenMenuId}
-                    handleCopy={handleCopy}
-                    handleDownload={handleDownload}
-                    handleInfo={handleInfo}
-                    handleMoveToTrash={handleMoveToTrash}
-                    handleOpen={handleOpen}
-                    handleRename={handleRename}
-                    handleShare={handleShare}
-                />
-            ) : (
-                <DashboardGridView
-                    onClick={handleItemClick}
-                    items={itemPage.items}
-                    layout={layout}
-                    handleCopy={handleCopy}
-                    handleDownload={handleDownload}
-                    handleInfo={handleInfo}
-                    handleMoveToTrash={handleMoveToTrash}
-                    handleOpen={handleOpen}
-                    handleRename={handleRename}
-                    handleShare={handleShare}
-                />
-            )}
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={layout}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2 }}
+                >
+                    {layout === "list" ? (
+                        <DashboardListView
+                            onClick={handleItemClick}
+                            items={itemPage.items}
+                            openMenuId={openMenuId}
+                            setOpenMenuId={setOpenMenuId}
+                            handleCopy={handleCopy}
+                            handleDownload={handleDownload}
+                            handleInfo={handleInfo}
+                            handleMoveToTrash={handleMoveToTrash}
+                            handleOpen={handleOpen}
+                            handleRename={handleRename}
+                            handleShare={handleShare}
+                        />
+                    ) : (
+                        <DashboardGridView
+                            onClick={handleItemClick}
+                            items={itemPage.items}
+                            layout={layout}
+                            handleCopy={handleCopy}
+                            handleDownload={handleDownload}
+                            handleInfo={handleInfo}
+                            handleMoveToTrash={handleMoveToTrash}
+                            handleOpen={handleOpen}
+                            handleRename={handleRename}
+                            handleShare={handleShare}
+                        />
+                    )}
+                </motion.div>
+            </AnimatePresence>
             {itemPage.hasNext && (
                 <div className="bottom-4 left-4">
                     <button
