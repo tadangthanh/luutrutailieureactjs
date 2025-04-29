@@ -24,3 +24,10 @@ export const getEmailsShared = async (page = 0, size = 10, keyword: string) => {
         toast.error("Failed to fetch emails.");
     }
 }
+export const delItem = async (id: number) => {
+    try {
+        return (await api.delete(`${apiUrl}/items/${id}`)).data;
+    } catch (error) {
+        toast.error("Có lỗi khi xóa item");
+    }
+}

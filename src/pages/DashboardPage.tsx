@@ -6,13 +6,14 @@ import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
 import FullScreenLoader from "../components/FullScreenLoader";
 import { ItemResponse } from "../types/ItemResponse";
-import { getItems, updateItem } from "../services/ItemApi";
+import { delItem, getItems, updateItem } from "../services/ItemApi";
 import api from "../utils/api";
 import webSocketService from "../services/WebSocketService";
 import ResizableSlidePanel from "../components/ResizableSlidePanel";
 import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
-import { uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
+import { copyDocument, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
+import BottomLeftNotification from "../components/BottomLeftNotification";
 
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -27,7 +28,8 @@ const DashboardPage = () => {
     const [newName, setNewName] = useState<string>(""); // Giá trị tên mới
     const [folderId, setFolderId] = useState<number | null>(null);// id của thư mục sẽ upload vào
     const folderIdRef = useRef<number | null>(null);
-
+    const [isProcessing, setIsProcessing] = useState(false);
+    const [messageProcessing, setMessageProcessing] = useState<string | null>(null);
     useEffect(() => {
         folderIdRef.current = folderId;
     }, [folderId]);
@@ -227,11 +229,38 @@ const DashboardPage = () => {
         setInfoItem(itemPage.items.find(item => item.id === id) || null);
         setIsInfoLoading(false);
     }
+
     const handleCopy = (id: number) => {
-        console.log(`Copying item with id: ${id}`);
+        setIsProcessing(true);
+        setMessageProcessing("Đang copy...")
+        copyDocument(id).then((res) => {
+            if (res.status === 201) {
+                setItemPage(prev => ({
+                    ...prev,
+                    items: [{ ...res.data }, ...prev.items], // thêm vào đầu danh sách
+                    totalItems: prev.totalItems + 1
+                }));
+            } else {
+                toast.error("Sao chép tài liệu thất bại.");
+            }
+        }).finally(() => {
+            setIsProcessing(false);
+            setMessageProcessing("");
+        });
     }
     const handleMoveToTrash = (id: number) => {
-        console.log(`Moving item with id: ${id} to trash`);
+        delItem(id).then((res) => {
+            if (res.status === 200) {
+                toast.success("Đã chuyển vào thùng rác");
+                setItemPage(prev => ({
+                    ...prev,
+                    items: prev.items.filter(item => item.id !== id),
+                    totalItems: prev.totalItems - 1
+                }));
+            } else {
+                toast.error(res.message);
+            }
+        })
     }
     const handleConfirmRename = async () => {
         try {
@@ -269,7 +298,6 @@ const DashboardPage = () => {
         }
     }
     const handleItemClick = (item: ItemResponse) => {
-        console.log("asdas")
         if (item.itemType === "FOLDER") {
             setFolderId(item.id);
             setItems([...items, `parent.id:${item.id}`])
@@ -431,6 +459,15 @@ const DashboardPage = () => {
                         </div>
                     )}
                 </ResizableSlidePanel>
+            )}
+            {isProcessing && (
+                <BottomLeftNotification
+                    message={messageProcessing || ""}
+                    onCancel={() => {
+                        // Ví dụ: hủy upload
+                        console.log("Hủy upload");
+                    }}
+                />
             )}
 
         </div>

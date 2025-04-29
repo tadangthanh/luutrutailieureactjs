@@ -27,3 +27,10 @@ export const uploadWithParent = async (folderId: number, formData: FormData) => 
         toast.error("Failed to upload documents.");
     }
 }
+export const copyDocument = async (documentId: number) => {
+    try {
+        return (await api.post(`/documents/${documentId}/copy`)).data;
+    } catch (error) {
+        toast.error("Failed to copy document.");
+    }
+}
