@@ -12,8 +12,9 @@ import webSocketService from "../services/WebSocketService";
 import ResizableSlidePanel from "../components/ResizableSlidePanel";
 import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
-import { copyDocument, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
+import { copyDocument, downloadDoc, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
 import BottomLeftNotification from "../components/BottomLeftNotification";
+import { downloadFolder } from "../services/FolderApi";
 
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -201,7 +202,7 @@ const DashboardPage = () => {
     };
 
     const handleDownload = (id: number) => {
-        console.log(`Downloading item with id: ${id}`);
+        downloadFolder(id);
     }
     const [openShareDialog, setOpenShareDialog] = useState(false);
     const [idItemToShare, setIdItemToShare] = useState<number | null>(null); // ID của item đang chia sẻ
