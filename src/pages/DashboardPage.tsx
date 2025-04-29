@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
 import DashboardListView from "../components/DashboardListView";
 import DashboardGridView from "../components/DashboardGridView";
@@ -12,6 +12,7 @@ import webSocketService from "../services/WebSocketService";
 import ResizableSlidePanel from "../components/ResizableSlidePanel";
 import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
+import { uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
 
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -25,6 +26,11 @@ const DashboardPage = () => {
     const [renamingItemId, setRenamingItemId] = useState<number | null>(null); // ID của item đang rename
     const [newName, setNewName] = useState<string>(""); // Giá trị tên mới
     const [folderId, setFolderId] = useState<number | null>(null);// id của thư mục sẽ upload vào
+    const folderIdRef = useRef<number | null>(null);
+
+    useEffect(() => {
+        folderIdRef.current = folderId;
+    }, [folderId]);
     const [uploadProgress, setUploadProgress] = useState<{
         fileName: string;
         percent: number;
@@ -80,11 +86,14 @@ const DashboardPage = () => {
         webSocketService.subscribeUploadCompleted(handleUploadCompleted);
 
         try {
-            const res = await api.post(`/documents`, formData, {
-                headers: { "Content-Type": "multipart/form-data" },
-            });
+            let res;
+            if (folderIdRef.current) {
+                res = await uploadWithParent(folderIdRef.current, formData);
+            } else {
+                res = await uploadEmptyParent(formData);
+            }
             if (res.status === 200) {
-                setUploadId(res.data.data);
+                setUploadId(res.data);
             } else {
                 toast.error("Tải tệp thất bại.");
                 webSocketService.unsubscribeUploadProgress();
@@ -261,6 +270,7 @@ const DashboardPage = () => {
     }
     const handleItemClick = (item: ItemResponse) => {
         if (item.itemType === "FOLDER") {
+            console.log("item id select", item.id)
             setFolderId(item.id);
             setItems([...items, `parent.id:${item.id}`])
             if (path.length === 0) {

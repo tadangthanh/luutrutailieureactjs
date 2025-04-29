@@ -1,5 +1,4 @@
 import React, { useState } from "react";
-import { Link } from "react-router-dom";
 
 interface BreadcrumbsProps {
     initialPath: Array<{ id: number; name: string }>;
