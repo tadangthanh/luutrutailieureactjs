@@ -12,6 +12,7 @@ interface DashboardGridViewProps {
     handleInfo(id: number): void;
     handleCopy(id: number): void;
     handleMoveToTrash(id: number): void;
+    onClick: (item: ItemResponse) => void;
 }
 
 const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, handleOpen,
@@ -20,6 +21,7 @@ const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, ha
     handleShare,
     handleInfo,
     handleCopy,
+    onClick,
     handleMoveToTrash }) => {
     const layoutClass =
         layout === "grid"
@@ -27,10 +29,11 @@ const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, ha
             : "flex flex-col";
 
     return (
-        <div className={`${layoutClass} gap-4`}>
+        <div className={`${layoutClass} gap-4`} >
             {items.map((item) => {
                 if (item.itemType === "FOLDER") {
                     return <FolderCard
+                        onClick={onClick}
                         key={item.id}
                         folder={item}
                         layout={layout}
@@ -43,6 +46,7 @@ const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, ha
                     />;
                 } else {
                     return <FileCard
+                        onClick={onClick}
                         key={item.id}
                         doc={item}
                         layout={layout}

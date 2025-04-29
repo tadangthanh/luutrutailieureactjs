@@ -5,6 +5,7 @@ import {
 } from "lucide-react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface ListRowProps {
     item: ItemResponse
@@ -114,45 +115,30 @@ const ListRow: React.FC<ListRowProps> = ({
                     <MoreHorizontal size={18} />
                 </button>
 
-                {isMenuOpen && (
-                    <div
-                        ref={menuRef}
-                        className="absolute right-0 mt-7 w-52 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 z-10"
-                    >
-                        <ul className="text-sm text-gray-700 dark:text-gray-200">
-                            <Option
-                                label="Mở"
-                                icon={<File size={16} />}
-                                onClick={() => handleOpen(item.id)} />
-                            <Option
-                                label="Đổi tên"
-                                icon={<Edit size={16} />}
-                                onClick={() => handleRename(item.id)} />
-                            <Option
-                                label="Thông tin"
-                                icon={<Info size={16} />}
-                                onClick={() => handleInfo(item.id)} />
-                            <Option
-                                label="Tải xuống"
-                                icon={<Download size={16} />}
-                                onClick={() => handleDownload(item.id)} />
-                            <Option
-                                label="Chia sẻ"
-                                icon={<UserPlus size={16} />}
-                                onClick={() => handleShare(item.id)} />
-                            {item.itemType !== "FOLDER" && (
-                                <Option
-                                    label="Tạo bản sao"
-                                    icon={<Copy size={16} />}
-                                    onClick={() => handleCopy(item.id)} />
-                            )}
-                            <Option
-                                label="Chuyển vào thùng rác"
-                                icon={<Trash size={16} />}
-                                onClick={() => handleMoveToTrash(item.id)} />
-                        </ul>
-                    </div>
-                )}
+                <AnimatePresence>
+                    {isMenuOpen && (
+                        <motion.div
+                            ref={menuRef}
+                            initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                            transition={{ duration: 0.15 }}
+                            className="absolute right-0 mt-7 w-52 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 z-10"
+                        >
+                            <ul className="text-sm text-gray-700 dark:text-gray-200">
+                                <Option label="Mở" icon={<File size={16} />} onClick={() => handleOpen(item.id)} />
+                                <Option label="Đổi tên" icon={<Edit size={16} />} onClick={() => handleRename(item.id)} />
+                                <Option label="Thông tin" icon={<Info size={16} />} onClick={() => handleInfo(item.id)} />
+                                <Option label="Tải xuống" icon={<Download size={16} />} onClick={() => handleDownload(item.id)} />
+                                <Option label="Chia sẻ" icon={<UserPlus size={16} />} onClick={() => handleShare(item.id)} />
+                                {item.itemType !== "FOLDER" && (
+                                    <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(item.id)} />
+                                )}
+                                <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(item.id)} />
+                            </ul>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
         </div>
     );

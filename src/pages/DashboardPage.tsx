@@ -31,6 +31,12 @@ const DashboardPage = () => {
     const folderIdRef = useRef<number | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [messageProcessing, setMessageProcessing] = useState<string | null>(null);
+    const onCancelRef = useRef<() => void>(() => {
+    });
+    const downloadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const onCancelNotificationBottomLeft = () => {
+        onCancelRef.current();
+    };
     useEffect(() => {
         folderIdRef.current = folderId;
     }, [folderId]);
@@ -201,9 +207,39 @@ const DashboardPage = () => {
         setNewName(itemPage.items.find(item => item.id === id)?.name || "");
     };
 
-    const handleDownload = (id: number) => {
-        downloadFolder(id);
+    const showNotificationBottomLeft = (message: string, onCancel: () => void) => {
+        setIsProcessing(true);
+        setMessageProcessing(message);
+        onCancelRef.current = onCancel;
     }
+    const hiddenNotificationBottomLeft = () => {
+        setIsProcessing(false);
+        setMessageProcessing(null);
+        onCancelRef.current = () => { };
+    }
+
+    const handleDownload = (id: number) => {
+        setOpenMenuId(null);
+        // Bắt đầu thông báo
+        showNotificationBottomLeft("Đang chuẩn bị tải xuống...", () => {
+            // Nếu người dùng bấm Hủy
+            if (downloadTimeoutRef.current) {
+                clearTimeout(downloadTimeoutRef.current);
+                downloadTimeoutRef.current = null;
+                hiddenNotificationBottomLeft();
+            }
+        });
+
+        // Đặt timeout 3 giây để thực hiện download
+        downloadTimeoutRef.current = setTimeout(() => {
+            downloadFolder(id)
+                .catch((err) => toast.error("Tải xuống thất bại"))
+                .finally(() => {
+                    hiddenNotificationBottomLeft();
+                    downloadTimeoutRef.current = null;
+                });
+        }, 3000);
+    };
     const [openShareDialog, setOpenShareDialog] = useState(false);
     const [idItemToShare, setIdItemToShare] = useState<number | null>(null); // ID của item đang chia sẻ
     const handleShare = (id: number) => {
@@ -347,6 +383,7 @@ const DashboardPage = () => {
                 />
             ) : (
                 <DashboardGridView
+                    onClick={handleItemClick}
                     items={itemPage.items}
                     layout={layout}
                     handleCopy={handleCopy}
@@ -464,10 +501,7 @@ const DashboardPage = () => {
             {isProcessing && (
                 <BottomLeftNotification
                     message={messageProcessing || ""}
-                    onCancel={() => {
-                        // Ví dụ: hủy upload
-                        console.log("Hủy upload");
-                    }}
+                    onCancel={onCancelNotificationBottomLeft}
                 />
             )}
 

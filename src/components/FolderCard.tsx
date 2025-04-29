@@ -1,4 +1,4 @@
-import { MoreVertical, Edit, File, Info, Trash, Copy, Folder, Download, UserPlus } from "lucide-react";
+import { MoreVertical, Edit, File, Info, Trash, Folder, Download, UserPlus } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
@@ -12,6 +12,8 @@ interface FolderCardProps {
     handleShare(id: number): void;
     handleInfo(id: number): void;
     handleMoveToTrash(id: number): void;
+    onClick: (item: ItemResponse) => void;
+
 }
 
 const FolderCard: React.FC<FolderCardProps> = ({ folder, layout, handleOpen,
@@ -19,6 +21,7 @@ const FolderCard: React.FC<FolderCardProps> = ({ folder, layout, handleOpen,
     handleDownload,
     handleShare,
     handleInfo,
+    onClick,
     handleMoveToTrash }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement | null>(null);
@@ -43,7 +46,7 @@ const FolderCard: React.FC<FolderCardProps> = ({ folder, layout, handleOpen,
 
 
     return (
-        <div
+        <div onClick={() => onClick(folder)}
             className={`relative group rounded-2xl p-4 w-full shadow-sm hover:shadow-md cursor-pointer transition-all
             ${layout === "list"
                     ? "flex items-center gap-3 bg-secondary/30 dark:bg-secondary/40"

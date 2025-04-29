@@ -12,7 +12,7 @@ import {
 import React, { useState, useRef, useEffect } from "react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
-
+import { motion, AnimatePresence } from "framer-motion";
 interface FileCardProps {
     doc: ItemResponse;
     layout: "grid" | "list";
@@ -22,6 +22,7 @@ interface FileCardProps {
     handleShare(id: number): void;
     handleInfo(id: number): void;
     handleCopy(id: number): void;
+    onClick: (item: ItemResponse) => void;
     handleMoveToTrash(id: number): void;
 }
 
@@ -30,6 +31,7 @@ const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
     handleDownload,
     handleShare,
     handleInfo,
+    onClick,
     handleCopy,
     handleMoveToTrash }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -55,6 +57,7 @@ const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
 
     return (
         <div
+            onClick={() => onClick(doc)}
             className={`relative group rounded-2xl p-4 w-full shadow-sm hover:shadow-md cursor-pointer transition-all
             ${layout === "list"
                     ? "flex items-center gap-3 bg-neutral-light dark:bg-neutral-dark"
@@ -81,43 +84,29 @@ const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
             </div>
 
             {/* Dropdown menu */}
-            {isMenuOpen && (
-                <div
-                    ref={menuRef}
-                    className="absolute top-10 right-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 z-20"
-                >
-                    <ul className="text-sm text-gray-700 dark:text-gray-200">
-                        <Option
-                            label="Mở"
-                            icon={<File size={16} />}
-                            onClick={() => handleOpen(doc.id)} />
-                        <Option
-                            label="Đổi tên"
-                            icon={<Edit size={16} />}
-                            onClick={() => handleRename(doc.id)} />
-                        <Option
-                            label="Thông tin"
-                            icon={<Info size={16} />}
-                            onClick={() => handleInfo(doc.id)} />
-                        <Option
-                            label="Tải xuống"
-                            icon={<Download size={16} />}
-                            onClick={() => handleDownload(doc.id)} />
-                        <Option
-                            label="Chia sẻ"
-                            icon={<UserPlus size={16} />}
-                            onClick={() => handleShare(doc.id)} />
-                        <Option
-                            label="Tạo bản sao"
-                            icon={<Copy size={16} />}
-                            onClick={() => handleCopy(doc.id)} />
-                        <Option
-                            label="Chuyển vào thùng rác"
-                            icon={<Trash size={16} />}
-                            onClick={() => handleMoveToTrash(doc.id)} />
-                    </ul>
-                </div>
-            )}
+            <AnimatePresence>
+                {isMenuOpen && (
+                    <motion.div
+                        ref={menuRef}
+                        initial={{ opacity: 0, scale: 0.95, y: -8 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -8 }}
+                        transition={{ duration: 0.15 }}
+                        className="absolute top-10 right-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 z-20"
+                    >
+                        <ul className="text-sm text-gray-700 dark:text-gray-200">
+                            <Option label="Mở" icon={<File size={16} />} onClick={() => handleOpen(doc.id)} />
+                            <Option label="Đổi tên" icon={<Edit size={16} />} onClick={() => handleRename(doc.id)} />
+                            <Option label="Thông tin" icon={<Info size={16} />} onClick={() => handleInfo(doc.id)} />
+                            <Option label="Tải xuống" icon={<Download size={16} />} onClick={() => handleDownload(doc.id)} />
+                            <Option label="Chia sẻ" icon={<UserPlus size={16} />} onClick={() => handleShare(doc.id)} />
+                            <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(doc.id)} />
+                            <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(doc.id)} />
+                        </ul>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 };
