@@ -31,10 +31,12 @@ const DashboardPage = () => {
     const [newName, setNewName] = useState<string>(""); // Giá trị tên mới
     const [folderId, setFolderId] = useState<number | null>(null);// id của thư mục sẽ upload vào
     const folderIdRef = useRef<number | null>(null);
+    const pathRef = useRef<Array<{ id: number; name: string }>>([
+        { id: 0, name: 'Trang chủ' },
+    ]);
+
     const [isProcessing, setIsProcessing] = useState(false);
     const [messageProcessing, setMessageProcessing] = useState<string | null>(null);
-    const [path, setPath] = useState<{ id: number, name: string }[]>([
-    ]);
     const onCancelRef = useRef<() => void>(() => {
     });
     const downloadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -329,32 +331,45 @@ const DashboardPage = () => {
         }
     };
 
+    const buildFilters = (parentId: number | null) =>
+        (prev: string[]) => {
+            const base = prev.filter(i => !i.startsWith('parent.id:'));
+            return parentId != null ? [...base, `parent.id:${parentId}`] : base;
+        };
 
     const handleBreadCrumbsClick = (id: number) => {
-        if (id === 0) {
-            setPath([]);
-            setItems((prev: string[]) => {
-                const filteredItems = prev.filter(item => !item.startsWith("parent.id:"));
-                return filteredItems;
-            })
-        } else {
-            setItems([...items, `parent.id:${id}`])
+        // 1) Set the folder (null for root)
+        setFolderId(id === 0 ? null : id);
+
+        // 2) Trim the crumb trail to the clicked one
+        const idx = pathRef.current.findIndex(p => p.id === id);
+        if (idx !== -1) {
+            pathRef.current = pathRef.current.slice(0, idx + 1);
         }
+
+        // 3) Rebuild your query filters
+        setItems(buildFilters(id === 0 ? null : id));
     }
     const handleItemClick = (item: ItemResponse) => {
-        if (item.itemType === "FOLDER") {
-            setFolderId(item.id);
-            setItems([...items, `parent.id:${item.id}`])
-            if (path.length === 0) {
-                setPath((prev: any) => {
-                    return [...prev, { id: 0, name: "Trang chủ" }, { id: item.id, name: item.name }];
-                });
-            } else {
-                setPath((prev: any) => {
-                    return [...prev, { id: item.id, name: item.name }];
-                });
-            }
+        if (item.itemType !== 'FOLDER') return;
+
+        // 1) Set the folder
+        setFolderId(item.id);
+
+        // 2) Rebuild your query filters
+        setItems(buildFilters(item.id));
+
+        // 3) Maintain the crumb trail:
+        //    – if already in the trail, slice back to it,
+        //    – otherwise append it.
+        const idx = pathRef.current.findIndex(p => p.id === item.id);
+        if (idx !== -1) {
+            // clicking on a folder that’s already in the crumb
+            pathRef.current = pathRef.current.slice(0, idx + 1);
+        } else {
+            pathRef.current.push({ id: item.id, name: item.name });
         }
+
     }
 
     const [isCreateFolder, setIsCreateFolder] = useState<boolean>(false);
@@ -363,7 +378,6 @@ const DashboardPage = () => {
     };
     const [newFolderName, setNewFolderName] = useState<string>(""); // Tên thư mục mới
     const handleCreateFolder = () => {
-        // console.log("create folder", newFolderName);
         createFolder({ name: newFolderName, folderParentId: folderIdRef.current }).then((res) => {
             if (res.status === 201) {
                 setItemPage(prev => ({
@@ -425,9 +439,9 @@ const DashboardPage = () => {
                 setOpenDropdownId={setOpenDropdownId}
             />
             <div>
-                {path && path.length > 1 && (
+                {pathRef.current && pathRef.current.length > 1 && (
                     <Breadcrumbs
-                        initialPath={path}
+                        initialPath={pathRef.current}
                         onClick={handleBreadCrumbsClick} // Cập nhật path khi click vào link
                     />
                 )}

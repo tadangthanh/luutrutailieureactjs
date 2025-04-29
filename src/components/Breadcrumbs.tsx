@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 
 interface BreadcrumbsProps {
     initialPath: Array<{ id: number; name: string }>;
@@ -13,7 +13,9 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ initialPath, onClick }) => {
         setPath(path.slice(0, index + 1)); // Sửa lại để giữ lại từ index đến cuối
         onClick(path[index].id); // Gọi callback khi click vào link
     };
-
+    useEffect(() => {
+        setPath(initialPath);
+    }, [initialPath]);
     return (
         <nav className="text-sm text-gray-700 dark:text-gray-300 mb-4">
             <ol className="flex items-center space-x-2">
