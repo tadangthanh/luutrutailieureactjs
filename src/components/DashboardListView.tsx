@@ -46,7 +46,11 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
                     </button>
                 </div>
             </div>
-
+            {items.length === 0 && (
+                <div className="flex items-center justify-center h-32 text-gray-500 dark:text-gray-400">
+                    Không có tài liệu nào
+                </div>
+            )}
             {items.map((item, index) => (
                 <motion.div
                     key={item.id}

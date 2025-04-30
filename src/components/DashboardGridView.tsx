@@ -30,6 +30,11 @@ const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, ha
 
     return (
         <div className={`${layoutClass} gap-4`} >
+            {items.length === 0 && (
+                <div className="flex items-center justify-center w-full h-full text-gray-500 dark:text-gray-400">
+                    <p className="text-lg">Không có tài liệu nào</p>
+                </div>
+            )}
             {items.map((item, index) => {
                 const delay = index * 0.03;
 

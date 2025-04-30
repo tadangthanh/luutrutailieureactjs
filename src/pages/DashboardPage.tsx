@@ -32,7 +32,7 @@ const DashboardPage = () => {
     const [folderId, setFolderId] = useState<number | null>(null);// id của thư mục sẽ upload vào
     const folderIdRef = useRef<number | null>(null);
     const pathRef = useRef<Array<{ id: number; name: string }>>([
-        { id: 0, name: 'Trang chủ' },
+        { id: 0, name: 'Kho lưu trữ của tôi' },
     ]);
 
     const [isProcessing, setIsProcessing] = useState(false);
@@ -40,6 +40,7 @@ const DashboardPage = () => {
     const onCancelRef = useRef<() => void>(() => {
     });
     const downloadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+    const copyTimeoutRef = useRef<NodeJS.Timeout | null>(null);
     const onCancelNotificationBottomLeft = () => {
         onCancelRef.current();
     };
@@ -227,7 +228,35 @@ const DashboardPage = () => {
         setMessageProcessing(null);
         onCancelRef.current = () => { };
     }
+    const handleCopy = (id: number) => {
+        setOpenMenuId(null);
+        // Bắt đầu thông báo
+        showNotificationBottomLeft("Đang tạo bản sao...", () => {
+            // Nếu người dùng bấm Hủy
+            if (copyTimeoutRef.current) {
+                clearTimeout(copyTimeoutRef.current);
+                copyTimeoutRef.current = null;
+                hiddenNotificationBottomLeft();
+            }
+        });
+        copyTimeoutRef.current = setTimeout(() => {
+            copyDocument(id).then((res) => {
+                if (res.status === 201) {
+                    setItemPage(prev => ({
+                        ...prev,
+                        items: [{ ...res.data }, ...prev.items], // thêm vào đầu danh sách
+                        totalItems: prev.totalItems + 1
+                    }));
+                } else {
+                    toast.error("Sao chép tài liệu thất bại.");
+                }
+            }).finally(() => {
+                hiddenNotificationBottomLeft()
+            });
+        }, 3000);
 
+
+    }
     const handleDownload = (id: number) => {
         setOpenMenuId(null);
         // Bắt đầu thông báo
@@ -277,24 +306,7 @@ const DashboardPage = () => {
         setIsInfoLoading(false);
     }
 
-    const handleCopy = (id: number) => {
-        setIsProcessing(true);
-        setMessageProcessing("Đang copy...")
-        copyDocument(id).then((res) => {
-            if (res.status === 201) {
-                setItemPage(prev => ({
-                    ...prev,
-                    items: [{ ...res.data }, ...prev.items], // thêm vào đầu danh sách
-                    totalItems: prev.totalItems + 1
-                }));
-            } else {
-                toast.error("Sao chép tài liệu thất bại.");
-            }
-        }).finally(() => {
-            setIsProcessing(false);
-            setMessageProcessing("");
-        });
-    }
+
     const handleMoveToTrash = (id: number) => {
         delItem(id).then((res) => {
             if (res.status === 200) {
