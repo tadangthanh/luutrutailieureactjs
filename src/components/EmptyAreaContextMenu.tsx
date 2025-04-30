@@ -1,4 +1,5 @@
 import { motion, AnimatePresence } from "framer-motion";
+import { FolderPlus, Upload } from "lucide-react"; // Thay thế icon
 
 interface EmptyAreaContextMenuProps {
     x: number;
@@ -20,15 +21,17 @@ export const EmptyAreaContextMenu: React.FC<EmptyAreaContextMenuProps> = ({ x, y
                 <ul className="text-sm text-gray-800 dark:text-gray-200">
                     <li
                         onClick={() => onSelect("newFolder")}
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                     >
-                        📁 Tạo thư mục
+                        <FolderPlus className="w-4 h-4" />
+                        Tạo thư mục
                     </li>
                     <li
                         onClick={() => onSelect("uploadFile")}
-                        className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
                     >
-                        📄 Tải lên tệp
+                        <Upload className="w-4 h-4" />
+                        Tải lên tệp
                     </li>
                 </ul>
             </motion.div>

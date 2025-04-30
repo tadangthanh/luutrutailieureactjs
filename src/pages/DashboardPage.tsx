@@ -376,6 +376,7 @@ const DashboardPage = () => {
     const openCreateFolderModal = () => {
         setIsCreateFolder(true);
     };
+
     const [newFolderName, setNewFolderName] = useState<string>(""); // Tên thư mục mới
     const handleCreateFolder = () => {
         createFolder({ name: newFolderName, folderParentId: folderIdRef.current }).then((res) => {
@@ -394,6 +395,39 @@ const DashboardPage = () => {
         });
 
     }
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const triggerFileUpload = () => {
+        fileInputRef.current?.click();
+    }
+    const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append("files", files[i]);
+        }
+        webSocketService.subscribeUploadProgress(handleMessage);
+        webSocketService.subscribeUploadCompleted(handleUploadCompleted);
+        try {
+            let res;
+            if (folderIdRef.current) {
+                res = await uploadWithParent(folderIdRef.current, formData);
+            } else {
+                res = await uploadEmptyParent(formData);
+            }
+            if (res.status === 200) {
+                setUploadId(res.data);
+            } else {
+                toast.error("Tải tệp thất bại.");
+                webSocketService.unsubscribeUploadProgress();
+                webSocketService.unsubscribeUploadCompleted();
+            }
+        } catch (err) {
+            toast.error("Tải tệp thất bại.");
+            webSocketService.unsubscribeUploadProgress();
+            webSocketService.unsubscribeUploadCompleted();
+        }
+    };
     return (
         <div
             onContextMenu={(e) => {
@@ -411,11 +445,19 @@ const DashboardPage = () => {
                     y={contextMenu.y}
                     onSelect={(action: any) => {
                         if (action === "newFolder") openCreateFolderModal();
-                        // else if (action === "uploadFile") triggerFileUpload();
+                        else if (action === "uploadFile") triggerFileUpload();
                         setContextMenu({ ...contextMenu, visible: false });
                     }}
                 />
             )}
+            <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFilesSelected}
+                accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                multiple
+                className="hidden"
+            />
             {isCreateFolder && (
                 <TextInputModal
                     title="Tạo thư mục mới"
