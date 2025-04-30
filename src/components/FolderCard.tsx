@@ -2,7 +2,7 @@ import { MoreVertical, Edit, File, Info, Trash, Folder, Download, UserPlus } fro
 import React, { useState, useRef, useEffect } from "react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
-
+import { motion, AnimatePresence } from "framer-motion";
 interface FolderCardProps {
     folder: ItemResponse;
     layout: "grid" | "list";
@@ -73,39 +73,28 @@ const FolderCard: React.FC<FolderCardProps> = ({ folder, layout, handleOpen,
             </div>
 
             {/* Dropdown Menu */}
-            {isMenuOpen && (
-                <div
-                    ref={menuRef}
-                    className="absolute top-10 right-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 z-20"
-                >
-                    <ul className="text-sm text-gray-700 dark:text-gray-200">
-                        <Option
-                            label="Mở"
-                            icon={<File size={16} />}
-                            onClick={() => handleOpen(folder.id)} />
-                        <Option
-                            label="Đổi tên"
-                            icon={<Edit size={16} />}
-                            onClick={() => handleRename(folder.id)} />
-                        <Option
-                            label="Thông tin"
-                            icon={<Info size={16} />}
-                            onClick={() => handleInfo(folder.id)} />
-                        <Option
-                            label="Tải xuống"
-                            icon={<Download size={16} />}
-                            onClick={() => handleDownload(folder.id)} />
-                        <Option
-                            label="Chia sẻ"
-                            icon={<UserPlus size={16} />}
-                            onClick={() => handleShare(folder.id)} />
-                        <Option
-                            label="Chuyển vào thùng rác"
-                            icon={<Trash size={16} />}
-                            onClick={() => handleMoveToTrash(folder.id)} />
-                    </ul>
-                </div>
-            )}
+            <AnimatePresence>
+                {isMenuOpen && (
+                    <motion.div
+                        ref={menuRef}
+                        className="absolute top-10 right-2 w-48 bg-white border border-gray-200 rounded-lg shadow-lg dark:bg-gray-800 dark:border-gray-700 z-20"
+                        initial={{ opacity: 0, scale: 0.95, y: -10 }}
+                        animate={{ opacity: 1, scale: 1, y: 0 }}
+                        exit={{ opacity: 0, scale: 0.95, y: -10 }}
+                        transition={{ duration: 0.15 }}
+                    >
+                        <ul className="text-sm text-gray-700 dark:text-gray-200">
+                            <Option label="Mở" icon={<File size={16} />} onClick={() => handleOpen(folder.id)} />
+                            <Option label="Đổi tên" icon={<Edit size={16} />} onClick={() => handleRename(folder.id)} />
+                            <Option label="Thông tin" icon={<Info size={16} />} onClick={() => handleInfo(folder.id)} />
+                            <Option label="Tải xuống" icon={<Download size={16} />} onClick={() => handleDownload(folder.id)} />
+                            <Option label="Chia sẻ" icon={<UserPlus size={16} />} onClick={() => handleShare(folder.id)} />
+                            <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(folder.id)} />
+                        </ul>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
         </div>
     );
 };

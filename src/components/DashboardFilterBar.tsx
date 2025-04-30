@@ -58,10 +58,8 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         getEmailsShared(pageNoEmail, 10, keyword).then((response) => {
             if (response.status === 200) {
                 setEmailPage((prev) => {
-                    const currentEmail = localStorage.getItem("email");
                     const existingEmails = new Set(prev.items);
                     const newItems = response.data.items.filter((email: string) => !existingEmails.has(email));
-
                     return {
                         ...response.data,
                         items: [...prev.items, ...newItems],
