@@ -61,3 +61,10 @@ export const downloadDoc = async (documentId: number) => {
         toast.error("Failed to download document.");
     }
 };
+export const searchDocuments = async (keyword: string, page = 0, size = 10) => {
+    try {
+        return (await api.get(`${apiUrl}/documents/search-metadata?query=${keyword}&page=${page}&size=${size}`)).data;
+    } catch (error) {
+        toast.error("Failed to search documents.");
+    }
+}
