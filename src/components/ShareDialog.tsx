@@ -9,6 +9,7 @@ import { useDebounce } from "use-debounce"; // <== thêm
 import { User } from "../types/User";
 import { toast } from "sonner";
 import Pagination from "./Pagination";
+import { PendingPermission } from "../types/PendingPermission";
 
 interface ShareDialogProps {
     onClose: () => void;

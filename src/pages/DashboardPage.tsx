@@ -9,7 +9,6 @@ import { ItemResponse } from "../types/ItemResponse";
 import { delItem, getItems, updateItem } from "../services/ItemApi";
 import api from "../utils/api";
 import webSocketService from "../services/WebSocketService";
-import ResizableSlidePanel from "../components/ResizableSlidePanel";
 import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { copyDocument, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
@@ -18,6 +17,8 @@ import { createFolder, downloadFolder } from "../services/FolderApi";
 import { AnimatePresence, motion } from "framer-motion";
 import { EmptyAreaContextMenu } from "../components/EmptyAreaContextMenu";
 import TextInputModal from "../components/TextInputModal";
+import { UploadProgress } from "../components/UploadProgress";
+import { ItemInfoPanel } from "../components/ItemInfoPanel";
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
     const [isLoading, setIsLoading] = useState(false);
@@ -182,7 +183,7 @@ const DashboardPage = () => {
 
     useEffect(() => {
         setIsLoading(true);
-        getItems(pageNo, 10, items)
+        getItems(pageNo, 20, items)
             .then((response) => {
                 if (response.status === 200) {
                     const newItems = response.data.items;
@@ -285,16 +286,6 @@ const DashboardPage = () => {
         setOpenMenuId(null);
         setIdItemToShare(id);
         setOpenShareDialog(true);
-    }
-    function formatDateTime(dateString: string): string {
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');     // Ngày
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng (getMonth() trả về từ 0-11)
-        const year = date.getFullYear();                         // Năm
-        const hours = String(date.getHours()).padStart(2, '0');   // Giờ
-        const minutes = String(date.getMinutes()).padStart(2, '0'); // Phút
-
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
     }
     const [infoItem, setInfoItem] = useState<ItemResponse | null>(null);
     const [isInfoLoading, setIsInfoLoading] = useState(false);
@@ -576,30 +567,15 @@ const DashboardPage = () => {
 
             {/* Upload Progress */}
             {uploadProgress && (
-                <div className="absolute bottom-4 right-4 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 z-50 w-72">
-                    <p className="text-sm text-primary font-semibold mb-2 truncate">
-                        Đang upload: {uploadProgress.fileName}
-                    </p>
-                    <progress
-                        className="w-full h-3"
-                        value={uploadProgress.percent}
-                        max={100}
-                    />
-                    <div className="flex justify-between items-center mt-1">
-                        <p className="text-xs text-secondary">
-                            {uploadProgress.currentChunk}/{uploadProgress.total} chunks ({uploadProgress.percent}%)
-                        </p>
-                        {uploadProgress.percent < 100 && (
-                            <button
-                                onClick={handleCancelUpload}
-                                className="text-xs text-red-500 hover:underline"
-                            >
-                                Hủy
-                            </button>
-                        )}
-                    </div>
-                </div>
+                <UploadProgress
+                    fileName={uploadProgress.fileName}
+                    percent={uploadProgress.percent}
+                    currentChunk={uploadProgress.currentChunk}
+                    total={uploadProgress.total}
+                    onCancel={handleCancelUpload}
+                />
             )}
+
             {openShareDialog && (
                 <ShareDialog
                     onClose={() => setOpenShareDialog(false)}
@@ -607,24 +583,11 @@ const DashboardPage = () => {
                 />
             )}
             {infoItem && (
-                <ResizableSlidePanel onClose={() => setInfoItem(null)}>
-                    {isInfoLoading ? (
-                        <div className="space-y-4 animate-pulse">
-                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-3/4" />
-                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2" />
-                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-2/3" />
-                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/4" />
-                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-1/2" />
-                        </div>
-                    ) : (
-                        <div className="text-sm text-gray-700 dark:text-gray-300 space-y-3">
-                            <div><strong>Tên:</strong> {infoItem.name}</div>
-                            <div><strong>Loại:</strong> {infoItem.itemType === "DOCUMENT" ? "Tài liệu" : "Thư mục"}</div>
-                            <div><strong>Ngày tạo:</strong> {formatDateTime(infoItem.createdAt)}</div>
-                            <div><strong>Ngày sửa:</strong> {formatDateTime(infoItem.updatedAt)}</div>
-                        </div>
-                    )}
-                </ResizableSlidePanel>
+                <ItemInfoPanel
+                    item={infoItem}
+                    isLoading={isInfoLoading}
+                    onClose={() => setInfoItem(null)}
+                />
             )}
             {isProcessing && (
                 <BottomLeftNotification
