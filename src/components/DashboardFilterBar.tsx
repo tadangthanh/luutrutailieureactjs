@@ -7,6 +7,7 @@ import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
 import { DashboardDateRangeDropdown } from "./DashboardDateRangeDropdown";
 import { searchDocuments } from "../services/DocumentApi";
+import OnlyOfficeEditor from "./OnlyOfficeEditor";
 interface DashboardFilterBarProps {
     layout: "grid" | "list";
     setLayout: (layout: "grid" | "list") => void;
@@ -26,7 +27,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
     const [debouncedKeyword, setDebouncedKeyword] = useState(""); // state cho keyword đã debounce
     const [typeOptions, setTypeOptions] = useState(new Map());
     const [searchResults, setSearchResults] = useState<any[]>([]);
-
+    const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
     useEffect(() => {
         setTypeOptions(() => {
             const map = new Map<string, string>();
@@ -140,6 +141,10 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
 
         fetchSearchResults();
     }, [debouncedKeyword]);
+    const handleSelectDocument = (documentId: number) => {
+        // Mở tài liệu trong tab mới bằng URL tương ứng
+        window.open(`http://localhost:3000/editor/${documentId}`, "_blank");
+    };
 
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -186,9 +191,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                             {searchResults.map((result, index) => (
                                 <button
                                     key={index}
-                                    onClick={() => {
-                                        console.log("Clicked result:", result);
-                                    }}
+                                    onClick={() => handleSelectDocument(result.document?.id || 0)}
                                     className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                                 >
                                     <div className="text-sm font-medium text-primary-dark truncate">

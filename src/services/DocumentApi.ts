@@ -68,3 +68,10 @@ export const searchDocuments = async (keyword: string, page = 0, size = 10) => {
         toast.error("Failed to search documents.");
     }
 }
+export const getOnlyOfficeConfig = async (documentId: number) => {
+    try {
+        return (await api.get(`${apiUrl}/documents/${documentId}/onlyoffice-config`)).data;
+    } catch (error) {
+        toast.error("Failed to get OnlyOffice config.");
+    }
+}

@@ -10,6 +10,7 @@ import PublicRoute from "./routes/PublicRoute";
 import { WebSocketProvider } from "./components/WebSocketProvider";
 import { Toaster } from "sonner";
 import DocumentQA from "./pages/DocumentQA";
+import OnlyOfficeEditor from "./components/OnlyOfficeEditor";
 
 function App() {
     return (
@@ -47,6 +48,7 @@ function App() {
                                 <MainLayout><DocumentQA /></MainLayout>
                             </PrivateRoute>
                         } />
+                        <Route path="/editor/:documentId" element={<OnlyOfficeEditor />} />
                     </Routes>
                 </Router>
             </>
