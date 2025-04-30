@@ -9,6 +9,7 @@ export class WebSocketService {
     private client: Client;
     private progressSubscription: StompSubscription | null = null;
     private completedSubscription: StompSubscription | null = null;
+    private uploadFailureSubscription: StompSubscription | null = null;
 
     constructor() {
         this.client = new Client({
@@ -33,7 +34,7 @@ export class WebSocketService {
     disconnect(): void {
         if (this.client.active) {
             this.unsubscribeUploadProgress();
-            this.unsubscribeUploadCompleted();
+            this.unsubscribeUploadSuccess();
             this.client.deactivate();
         }
     }
@@ -50,11 +51,22 @@ export class WebSocketService {
             }
         );
     }
+    subscribeUploadFailure(onMessage: (message: string) => void) {
+        if (!this.client.connected) return;
+        this.uploadFailureSubscription = this.client.subscribe(
+            "/user/topic/upload-failure",
+            (message) => {
+                if (message.body) {
+                    onMessage(message.body);
+                }
+            }
+        );
+    }
 
-    subscribeUploadCompleted(onMessage: (message: string) => void) {
+    subscribeUploadSuccess(onMessage: (message: string) => void) {
         if (!this.client.connected) return;
         this.completedSubscription = this.client.subscribe(
-            "/user/topic/upload-documents-completed",
+            "/user/topic/upload-success",
             (message) => {
                 if (message.body) {
                     onMessage(message.body);
@@ -69,9 +81,13 @@ export class WebSocketService {
         this.progressSubscription = null;
     }
 
-    unsubscribeUploadCompleted() {
+    unsubscribeUploadSuccess() {
         this.completedSubscription?.unsubscribe();
         this.completedSubscription = null;
+    }
+    unsubscribeUploadFailure() {
+        this.uploadFailureSubscription?.unsubscribe();
+        this.uploadFailureSubscription = null;
     }
 }
 

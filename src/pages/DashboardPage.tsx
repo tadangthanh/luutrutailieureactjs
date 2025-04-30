@@ -106,7 +106,8 @@ const DashboardPage = () => {
         }
 
         webSocketService.subscribeUploadProgress(handleMessage);
-        webSocketService.subscribeUploadCompleted(handleUploadCompleted);
+        webSocketService.subscribeUploadSuccess(handleUploadCompleted);
+        webSocketService.subscribeUploadFailure(handleUploadFailure);
 
         try {
             let res;
@@ -120,15 +121,24 @@ const DashboardPage = () => {
             } else {
                 toast.error("Tải tệp thất bại.");
                 webSocketService.unsubscribeUploadProgress();
-                webSocketService.unsubscribeUploadCompleted();
+                webSocketService.unsubscribeUploadSuccess();
             }
         } catch (err) {
             toast.error("Tải tệp thất bại.");
             webSocketService.unsubscribeUploadProgress();
-            webSocketService.unsubscribeUploadCompleted();
+            webSocketService.unsubscribeUploadSuccess();
         }
     }, [handleMessage]);
-
+    const handleUploadFailure = useCallback((message: string) => {
+        const msg = JSON.parse(message);
+        if (msg.content) {
+            toast.warning(msg.content);
+        }
+        setTimeout(() => setUploadProgress(null), 2000);
+        webSocketService.unsubscribeUploadProgress();
+        webSocketService.unsubscribeUploadSuccess();
+        webSocketService.unsubscribeUploadFailure();
+    }, []);
     const handleCancelUpload = async () => {
         if (!uploadId) return;
         try {
@@ -141,7 +151,7 @@ const DashboardPage = () => {
             setUploadProgress(null);
             setUploadId(null);
             webSocketService.unsubscribeUploadProgress();
-            webSocketService.unsubscribeUploadCompleted();
+            webSocketService.unsubscribeUploadSuccess();
         }
     };
     const handleUploadCompleted = useCallback((message: string) => {
@@ -161,7 +171,7 @@ const DashboardPage = () => {
 
         setTimeout(() => setUploadProgress(null), 2000);
         webSocketService.unsubscribeUploadProgress();
-        webSocketService.unsubscribeUploadCompleted();
+        webSocketService.unsubscribeUploadSuccess();
     }, []);
 
     useEffect(() => {
@@ -410,7 +420,7 @@ const DashboardPage = () => {
             formData.append("files", files[i]);
         }
         webSocketService.subscribeUploadProgress(handleMessage);
-        webSocketService.subscribeUploadCompleted(handleUploadCompleted);
+        webSocketService.subscribeUploadSuccess(handleUploadCompleted);
         try {
             let res;
             if (folderIdRef.current) {
@@ -423,12 +433,12 @@ const DashboardPage = () => {
             } else {
                 toast.error("Tải tệp thất bại.");
                 webSocketService.unsubscribeUploadProgress();
-                webSocketService.unsubscribeUploadCompleted();
+                webSocketService.unsubscribeUploadSuccess();
             }
         } catch (err) {
             toast.error("Tải tệp thất bại.");
             webSocketService.unsubscribeUploadProgress();
-            webSocketService.unsubscribeUploadCompleted();
+            webSocketService.unsubscribeUploadSuccess();
         }
     };
     return (
