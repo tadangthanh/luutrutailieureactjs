@@ -1,13 +1,12 @@
 import { LayoutGrid, List, Search } from "lucide-react";
 import { DashboardDropdown } from "./DashboarDropdown";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import UserDropdown from "./UserDropdown";
 import { getEmailsShared } from "../services/ItemApi";
 import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
 import { DashboardDateRangeDropdown } from "./DashboardDateRangeDropdown";
 import { searchDocuments } from "../services/DocumentApi";
-import OnlyOfficeEditor from "./OnlyOfficeEditor";
 interface DashboardFilterBarProps {
     layout: "grid" | "list";
     setLayout: (layout: "grid" | "list") => void;
@@ -27,7 +26,10 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
     const [debouncedKeyword, setDebouncedKeyword] = useState(""); // state cho keyword đã debounce
     const [typeOptions, setTypeOptions] = useState(new Map());
     const [searchResults, setSearchResults] = useState<any[]>([]);
-    const [selectedDocumentId, setSelectedDocumentId] = useState<number | null>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null); // tham chiếu đến ô input
+    const searchResultsRef = useRef<HTMLDivElement>(null); // tham chiếu đến vùng kết quả tìm kiếm
+    const [loading, setLoading] = useState(false);
+    const [isSearchResultsVisible, setIsSearchResultsVisible] = useState<boolean>(false);
     useEffect(() => {
         setTypeOptions(() => {
             const map = new Map<string, string>();
@@ -127,6 +129,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
         if (!debouncedKeyword) return;
 
         const fetchSearchResults = async () => {
+            setLoading(true);  // Bật loading trước khi tìm kiếm
             try {
                 const res = await searchDocuments(debouncedKeyword); // bạn tự viết service này
                 if (res.status === 200) {
@@ -136,6 +139,8 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                 }
             } catch (error) {
                 toast.error("Lỗi tìm kiếm tài liệu");
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -143,8 +148,27 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
     }, [debouncedKeyword]);
     const handleSelectDocument = (documentId: number) => {
         // Mở tài liệu trong tab mới bằng URL tương ứng
-        window.open(`http://localhost:3000/editor/${documentId}`, "_blank");
+        window.open(`${process.env.REACT_APP_URL_EDITOR}/${documentId}`, "_blank");
     };
+
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (
+                searchInputRef.current && !searchInputRef.current.contains(event.target as Node) &&
+                searchResultsRef.current && !searchResultsRef.current.contains(event.target as Node)
+            ) {
+                setIsSearchResultsVisible(false); // Ẩn kết quả khi click ra ngoài
+            }
+        };
+
+        document.addEventListener("mousedown", handleClickOutside);
+
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
+
 
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
@@ -179,6 +203,8 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                         <Search size={16} />
                     </span>
                     <input
+                        onFocus={() => setIsSearchResultsVisible(true)} // Khi focus vào input, hiển thị kết quả
+                        ref={searchInputRef}
                         type="text"
                         placeholder="Tìm kiếm tài liệu..."
                         value={searchInput}
@@ -186,8 +212,9 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                         className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-dark text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-light"
                     />
 
-                    {debouncedKeyword && searchResults.length > 0 && (
-                        <div className="absolute z-50 right-0 mt-1 w-[50vw] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-64 overflow-auto">
+                    {/* Hiển thị kết quả tìm kiếm */}
+                    {debouncedKeyword && isSearchResultsVisible && searchResults.length > 0 && (
+                        <div ref={searchResultsRef} className="absolute z-50 right-0 mt-1 w-[50vw] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-64 overflow-auto">
                             {searchResults.map((result, index) => (
                                 <button
                                     key={index}
@@ -201,16 +228,21 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                                         Object.entries(result.highlights as Record<string, string[]>).map(([field, highlights]) => (
                                             <div key={field} className="text-xs text-gray-500 dark:text-gray-400">
                                                 {highlights.map((text, idx) => (
-                                                    <span
-                                                        key={idx}
-                                                        dangerouslySetInnerHTML={{ __html: text }}
-                                                        className="block"
-                                                    />
+                                                    <span key={idx} dangerouslySetInnerHTML={{ __html: text }} className="block" />
                                                 ))}
                                             </div>
                                         ))}
                                 </button>
                             ))}
+                        </div>
+                    )}
+
+                    {/* Hiển thị loading spinner ở cạnh phải ô input */}
+                    {loading && searchInput && (
+                        <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-6 h-6">
+                            <div className="spinner-border animate-spin inline-block w-6 h-6 border-4 border-solid border-primary-dark border-t-transparent rounded-full" role="status">
+                                {/* <span className="visually-hidden">Loading...</span> */}
+                            </div>
                         </div>
                     )}
                 </div>
@@ -235,6 +267,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                 </div>
             </div>
         </div>
+
     );
 };
 
