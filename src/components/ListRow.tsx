@@ -81,6 +81,7 @@ const ListRow: React.FC<ListRowProps> = ({
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
+
     return (
         <div
             onClick={() => onClick(item)}
