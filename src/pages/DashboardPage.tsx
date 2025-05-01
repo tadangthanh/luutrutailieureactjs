@@ -222,7 +222,8 @@ const DashboardPage = () => {
     }, [items]);
 
     const handleOpen = (id: number) => {
-        console.log(`Opening item with id: ${id}`);
+        // Mở tài liệu trong tab mới bằng URL tương ứng
+        window.open(`${process.env.REACT_APP_URL_EDITOR}/${id}`, "_blank");
     }
     const handleRename = (id: number) => {
         setRenamingItemId(id);
@@ -364,23 +365,26 @@ const DashboardPage = () => {
         setItems(buildFilters(id === 0 ? null : id));
     }
     const handleItemClick = (item: ItemResponse) => {
-        if (item.itemType !== 'FOLDER') return;
+        if (item.itemType === 'FOLDER') {
+            // 1) Set the folder
+            setFolderId(item.id);
 
-        // 1) Set the folder
-        setFolderId(item.id);
+            // 2) Rebuild your query filters
+            setItems(buildFilters(item.id));
 
-        // 2) Rebuild your query filters
-        setItems(buildFilters(item.id));
-
-        // 3) Maintain the crumb trail:
-        //    – if already in the trail, slice back to it,
-        //    – otherwise append it.
-        const idx = pathRef.current.findIndex(p => p.id === item.id);
-        if (idx !== -1) {
-            // clicking on a folder that’s already in the crumb
-            pathRef.current = pathRef.current.slice(0, idx + 1);
-        } else {
-            pathRef.current.push({ id: item.id, name: item.name });
+            // 3) Maintain the crumb trail:
+            //    – if already in the trail, slice back to it,
+            //    – otherwise append it.
+            const idx = pathRef.current.findIndex(p => p.id === item.id);
+            if (idx !== -1) {
+                // clicking on a folder that’s already in the crumb
+                pathRef.current = pathRef.current.slice(0, idx + 1);
+            } else {
+                pathRef.current.push({ id: item.id, name: item.name });
+            }
+        } else if (item.itemType === 'DOCUMENT') {
+            // Handle click on document item
+            handleOpen(item.id);
         }
 
     }

@@ -7,6 +7,7 @@ import {
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
 import { motion, AnimatePresence } from "framer-motion";
+import { formatDate, formatDateTime } from "../utils/FormatDateTimeUtil";
 
 interface ListRowProps {
     item: ItemResponse
@@ -60,15 +61,7 @@ const ListRow: React.FC<ListRowProps> = ({
     const renderIcon = () => item.itemType === "FOLDER"
         ? <FolderClosed size={16} className="mr-2" />
         : <FileText size={16} className="mr-2" />;
-    function formatDate(dateString: string): string {
-        const date = new Date(dateString);
 
-        const day = String(date.getDate()).padStart(2, '0'); // Ngày
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng
-        const year = date.getFullYear(); // Năm
-
-        return `${day}/${month}/${year}`;  // Định dạng ngày/tháng/năm (DD/MM/YYYY)
-    }
     const formatOwner = (ownerEmail: string) => {
         if (ownerEmail === localStorage.getItem('email')) {
             return "Tôi";
@@ -87,16 +80,7 @@ const ListRow: React.FC<ListRowProps> = ({
 
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
-    function formatDateTime(dateString: string): string {
-        const date = new Date(dateString);
-        const day = String(date.getDate()).padStart(2, '0');     // Ngày
-        const month = String(date.getMonth() + 1).padStart(2, '0'); // Tháng (getMonth() trả về từ 0-11)
-        const year = date.getFullYear();                         // Năm
-        const hours = String(date.getHours()).padStart(2, '0');   // Giờ
-        const minutes = String(date.getMinutes()).padStart(2, '0'); // Phút
 
-        return `${day}/${month}/${year} ${hours}:${minutes}`;
-    }
     return (
         <div
             onClick={() => onClick(item)}
