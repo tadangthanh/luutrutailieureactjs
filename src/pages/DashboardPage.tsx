@@ -85,7 +85,7 @@ const DashboardPage = () => {
 
     const handleDragOver = useCallback((e: DragEvent) => {
         e.preventDefault();
-        // setIsDragging(true);
+        setIsDragging(true);
     }, []);
 
     const handleDragLeave = useCallback((e: DragEvent) => {
