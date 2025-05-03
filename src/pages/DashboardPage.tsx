@@ -11,7 +11,7 @@ import api from "../utils/api";
 import webSocketService from "../services/WebSocketService";
 import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
-import { copyDocument, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
+import { copyDocument, getOnlyOfficeConfig, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
 import BottomLeftNotification from "../components/BottomLeftNotification";
 import { createFolder, downloadFolder } from "../services/FolderApi";
 import { AnimatePresence, motion } from "framer-motion";
@@ -21,6 +21,8 @@ import { UploadProgress } from "../components/UploadProgress";
 import { ItemInfoPanel } from "../components/ItemInfoPanel";
 import VersionHistoryDialog from '../components/VersionHistoryDialog';
 import { DocumentVersionResponse } from "../types/DocumentVersionResponse";
+import { OnlyOfficeConfig } from "../types/OnlyOfficeConfig";
+import { useNavigate } from "react-router-dom";
 
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -225,10 +227,27 @@ const DashboardPage = () => {
             items: [],
         });
     }, [items]);
-
+    // const [config, setConfig] = useState<OnlyOfficeConfig | null>(null);
+    const navigate = useNavigate();
     const handleOpen = (id: number) => {
+        getOnlyOfficeConfig(Number(id))
+            .then((response) => {
+                if (response.status === 200) {
+                    const config: OnlyOfficeConfig = response.data;
+                    // Mở editor trong tab mới
+                    const editorUrl = `/editor?config=${encodeURIComponent(JSON.stringify(config))}`;
+                    window.open(editorUrl, '_blank');
+                } else {
+                    toast.error(response.message); // Hiển thị thông báo lỗi nếu không thành công
+                    navigate("/"); // Điều hướng về trang chính nếu có lỗi
+                }
+            }).catch((error) => {
+                console.error("Lỗi khi lấy cấu hình OnlyOffice:", error);
+                toast.error("Lỗi khi lấy cấu hình tài liệu.");
+                navigate("/"); // Điều hướng về trang chính nếu có lỗi
+            })
         // Mở tài liệu trong tab mới bằng URL tương ứng
-        window.open(`${process.env.REACT_APP_URL_EDITOR}/${id}`, "_blank");
+        // window.open(`${process.env.REACT_APP_URL_EDITOR}/${id}`, "_blank");
     }
     const handleRename = (id: number) => {
         setRenamingItemId(id);
@@ -647,6 +666,7 @@ const DashboardPage = () => {
                     onRestoreSuccess={handleRestoreSuccess}
                 />
             )}
+
 
         </div>
     );

@@ -3,9 +3,8 @@ import { motion } from 'framer-motion';
 import { DocumentVersionResponse } from '../types/DocumentVersionResponse';
 import { formatDateTime } from '../utils/FormatDateTimeUtil';
 import { Download, RotateCcw } from 'lucide-react';
-import api from '../utils/api';
 import { getVersionHistory, restoreVersion, downloadVersion } from '../services/DocumentApi';
-import { getFileTypeName, getFileExtensionFromMimeType } from '../utils/FileTypeUtil';
+import { getFileTypeName } from '../utils/FileTypeUtil';
 import { toast } from 'sonner';
 
 interface VersionHistoryDialogProps {

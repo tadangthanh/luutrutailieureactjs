@@ -2,7 +2,6 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import MainLayout from './layouts/MainLayout';
 import DashboardPage from './pages/DashboardPage';
 import TrashPage from "./pages/TrashPage";
-import SharedPage from "./pages/SharedPage";
 import LoginPage from "./pages/LoginPage";
 import RegisterPage from "./pages/RegisterPage";
 import PrivateRoute from "./routes/PrivateRoute";
@@ -10,8 +9,8 @@ import PublicRoute from "./routes/PublicRoute";
 import { WebSocketProvider } from "./components/WebSocketProvider";
 import { Toaster } from "sonner";
 import DocumentQA from "./pages/DocumentQA";
-import OnlyOfficeEditor from "./components/OnlyOfficeEditor";
 import SharedDashboardPage from "./pages/SharedDashboardPage";
+import { Editor } from "./components/Editor";
 
 function App() {
     return (
@@ -49,7 +48,7 @@ function App() {
                                 <MainLayout><DocumentQA /></MainLayout>
                             </PrivateRoute>
                         } />
-                        <Route path="/editor/:documentId" element={<OnlyOfficeEditor />} />
+                        <Route path="/editor" element={<Editor />} />
                     </Routes>
                 </Router>
             </>

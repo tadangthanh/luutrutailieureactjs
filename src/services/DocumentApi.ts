@@ -75,6 +75,13 @@ export const getVersionHistory = async (documentId: number) => {
         toast.error("Failed to fetch version history.");
     }
 }
+export const getOnlyOfficeConfigForVersion = async (versionId: number) => {
+    try {
+        return (await api.get(`${apiUrl}/document-versions/${versionId}/config-preview`)).data;
+    } catch (error) {
+        toast.error("Failed to fetch version history.");
+    }
+}
 export const restoreVersion = async (documentId: number, targetVersionId: number) => {
     try {
         return (await api.post(`${apiUrl}/document-versions/${documentId}/versions/${targetVersionId}/restore`)).data;
