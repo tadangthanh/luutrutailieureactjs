@@ -11,6 +11,7 @@ import { WebSocketProvider } from "./components/WebSocketProvider";
 import { Toaster } from "sonner";
 import DocumentQA from "./pages/DocumentQA";
 import OnlyOfficeEditor from "./components/OnlyOfficeEditor";
+import SharedDashboardPage from "./pages/SharedDashboardPage";
 
 function App() {
     return (
@@ -40,7 +41,7 @@ function App() {
                         } />
                         <Route path="/shared" element={
                             <PrivateRoute>
-                                <MainLayout><SharedPage /></MainLayout>
+                                <MainLayout><SharedDashboardPage /></MainLayout>
                             </PrivateRoute>
                         } />
                         <Route path="/document-assistant" element={

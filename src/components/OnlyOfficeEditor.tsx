@@ -56,7 +56,7 @@ const OnlyOfficeEditor = () => {
                             id: config.user.id,
                             name: config.user.name,
                         },
-                        callbackUrl: `https://neil-interstate-fork-devon.trycloudflare.com/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`, // URL để nhận sự kiện "save" từ OnlyOffice
+                        callbackUrl: `https://presented-conversations-defend-shame.trycloudflare.com/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`, // URL để nhận sự kiện "save" từ OnlyOffice
                         customization: {
                             forcesave: true, // Tự động lưu nếu cần
                         }
