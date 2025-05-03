@@ -194,6 +194,8 @@ const SharedDashboardPage = () => {
         onCancelRef.current();
     };
 
+    const handleVersionHistory = (id: number) => {
+    }
     return (
         <div className="relative width-full h-full flex flex-col gap-4 p-4">
             {isLoading && <FullScreenLoader />}
@@ -221,6 +223,7 @@ const SharedDashboardPage = () => {
                 >
                     {layout === "list" ? (
                         <DashboardListView
+                            handleVersionHistory={handleVersionHistory}
                             onClick={handleItemClick}
                             items={itemPage.items}
                             openMenuId={openMenuId}

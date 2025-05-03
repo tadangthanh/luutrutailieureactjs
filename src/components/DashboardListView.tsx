@@ -16,6 +16,7 @@ interface DashboardListViewProps {
     handleInfo(id: number): void;
     handleCopy(id: number): void;
     handleMoveToTrash(id: number): void;
+    handleVersionHistory(id: number): void;
     onClick: (item: ItemResponse) => void;
 }
 
@@ -30,6 +31,7 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
     handleInfo,
     handleCopy,
     handleMoveToTrash,
+    handleVersionHistory,
     onClick
 }) => {
     const menuRef = useRef<HTMLDivElement | null>(null);
@@ -131,6 +133,7 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
                         handleOpen={handleOpen}
                         handleRename={handleRename}
                         handleShare={handleShare}
+                        handleVersionHistory={handleVersionHistory}
                     />
                 </motion.div>
             ))}

@@ -19,6 +19,9 @@ import { EmptyAreaContextMenu } from "../components/EmptyAreaContextMenu";
 import TextInputModal from "../components/TextInputModal";
 import { UploadProgress } from "../components/UploadProgress";
 import { ItemInfoPanel } from "../components/ItemInfoPanel";
+import VersionHistoryDialog from '../components/VersionHistoryDialog';
+import { DocumentVersionResponse } from "../types/DocumentVersionResponse";
+
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
     const [isLoading, setIsLoading] = useState(false);
@@ -69,6 +72,8 @@ const DashboardPage = () => {
         totalItems: 0,
         items: [],
     });
+
+    const [versionHistoryItemId, setVersionHistoryItemId] = useState<number | null>(null);
 
     const handleMessage = useCallback((message: string) => {
         const msg = JSON.parse(message);
@@ -377,7 +382,7 @@ const DashboardPage = () => {
             //    – otherwise append it.
             const idx = pathRef.current.findIndex(p => p.id === item.id);
             if (idx !== -1) {
-                // clicking on a folder that’s already in the crumb
+                // clicking on a folder that's already in the crumb
                 pathRef.current = pathRef.current.slice(0, idx + 1);
             } else {
                 pathRef.current.push({ id: item.id, name: item.name });
@@ -445,6 +450,30 @@ const DashboardPage = () => {
             webSocketService.unsubscribeUploadSuccess();
         }
     };
+
+    const handleVersionHistory = (id: number) => {
+        setOpenMenuId(null);
+        setVersionHistoryItemId(id);
+    };
+
+    const handleRestoreSuccess = (documentId: number, version: DocumentVersionResponse) => {
+        setItemPage(prev => ({
+            ...prev,
+            items: prev.items.map(item => {
+                if (item.id === documentId) {
+                    return {
+                        ...item,
+                        version: version.version,
+                        type: version.type,
+                        size: version.size,
+                        updatedAt: version.updatedAt
+                    };
+                }
+                return item;
+            })
+        }));
+    };
+
     return (
         <div
             onContextMenu={(e) => {
@@ -515,6 +544,7 @@ const DashboardPage = () => {
                 >
                     {layout === "list" ? (
                         <DashboardListView
+                            handleVersionHistory={handleVersionHistory}
                             onClick={handleItemClick}
                             items={itemPage.items}
                             openMenuId={openMenuId}
@@ -607,6 +637,14 @@ const DashboardPage = () => {
                 <BottomLeftNotification
                     message={messageProcessing || ""}
                     onCancel={onCancelNotificationBottomLeft}
+                />
+            )}
+
+            {versionHistoryItemId && (
+                <VersionHistoryDialog
+                    documentId={versionHistoryItemId}
+                    onClose={() => setVersionHistoryItemId(null)}
+                    onRestoreSuccess={handleRestoreSuccess}
                 />
             )}
 

@@ -3,6 +3,7 @@ import {
     MoreHorizontal, Download, Edit, File, Info, Trash, Copy, FileText,
     UserPlus,
     FolderClosed,
+    History,
 } from "lucide-react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
@@ -20,6 +21,7 @@ interface ListRowProps {
     handleInfo(id: number): void;
     handleCopy(id: number): void;
     handleMoveToTrash(id: number): void;
+    handleVersionHistory(id: number): void;
     onClick: (item: ItemResponse) => void;
 }
 
@@ -34,6 +36,7 @@ const ListRow: React.FC<ListRowProps> = ({
     handleInfo,
     handleCopy,
     handleMoveToTrash,
+    handleVersionHistory,
     onClick
 }) => {
     const menuRef = useRef<HTMLDivElement | null>(null);
@@ -118,7 +121,10 @@ const ListRow: React.FC<ListRowProps> = ({
                                 <Option label="Tải xuống" icon={<Download size={16} />} onClick={() => handleDownload(item.id)} />
                                 <Option label="Chia sẻ" icon={<UserPlus size={16} />} onClick={() => handleShare(item.id)} />
                                 {item.itemType !== "FOLDER" && (
-                                    <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(item.id)} />
+                                    <>
+                                        <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(item.id)} />
+                                        <Option label="Lịch sử phiên bản" icon={<History size={16} />} onClick={() => handleVersionHistory(item.id)} />
+                                    </>
                                 )}
                                 <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(item.id)} />
                             </ul>

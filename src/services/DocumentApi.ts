@@ -68,6 +68,50 @@ export const searchDocuments = async (keyword: string, page = 0, size = 10) => {
         toast.error("Failed to search documents.");
     }
 }
+export const getVersionHistory = async (documentId: number) => {
+    try {
+        return (await api.get(`${apiUrl}/document-versions/${documentId}/versions`)).data;
+    } catch (error) {
+        toast.error("Failed to fetch version history.");
+    }
+}
+export const restoreVersion = async (documentId: number, targetVersionId: number) => {
+    try {
+        return (await api.post(`${apiUrl}/document-versions/${documentId}/versions/${targetVersionId}/restore`)).data;
+    } catch (error) {
+        toast.error("Failed to fetch version history.");
+    }
+}
+export const downloadVersion = async (versionId: number) => {
+    try {
+        const response = await api.get(`/document-versions/${versionId}/download`, {
+            responseType: 'blob'
+        });
+
+        const url = window.URL.createObjectURL(new Blob([response.data]));
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Get filename from Content-Disposition header
+        const contentDisposition = response.headers['content-disposition'];
+        let fileName = 'downloaded_file';
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename\*?=([^;]+)/);
+            if (match?.[1]) {
+                fileName = decodeURIComponent(match[1].replace(/UTF-8''/, '').trim());
+            }
+        }
+
+        link.setAttribute('download', fileName);
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+        window.URL.revokeObjectURL(url);
+    } catch (error) {
+        toast.error("Tải xuống phiên bản thất bại");
+    }
+};
+
 export const getOnlyOfficeConfig = async (documentId: number) => {
     try {
         return (await api.get(`${apiUrl}/documents/${documentId}/onlyoffice-config`)).data;
