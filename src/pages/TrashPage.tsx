@@ -2,10 +2,10 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast } from "sonner";
-import { getTrash, restoreItem, deleteForeverItem } from "../services/ItemApi";
+import { getTrash, restoreItem, deleteForeverItem, cleanTrash } from "../services/ItemApi";
 import { PageResponse } from "../types/PageResponse";
 import { ItemResponse } from "../types/ItemResponse";
-import { Trash2, RotateCcw, Loader2, Folder, File, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, RotateCcw, Loader2, Folder, File, ChevronLeft, ChevronRight, AlertTriangle } from "lucide-react";
 
 const TrashPage = () => {
     const [itemPage, setItemPage] = useState<PageResponse<ItemResponse>>({
@@ -71,6 +71,25 @@ const TrashPage = () => {
         }
     };
 
+    const handleCleanTrash = async () => {
+        try {
+            cleanTrash().then((res) => {
+                if (res.status === 200) {
+                    toast.success("Đã dọn sạch thùng rác");
+                    setItemPage((prev) => ({
+                        ...prev,
+                        items: [],
+                        totalItems: 0,
+                    }));
+                } else {
+                    toast.error(res.message);
+                }
+            })
+        } catch (error) {
+            toast.error("Không thể dọn sạch thùng rác");
+        }
+    };
+
     const getItemIcon = (itemType: string) => {
         if (itemType === "FOLDER") {
             return <Folder className="w-5 h-5 text-blue-500 dark:text-blue-400" />;
@@ -96,10 +115,32 @@ const TrashPage = () => {
                 transition={{ duration: 0.5 }}
                 className="mb-8"
             >
-                <p className="text-gray-600 dark:text-gray-400 mt-2">
-                    Tổng số: {itemPage.totalItems} mục
-                </p>
+                <div className="flex items-center justify-between">
+                    <div>
+                        <p className="text-gray-600 dark:text-gray-400 mt-2">
+                            Tổng số: {itemPage.totalItems} mục
+                        </p>
+                    </div>
+                    {itemPage.totalItems > 0 && (
+                        <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={handleCleanTrash}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors flex items-center gap-2"
+                        >
+                            <Trash2 className="w-5 h-5" />
+                            Dọn sạch thùng rác
+                        </motion.button>
+                    )}
+                </div>
             </motion.div>
+
+            <div className="mb-6 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg flex items-start gap-3">
+                <AlertTriangle className="w-5 h-5 text-yellow-500 dark:text-yellow-400 mt-0.5" />
+                <p className="text-yellow-700 dark:text-yellow-400 text-sm">
+                    Các mục trong thùng rác sẽ bị xóa vĩnh viễn sau 30 ngày kể từ ngày xóa.
+                </p>
+            </div>
 
             {loading ? (
                 <div className="flex justify-center items-center h-64">
