@@ -47,7 +47,7 @@ export const cleanTrash = async () => {
 }
 export const restoreItem = async (id: number) => {
     try {
-        return (await api.put(`${apiUrl}/items/restore/${id}`)).data;
+        return (await api.post(`${apiUrl}/items/restore/${id}`)).data;
     } catch (error) {
         toast.error("Có lỗi khi khôi phục item");
     }
