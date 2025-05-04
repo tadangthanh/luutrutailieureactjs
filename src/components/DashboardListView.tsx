@@ -1,4 +1,4 @@
-import { MoreHorizontal, Check, Bookmark } from "lucide-react";
+import { MoreHorizontal, Check } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Option } from "./Option";

@@ -2,13 +2,23 @@ import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { getSavedItems, removeItem } from "../services/ItemSavedApi";
 import { PageResponse } from "../types/PageResponse";
-import { SavedItemResponse } from "../types/SavedItemResponse";
 import { toast } from "sonner";
 import { FileIcon, FolderIcon, Trash2Icon, ChevronLeftIcon, ChevronRightIcon } from "lucide-react";
 import { formatFileSize, formatDateTime } from "../utils/FormatDateTimeUtil";
+import { ItemResponse } from "../types/ItemResponse";
+import { useNavigate } from "react-router-dom";
+import { getOnlyOfficeConfig } from "../services/DocumentApi";
+import { OnlyOfficeConfig } from "../types/OnlyOfficeConfig";
 
 const SavedDocumentsPage = () => {
-    const [savedItems, setSavedItems] = useState<PageResponse<SavedItemResponse> | null>(null);
+    const [savedItems, setSavedItems] = useState<PageResponse<ItemResponse>>({
+        items: [],
+        totalPage: 0,
+        pageNo: 0,
+        pageSize: 10,
+        totalItems: 0,
+        hasNext: false,
+    });
     const [loading, setLoading] = useState(true);
 
     const fetchSavedItems = async (page: number) => {
@@ -16,7 +26,7 @@ const SavedDocumentsPage = () => {
             setLoading(true);
             const response = await getSavedItems(page, 10);
             if (response) {
-                setSavedItems(response);
+                setSavedItems(response.data);
             }
         } catch (error) {
             toast.error("Failed to fetch saved items");
@@ -25,11 +35,18 @@ const SavedDocumentsPage = () => {
         }
     };
 
-    const handleRemoveItem = async (savedItemId: number) => {
+    const handleRemoveItem = async (itemId: number) => {
         try {
-            await removeItem(savedItemId);
-            toast.success("Item removed from saved list");
-            fetchSavedItems(savedItems?.pageNo || 0);
+            removeItem(itemId).then((res) => {
+                if (res.status === 200) {
+                    setSavedItems((prev) => ({
+                        ...prev,
+                        items: prev.items.filter((item) => item.id !== itemId),
+                    }));
+                } else {
+                    toast.error(res.message);
+                }
+            })
         } catch (error) {
             toast.error("Failed to remove item");
         }
@@ -59,11 +76,29 @@ const SavedDocumentsPage = () => {
             }
         }
     };
+    const navigate = useNavigate();
+    const handleOpen = (itemId: number) => () => {
+        getOnlyOfficeConfig(itemId)
+            .then((response) => {
+                if (response.status === 200) {
+                    const config: OnlyOfficeConfig = response.data;
+                    // Mở editor trong tab mới
+                    const editorUrl = `/editor?config=${encodeURIComponent(JSON.stringify(config))}`;
+                    window.open(editorUrl, '_blank');
+                } else {
+                    toast.error(response.message); // Hiển thị thông báo lỗi nếu không thành công
+                    navigate("/"); // Điều hướng về trang chính nếu có lỗi
+                }
+            }).catch((error) => {
+                console.error("Lỗi khi lấy cấu hình OnlyOffice:", error);
+                toast.error("Lỗi khi lấy cấu hình tài liệu.");
+                navigate("/"); // Điều hướng về trang chính nếu có lỗi
+            })
+    }
+
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
-            <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-8">Tài liệu đã lưu</h1>
-
             <motion.div
                 variants={containerVariants}
                 initial="hidden"
@@ -92,38 +127,42 @@ const SavedDocumentsPage = () => {
                     ) : (
                         savedItems.items.map((savedItem) => (
                             <motion.div
+                                onClick={handleOpen(savedItem.id)}
                                 key={savedItem.id}
                                 variants={itemVariants}
-                                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300"
+                                className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
                             >
                                 <div className="flex items-start justify-between">
                                     <div className="flex items-center space-x-3">
-                                        {savedItem.item.itemType === "DOCUMENT" ? (
+                                        {savedItem.itemType === "DOCUMENT" ? (
                                             <FileIcon className="w-6 h-6 text-blue-500" />
                                         ) : (
                                             <FolderIcon className="w-6 h-6 text-yellow-500" />
                                         )}
                                         <div>
                                             <h3 className="font-medium text-gray-800 dark:text-white truncate">
-                                                {savedItem.item.name}
+                                                {savedItem.name}
                                             </h3>
                                             <p className="text-sm text-gray-500 dark:text-gray-400">
-                                                {savedItem.item.itemType === "DOCUMENT" && savedItem.item.size
-                                                    ? formatFileSize(savedItem.item.size)
+                                                {savedItem.itemType === "DOCUMENT" && savedItem.size
+                                                    ? formatFileSize(savedItem.size)
                                                     : "Thư mục"}
                                             </p>
                                         </div>
                                     </div>
                                     <button
-                                        onClick={() => handleRemoveItem(savedItem.id)}
+                                        onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRemoveItem(savedItem.id)
+                                        }}
                                         className="text-gray-400 hover:text-red-500 transition-colors duration-200"
                                     >
                                         <Trash2Icon className="w-5 h-5" />
                                     </button>
                                 </div>
                                 <div className="mt-4 text-sm text-gray-500 dark:text-gray-400">
-                                    <p>Người sở hữu: {savedItem.item.ownerName}</p>
-                                    <p>Ngày tạo: {formatDateTime(savedItem.item.createdAt)}</p>
+                                    <p>Người sở hữu: {savedItem.ownerName}</p>
+                                    <p>Ngày tạo: {formatDateTime(savedItem.createdAt)}</p>
                                 </div>
                             </motion.div>
                         ))

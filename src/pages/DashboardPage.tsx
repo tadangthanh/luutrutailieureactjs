@@ -4,7 +4,6 @@ import DashboardListView from "../components/DashboardListView";
 import DashboardGridView from "../components/DashboardGridView";
 import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
-import FullScreenLoader from "../components/FullScreenLoader";
 import { ItemResponse } from "../types/ItemResponse";
 import { delItem, getItems, updateItem } from "../services/ItemApi";
 import api from "../utils/api";
@@ -247,8 +246,6 @@ const DashboardPage = () => {
                 toast.error("Lỗi khi lấy cấu hình tài liệu.");
                 navigate("/"); // Điều hướng về trang chính nếu có lỗi
             })
-        // Mở tài liệu trong tab mới bằng URL tương ứng
-        // window.open(`${process.env.REACT_APP_URL_EDITOR}/${id}`, "_blank");
     }
     const handleRename = (id: number) => {
         setRenamingItemId(id);
@@ -563,7 +560,6 @@ const DashboardPage = () => {
                     placeholder="Nhập tên thư mục"
                 />
             )}
-            {isLoading && <FullScreenLoader />}
             <DashboardFilterBar
                 layout={layout}
                 setItems={setItems}

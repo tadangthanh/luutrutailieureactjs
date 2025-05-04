@@ -31,3 +31,31 @@ export const delItem = async (id: number) => {
         toast.error("Có lỗi khi xóa item");
     }
 }
+export const getTrash = async (page = 0, size = 10) => {
+    try {
+        return (await api.get(`${apiUrl}/items/trash?page=${page}&size=${size}`)).data;
+    } catch (error) {
+        toast.error("Failed to fetch trash items.");
+    }
+}
+export const cleanTrash = async () => {
+    try {
+        return (await api.delete(`${apiUrl}/items/clean-trash`)).data;
+    } catch (error) {
+        toast.error("Có lỗi khi dọn rác");
+    }
+}
+export const restoreItem = async (id: number) => {
+    try {
+        return (await api.put(`${apiUrl}/items/restore/${id}`)).data;
+    } catch (error) {
+        toast.error("Có lỗi khi khôi phục item");
+    }
+}
+export const deleteForeverItem = async (id: number) => {
+    try {
+        return (await api.delete(`${apiUrl}/items/delete-forever/${id}`)).data;
+    } catch (error) {
+        toast.error("Có lỗi khi xóa item vĩnh viễn");
+    }
+}

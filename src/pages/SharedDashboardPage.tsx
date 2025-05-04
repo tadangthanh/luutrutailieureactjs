@@ -1,25 +1,18 @@
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useRef } from "react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
 import DashboardListView from "../components/DashboardListView";
 import DashboardGridView from "../components/DashboardGridView";
 import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
-import FullScreenLoader from "../components/FullScreenLoader";
 import { ItemResponse } from "../types/ItemResponse";
 import { delItem, getItems, updateItem } from "../services/ItemApi";
-import api from "../utils/api";
-import webSocketService from "../services/WebSocketService";
 import ShareDialog from "../components/ShareDialog";
-import Breadcrumbs from "../components/Breadcrumbs";
-import { copyDocument, uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
+import { copyDocument } from "../services/DocumentApi";
 import BottomLeftNotification from "../components/BottomLeftNotification";
-import { createFolder, downloadFolder } from "../services/FolderApi";
+import { downloadFolder } from "../services/FolderApi";
 import { AnimatePresence, motion } from "framer-motion";
-import { EmptyAreaContextMenu } from "../components/EmptyAreaContextMenu";
 import TextInputModal from "../components/TextInputModal";
-import { UploadProgress } from "../components/UploadProgress";
 import { ItemInfoPanel } from "../components/ItemInfoPanel";
-import { Bookmark } from "lucide-react";
 
 const SharedDashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -199,7 +192,6 @@ const SharedDashboardPage = () => {
     }
     return (
         <div className="relative width-full h-full flex flex-col gap-4 p-4">
-            {isLoading && <FullScreenLoader />}
 
             <DashboardFilterBar
                 layout={layout}
