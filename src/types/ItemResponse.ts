@@ -9,5 +9,6 @@ export interface ItemResponse extends BaseDto {
     ownerEmail: string;
     deletedAt: string | null;
     itemType: "DOCUMENT" | "FOLDER";
+    saved: boolean;
     size: number | null; // Size in bytes, null for folders
 }

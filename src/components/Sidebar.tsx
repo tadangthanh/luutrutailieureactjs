@@ -1,83 +1,146 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Asterisk, Home, Share2, Trash2, Menu } from "lucide-react";
+import { Asterisk, Home, Share2, Trash2, Menu, Bookmark, X } from "lucide-react";
 import { JSX } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+
 interface SidebarProps {
     setActiveMenu: (menu: string) => void;
 }
+
 export const Sidebar: React.FC<SidebarProps> = ({ setActiveMenu }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [activeLink, setActiveLink] = useState<string>("");
     const location = useLocation();
-
     const currentPath = location.pathname;
+
+    // Only for mobile
+    const sidebarVariants = {
+        open: { width: "16rem", opacity: 1, transition: { duration: 0.3 } },
+        closed: { width: "0", opacity: 0, transition: { duration: 0.3 } }
+    };
+
+    const overlayVariants = {
+        open: { opacity: 1 },
+        closed: { opacity: 0 }
+    };
+
     return (
         <>
-            {/* Toggle Button - hiển thị chỉ trên mobile */}
+            {/* Mobile Toggle Button */}
             <button
-                className="md:hidden fixed top-4 left-4 z-50 bg-white dark:bg-neutral-dark p-2 rounded-md shadow-md"
+                className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow"
                 onClick={() => setIsOpen(!isOpen)}
             >
-                <Menu size={24} className="text-primary-dark dark:text-primary-light" />
+                {isOpen ? (
+                    <X size={24} className="text-gray-700 dark:text-gray-200" />
+                ) : (
+                    <Menu size={24} className="text-gray-700 dark:text-gray-200" />
+                )}
             </button>
 
-            {/* Sidebar */}
-            <aside
-                className={`bg-white dark:bg-neutral-dark border-r border-gray-200 dark:border-gray-700 h-screen transition-all duration-300 ease-in-out flex flex-col fixed top-0 left-0 z-40 ${isOpen ? "w-64" : "w-0 overflow-hidden"
-                    } md:static md:w-64`}
+            {/* Overlay for mobile */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        variants={overlayVariants}
+                        initial="closed"
+                        animate="open"
+                        exit="closed"
+                        className="fixed inset-0 bg-black/30 z-30 md:hidden"
+                        onClick={() => setIsOpen(false)}
+                    />
+                )}
+            </AnimatePresence>
+
+            {/* Sidebar for mobile (animated) */}
+            <motion.aside
+                variants={sidebarVariants}
+                initial="closed"
+                animate={isOpen ? "open" : "closed"}
+                className="fixed top-0 left-0 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 overflow-hidden md:hidden"
             >
-                {/* Title */}
-                <div className="p-4 hidden md:flex items-center justify-start text-primary-dark dark:text-primary-light font-bold text-xl">
-                    Drive
-                </div>
+                <SidebarContent setActiveMenu={setActiveMenu} setIsOpen={setIsOpen} currentPath={currentPath} setActiveLink={setActiveLink} activeLink={activeLink} />
+            </motion.aside>
 
-                {/* Navigation */}
-                <nav className="flex flex-col gap-2 p-2 md:p-4 text-gray-700 dark:text-gray-300 text-xs md:text-base">
-                    <NavItem
-                        to="/"
-                        icon={<Home size={20} />}
-                        label="Tài liệu của tôi"
-                        active={currentPath === "/"}
-                        onClick={() => setActiveLink("/")}
-                        setActiveMenu={setActiveMenu}
-                    />
-                    <NavItem
-                        to="/shared"
-                        icon={<Share2 size={20} />}
-                        label="Đã chia sẻ"
-                        active={activeLink === "/shared"}
-                        onClick={() => setActiveLink("/shared")}
-                        setActiveMenu={setActiveMenu}
-                    />
-                    <NavItem
-                        to="/trash"
-                        icon={<Trash2 size={20} />}
-                        label="Thùng rác"
-                        active={activeLink === "/trash"}
-                        onClick={() => setActiveLink("/trash")}
-                        setActiveMenu={setActiveMenu}
-                    />
-                    <NavItem
-                        to="/document-assistant"
-                        icon={<Asterisk size={20} />}
-                        label="Trợ lý tài liệu"
-                        active={activeLink === "/document-assistant"}
-                        onClick={() => setActiveLink("/document-assistant")}
-                        setActiveMenu={setActiveMenu} // Truyền setActiveMenu vào NavItem
-                    />
-                </nav>
+            {/* Sidebar for desktop (always visible) */}
+            <aside className="hidden md:block w-64 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40">
+                <SidebarContent setActiveMenu={setActiveMenu} setIsOpen={undefined} currentPath={currentPath} setActiveLink={setActiveLink} activeLink={activeLink} />
             </aside>
-
-            {/* Overlay để đóng khi click ra ngoài - chỉ hiển thị ở mobile khi mở menu */}
-            {isOpen && (
-                <div
-                    className="fixed inset-0 bg-black/30 z-30 md:hidden"
-                    onClick={() => setIsOpen(false)}
-                />
-            )}
         </>
     );
 };
+
+function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, activeLink }: {
+    setActiveMenu: (menu: string) => void,
+    setIsOpen?: (open: boolean) => void,
+    currentPath: string,
+    setActiveLink: (link: string) => void,
+    activeLink: string
+}) {
+    return (
+        <div className="flex flex-col h-full">
+            {/* Logo/Title */}
+            <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
+                <div className="text-xl font-bold text-primary dark:text-white">
+                    Drive
+                </div>
+                {setIsOpen && (
+                    <button
+                        className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                        onClick={() => setIsOpen(false)}
+                    >
+                        <X size={20} className="text-gray-700 dark:text-gray-200" />
+                    </button>
+                )}
+            </div>
+            {/* Navigation */}
+            <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+                <NavItem
+                    to="/"
+                    icon={<Home size={20} />}
+                    label="Tài liệu của tôi"
+                    active={currentPath === "/"}
+                    onClick={() => setActiveLink("/")}
+                    setActiveMenu={setActiveMenu}
+                />
+                <NavItem
+                    to="/shared"
+                    icon={<Share2 size={20} />}
+                    label="Đã chia sẻ"
+                    active={activeLink === "/shared"}
+                    onClick={() => setActiveLink("/shared")}
+                    setActiveMenu={setActiveMenu}
+                />
+                <NavItem
+                    to="/saved"
+                    icon={<Bookmark size={20} />}
+                    label="Tài liệu đã lưu"
+                    active={activeLink === "/saved"}
+                    onClick={() => setActiveLink("/saved")}
+                    setActiveMenu={setActiveMenu}
+                />
+                <NavItem
+                    to="/trash"
+                    icon={<Trash2 size={20} />}
+                    label="Thùng rác"
+                    active={activeLink === "/trash"}
+                    onClick={() => setActiveLink("/trash")}
+                    setActiveMenu={setActiveMenu}
+                />
+                <NavItem
+                    to="/document-assistant"
+                    icon={<Asterisk size={20} />}
+                    label="Trợ lý tài liệu"
+                    active={activeLink === "/document-assistant"}
+                    onClick={() => setActiveLink("/document-assistant")}
+                    setActiveMenu={setActiveMenu}
+                />
+            </nav>
+        </div>
+    );
+}
+
 const NavItem = ({
     to,
     icon,
@@ -95,22 +158,19 @@ const NavItem = ({
 }) => (
     <Link
         to={to}
-        onClick={
-            () => {
-                onClick();
-                setActiveMenu(label);
-            }
-        }
-        className={`flex items-center gap-2 px-2 py-2 rounded-md transition-colors
-            ${active ?
-                "bg-primary-light text-white dark:bg-primary-dark dark:text-white border-l-4 border-primary-dark shadow-lg" // Active state
-                :
-                "text-gray-700 dark:text-gray-300 hover:bg-primary-light/10" // Normal state
+        onClick={() => {
+            onClick();
+            setActiveMenu(label);
+        }}
+        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
+            ${active
+                ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-white border-l-4 border-primary"
+                : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
             }`}
     >
-        <div className={`min-w-[20px] text-primary ${active ? "text-secondary" : "text-gray-500 dark:text-gray-400"}`}>
+        <div className={`${active ? "text-primary" : "text-gray-500 dark:text-gray-400"}`}>
             {icon}
         </div>
-        <span className="hidden md:inline">{label}</span>
+        <span className="font-medium">{label}</span>
     </Link>
 );

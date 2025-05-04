@@ -1,9 +1,10 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
     MoreHorizontal, Download, Edit, File, Info, Trash, Copy, FileText,
     UserPlus,
     FolderClosed,
     History,
+    Bookmark
 } from "lucide-react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
@@ -23,6 +24,8 @@ interface ListRowProps {
     handleMoveToTrash(id: number): void;
     handleVersionHistory(id: number): void;
     onClick: (item: ItemResponse) => void;
+    handleSave: (id: number) => void;
+    handleUnSave: (id: number) => void;
 }
 
 const ListRow: React.FC<ListRowProps> = ({
@@ -37,7 +40,9 @@ const ListRow: React.FC<ListRowProps> = ({
     handleCopy,
     handleMoveToTrash,
     handleVersionHistory,
-    onClick
+    onClick,
+    handleSave,
+    handleUnSave
 }) => {
     const menuRef = useRef<HTMLDivElement | null>(null);
     const isMenuOpen = openMenuId === item.id;
@@ -95,7 +100,10 @@ const ListRow: React.FC<ListRowProps> = ({
             </div>
             <div className="col-span-1" title={item.ownerEmail}>{formatOwner(item.ownerEmail)}</div>
             <div className="col-span-1" title={formatDateTime(item.updatedAt)}>{formatDate(item.updatedAt)}</div>
-            <div className="col-span-1">{item.itemType === "FOLDER" ? "--" : formatBytes(item.size)}</div>
+            <div className="col-span-1">
+                {item.itemType === "FOLDER" ? "--" : formatBytes(item.size)}
+            </div>
+
             <div className="col-span-1 flex justify-end relative">
                 <button
                     onClick={handleMenuClick}
@@ -118,6 +126,18 @@ const ListRow: React.FC<ListRowProps> = ({
                                 <Option label="Mở" icon={<File size={16} />} onClick={() => handleOpen(item.id)} />
                                 <Option label="Đổi tên" icon={<Edit size={16} />} onClick={() => handleRename(item.id)} />
                                 <Option label="Thông tin" icon={<Info size={16} />} onClick={() => handleInfo(item.id)} />
+                                <Option label={item.saved ? "Bỏ lưu" : "Lưu"} icon={<Bookmark
+                                    size={16}
+                                    className={item.saved
+                                        ? "text-yellow-500 fill-yellow-500" // đã lưu
+                                        : ""}                 // chưa lưu
+                                />} onClick={() => {
+                                    if (item.saved) {
+                                        handleUnSave(item.id);
+                                    } else {
+                                        handleSave(item.id);
+                                    }
+                                }} />
                                 <Option label="Tải xuống" icon={<Download size={16} />} onClick={() => handleDownload(item.id)} />
                                 <Option label="Chia sẻ" icon={<UserPlus size={16} />} onClick={() => handleShare(item.id)} />
                                 {item.itemType !== "FOLDER" && (

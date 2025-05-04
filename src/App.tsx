@@ -11,6 +11,7 @@ import { Toaster } from "sonner";
 import DocumentQA from "./pages/DocumentQA";
 import SharedDashboardPage from "./pages/SharedDashboardPage";
 import { Editor } from "./components/Editor";
+import SavedDocumentsPage from "./pages/SavedDocumentsPage";
 
 function App() {
     return (
@@ -33,19 +34,28 @@ function App() {
                                 <MainLayout><DashboardPage /></MainLayout>
                             </PrivateRoute>
                         } />
+                        {/* trash */}
                         <Route path="/trash" element={
                             <PrivateRoute>
                                 <MainLayout><TrashPage /></MainLayout>
                             </PrivateRoute>
                         } />
+                        {/* shared */}
                         <Route path="/shared" element={
                             <PrivateRoute>
                                 <MainLayout><SharedDashboardPage /></MainLayout>
                             </PrivateRoute>
                         } />
+                        {/* document assistant */}
                         <Route path="/document-assistant" element={
                             <PrivateRoute>
                                 <MainLayout><DocumentQA /></MainLayout>
+                            </PrivateRoute>
+                        } />
+                        {/* saved */}
+                        <Route path="/saved" element={
+                            <PrivateRoute>
+                                <MainLayout><SavedDocumentsPage /></MainLayout>
                             </PrivateRoute>
                         } />
                         <Route path="/editor" element={<Editor />} />

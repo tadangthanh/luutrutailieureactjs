@@ -6,7 +6,9 @@ import { getEmailsShared } from "../services/ItemApi";
 import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
 import { DashboardDateRangeDropdown } from "./DashboardDateRangeDropdown";
-import { searchDocuments } from "../services/DocumentApi";
+import { getOnlyOfficeConfig, searchDocuments } from "../services/DocumentApi";
+import { OnlyOfficeConfig } from "../types/OnlyOfficeConfig";
+import { useNavigate } from "react-router-dom";
 interface DashboardFilterBarProps {
     layout: "grid" | "list";
     setLayout: (layout: "grid" | "list") => void;
@@ -146,9 +148,24 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
 
         fetchSearchResults();
     }, [debouncedKeyword]);
+    const navigate = useNavigate();
     const handleSelectDocument = (documentId: number) => {
-        // Mở tài liệu trong tab mới bằng URL tương ứng
-        window.open(`${process.env.REACT_APP_URL_EDITOR}/${documentId}`, "_blank");
+        getOnlyOfficeConfig(documentId)
+            .then((response) => {
+                if (response.status === 200) {
+                    const config: OnlyOfficeConfig = response.data;
+                    // Mở editor trong tab mới
+                    const editorUrl = `/editor?config=${encodeURIComponent(JSON.stringify(config))}`;
+                    window.open(editorUrl, '_blank');
+                } else {
+                    toast.error(response.message); // Hiển thị thông báo lỗi nếu không thành công
+                    navigate("/"); // Điều hướng về trang chính nếu có lỗi
+                }
+            }).catch((error) => {
+                console.error("Lỗi khi lấy cấu hình OnlyOffice:", error);
+                toast.error("Lỗi khi lấy cấu hình tài liệu.");
+                navigate("/"); // Điều hướng về trang chính nếu có lỗi
+            })
     };
 
     useEffect(() => {

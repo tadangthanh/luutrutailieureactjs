@@ -23,6 +23,7 @@ import VersionHistoryDialog from '../components/VersionHistoryDialog';
 import { DocumentVersionResponse } from "../types/DocumentVersionResponse";
 import { OnlyOfficeConfig } from "../types/OnlyOfficeConfig";
 import { useNavigate } from "react-router-dom";
+import { removeItem, saveItem } from "../services/ItemSavedApi";
 
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -493,6 +494,31 @@ const DashboardPage = () => {
         }));
     };
 
+    const handleSave = (id: number) => {
+        saveItem(id).then((res) => {
+            if (res.status === 201) {
+                setItemPage(prev => ({
+                    ...prev,
+                    items: prev.items.map(item => item.id === id ? { ...item, saved: true } : item)
+                }));
+            } else {
+                toast.error(res.message);
+            }
+        })
+    }
+    const handleUnSave = (id: number) => {
+        removeItem(id).then((res) => {
+            if (res.status === 200) {
+                setItemPage(prev => ({
+                    ...prev,
+                    items: prev.items.map(item => item.id === id ? { ...item, saved: false } : item)
+                }));
+            } else {
+                toast.error(res.message);
+            }
+        })
+    }
+
     return (
         <div
             onContextMenu={(e) => {
@@ -563,6 +589,8 @@ const DashboardPage = () => {
                 >
                     {layout === "list" ? (
                         <DashboardListView
+                            handleSave={handleSave}
+                            handleUnSave={handleUnSave}
                             handleVersionHistory={handleVersionHistory}
                             onClick={handleItemClick}
                             items={itemPage.items}
@@ -578,6 +606,7 @@ const DashboardPage = () => {
                         />
                     ) : (
                         <DashboardGridView
+                            handleVersionHistory={handleVersionHistory}
                             onClick={handleItemClick}
                             items={itemPage.items}
                             layout={layout}

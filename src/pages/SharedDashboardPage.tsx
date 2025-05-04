@@ -19,6 +19,7 @@ import { EmptyAreaContextMenu } from "../components/EmptyAreaContextMenu";
 import TextInputModal from "../components/TextInputModal";
 import { UploadProgress } from "../components/UploadProgress";
 import { ItemInfoPanel } from "../components/ItemInfoPanel";
+import { Bookmark } from "lucide-react";
 
 const SharedDashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -223,6 +224,8 @@ const SharedDashboardPage = () => {
                 >
                     {layout === "list" ? (
                         <DashboardListView
+                            handleSave={(id: number) => { }}
+                            handleUnSave={(id: number) => { }}
                             handleVersionHistory={handleVersionHistory}
                             onClick={handleItemClick}
                             items={itemPage.items}
@@ -248,6 +251,7 @@ const SharedDashboardPage = () => {
                             handleOpen={handleOpen}
                             handleRename={handleRename}
                             handleShare={handleShare}
+                            handleVersionHistory={handleVersionHistory}
                         />
                     )}
                 </motion.div>

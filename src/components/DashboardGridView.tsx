@@ -13,6 +13,7 @@ interface DashboardGridViewProps {
     handleCopy(id: number): void;
     handleMoveToTrash(id: number): void;
     onClick: (item: ItemResponse) => void;
+    handleVersionHistory(id: number): void;
 }
 
 const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, handleOpen,
@@ -22,6 +23,7 @@ const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, ha
     handleInfo,
     handleCopy,
     onClick,
+    handleVersionHistory,
     handleMoveToTrash }) => {
     const layoutClass =
         layout === "grid"
@@ -65,6 +67,7 @@ const DashboardGridView: React.FC<DashboardGridViewProps> = ({ layout, items, ha
                             handleOpen={handleOpen}
                             handleRename={handleRename}
                             handleShare={handleShare}
+                            handleVersionHistory={handleVersionHistory}
                         />
                     )
                 );

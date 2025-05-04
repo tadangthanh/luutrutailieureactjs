@@ -8,6 +8,7 @@ import {
     Copy,
     UserPlus,
     File,
+    History,
 } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { ItemResponse } from "../types/ItemResponse";
@@ -24,6 +25,7 @@ interface FileCardProps {
     handleCopy(id: number): void;
     onClick: (item: ItemResponse) => void;
     handleMoveToTrash(id: number): void;
+    handleVersionHistory(id: number): void;
 }
 
 const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
@@ -33,6 +35,7 @@ const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
     handleInfo,
     onClick,
     handleCopy,
+    handleVersionHistory,
     handleMoveToTrash }) => {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement | null>(null);
@@ -101,6 +104,12 @@ const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
                             <Option label="Tải xuống" icon={<Download size={16} />} onClick={() => handleDownload(doc.id)} />
                             <Option label="Chia sẻ" icon={<UserPlus size={16} />} onClick={() => handleShare(doc.id)} />
                             <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(doc.id)} />
+                            {doc.itemType !== "FOLDER" && (
+                                <>
+                                    <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(doc.id)} />
+                                    <Option label="Lịch sử phiên bản" icon={<History size={16} />} onClick={() => handleVersionHistory(doc.id)} />
+                                </>
+                            )}
                             <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(doc.id)} />
                         </ul>
                     </motion.div>

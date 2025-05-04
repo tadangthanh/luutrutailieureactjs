@@ -13,7 +13,6 @@ interface FolderCardProps {
     handleInfo(id: number): void;
     handleMoveToTrash(id: number): void;
     onClick: (item: ItemResponse) => void;
-
 }
 
 const FolderCard: React.FC<FolderCardProps> = ({ folder, layout, handleOpen,

@@ -1,4 +1,4 @@
-import { MoreHorizontal, Check } from "lucide-react";
+import { MoreHorizontal, Check, Bookmark } from "lucide-react";
 import { useRef, useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Option } from "./Option";
@@ -17,6 +17,8 @@ interface DashboardListViewProps {
     handleCopy(id: number): void;
     handleMoveToTrash(id: number): void;
     handleVersionHistory(id: number): void;
+    handleSave: (id: number) => void;
+    handleUnSave: (id: number) => void;
     onClick: (item: ItemResponse) => void;
 }
 
@@ -30,8 +32,10 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
     handleShare,
     handleInfo,
     handleCopy,
+    handleUnSave,
     handleMoveToTrash,
     handleVersionHistory,
+    handleSave,
     onClick
 }) => {
     const menuRef = useRef<HTMLDivElement | null>(null);
@@ -124,6 +128,7 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
                     <ListRow
                         onClick={onClick}
                         item={item}
+                        handleUnSave={handleUnSave}
                         openMenuId={openMenuId}
                         setOpenMenuId={setOpenMenuId}
                         handleCopy={handleCopy}
@@ -134,6 +139,7 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
                         handleRename={handleRename}
                         handleShare={handleShare}
                         handleVersionHistory={handleVersionHistory}
+                        handleSave={handleSave}
                     />
                 </motion.div>
             ))}
