@@ -457,7 +457,7 @@ const DocumentQA: React.FC = () => {
             <div className="flex-1 px-4 sm:px-6 md:px-10 py-6">
                 <div className="px-4 sm:px-6 py-6 space-y-6 bg-white dark:bg-gray-900 rounded-2xl mt-4 md:mt-12 shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300">
                     <h1 className="text-2xl sm:text-3xl font-extrabold text-primary dark:text-white tracking-tight">
-                        🤖 Trợ lý Tài Liệu Thông Minh
+                        🤖 AI Hỏi đáp
                     </h1>
 
                     <div className="relative"> {/* Container chính, chứa toàn bộ */}
