@@ -107,6 +107,10 @@ const TrashPage = () => {
         }
     };
 
+    const handleItemClick = (item: ItemResponse) => {
+        toast.info("Vui lòng khôi phục mục này trước khi truy cập.");
+    };
+
     return (
         <div className="p-6 max-w-4xl mx-auto bg-gray-50 dark:bg-gray-900 min-h-full">
             <motion.div
@@ -169,7 +173,8 @@ const TrashPage = () => {
                                     animate={{ opacity: 1, x: 0 }}
                                     exit={{ opacity: 0, x: 20 }}
                                     transition={{ duration: 0.3 }}
-                                    className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow"
+                                    className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md transition-shadow cursor-pointer"
+                                    onClick={() => handleItemClick(item)}
                                 >
                                     <div className="flex justify-between items-center">
                                         <div className="flex items-center gap-3">
@@ -209,7 +214,10 @@ const TrashPage = () => {
                                             <motion.button
                                                 whileHover={{ scale: 1.05 }}
                                                 whileTap={{ scale: 0.95 }}
-                                                onClick={() => handleDeleteForever(item.id)}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    handleDeleteForever(item.id);
+                                                }}
                                                 className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full"
                                                 title="Xóa vĩnh viễn"
                                             >

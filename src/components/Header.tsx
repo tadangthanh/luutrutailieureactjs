@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import Dropdown from "./Dropdown";
 import { Settings, Upload, FolderPlus } from "lucide-react";
+import { useItemContext } from "../contexts/ItemContext";
 
 interface HeaderProps {
     activeMenu: string;
@@ -20,6 +21,7 @@ export const Header: React.FC<HeaderProps> = ({ activeMenu }) => {
         localStorage.removeItem("avatarUrl");
         window.location.href = "/login";
     };
+    const { openCreateFolderModal, triggerFileUpload } = useItemContext();
 
     return (
         <header className="bg-white dark:bg-gray-800 shadow-lg px-8 py-5 flex flex-col md:flex-row md:justify-between md:items-center gap-4 sticky top-0 z-30 border-b border-gray-200 dark:border-gray-700">
@@ -28,12 +30,16 @@ export const Header: React.FC<HeaderProps> = ({ activeMenu }) => {
             </h1>
 
             <div className="flex flex-wrap items-center gap-4">
-                <button className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
+                <button
+                    onClick={triggerFileUpload}
+                    className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
                     <Upload size={18} />
                     Tải lên
                 </button>
 
-                <button className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
+                <button
+                    onClick={openCreateFolderModal}
+                    className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
                     <FolderPlus size={18} />
                     Tạo thư mục
                 </button>
