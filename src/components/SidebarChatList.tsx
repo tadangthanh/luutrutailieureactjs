@@ -31,7 +31,6 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
     const [isCollapsed, setIsCollapsed] = useState(false);
 
     const menuRef = useRef<HTMLDivElement>(null);
-
     const handleLoadMore = async () => {
         setIsLoadingMore(true);
         try {
@@ -109,7 +108,7 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
                     {/* Danh sách */}
                     <div className="flex-1 overflow-y-auto max-h-[calc(100vh-200px)] space-y-2 pr-1 custom-scrollbar">
                         {chatSessionsPage.items.map((chat) => {
-                            const isSelected = chat === chatSelected;
+                            const isSelected = chatSelected?.id === chat.id;
                             return (
                                 <div
                                     key={chat.id}

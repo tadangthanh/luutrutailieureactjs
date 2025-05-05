@@ -61,6 +61,36 @@ export const downloadDoc = async (documentId: number) => {
         toast.error("Failed to download document.");
     }
 };
+export const fetchDocAsFile = async (documentId: number): Promise<File | null> => {
+    try {
+        const response = await api.get(`/documents/${documentId}/download`, {
+            responseType: "blob",
+        });
+
+        // Sử dụng type từ response nếu có
+        const mimeType = response.headers["content-type"] || "application/octet-stream";
+
+        // Tạo Blob với type đúng
+        const blob = new Blob([response.data], { type: mimeType });
+
+
+        // Lấy tên file từ content-disposition
+        let fileName = "downloaded-file";
+        const contentDisposition = response.headers["content-disposition"];
+        if (contentDisposition) {
+            const match = contentDisposition.match(/filename\*?=([^;]+)/);
+            if (match?.[1]) {
+                fileName = decodeURIComponent(match[1].replace(/UTF-8''/, '').trim());
+            }
+        }
+
+        return new File([blob], fileName, { type: blob.type });
+    } catch (error) {
+        toast.error("Tải tài liệu thất bại.");
+        return null;
+    }
+};
+
 export const searchDocuments = async (keyword: string, page = 0, size = 10) => {
     try {
         return (await api.get(`${apiUrl}/documents/search-metadata?query=${keyword}&page=${page}&size=${size}`)).data;

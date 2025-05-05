@@ -7,7 +7,7 @@ import { ItemResponse } from "../types/ItemResponse";
 import { delItem, updateItem } from "../services/ItemApi";
 import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
-import { copyDocument, getOnlyOfficeConfig } from "../services/DocumentApi";
+import { copyDocument, downloadDoc, getOnlyOfficeConfig } from "../services/DocumentApi";
 import BottomLeftNotification from "../components/BottomLeftNotification";
 import { downloadFolder } from "../services/FolderApi";
 import { AnimatePresence, motion } from "framer-motion";
@@ -125,12 +125,22 @@ const DashboardPage = () => {
 
         // Đặt timeout 3 giây để thực hiện download
         downloadTimeoutRef.current = setTimeout(() => {
-            downloadFolder(id)
-                .catch((err) => toast.error("Tải xuống thất bại"))
-                .finally(() => {
-                    hiddenNotificationBottomLeft();
-                    downloadTimeoutRef.current = null;
-                });
+            if (itemPage.items.find(item => item.id === id)?.itemType === 'FOLDER') {
+                downloadFolder(id)
+                    .catch((err) => toast.error("Tải xuống thất bại"))
+                    .finally(() => {
+                        hiddenNotificationBottomLeft();
+                        downloadTimeoutRef.current = null;
+                    });
+            } else {
+                downloadDoc(id)
+                    .catch((err) => toast.error("Tải xuống thất bại"))
+                    .finally(() => {
+                        hiddenNotificationBottomLeft();
+                        downloadTimeoutRef.current = null;
+                    });
+            }
+
         }, 3000);
     };
     const [openShareDialog, setOpenShareDialog] = useState(false);

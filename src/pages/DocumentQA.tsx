@@ -10,9 +10,11 @@ import { PageResponse } from "../types/PageResponse";
 import { Conversation } from "../types/Conversation";
 import { addConversation, getConversations } from "../services/ConversationApi";
 import { ChatSessionDto } from "../types/ChatSessionDto";
-import { getChatSessions, createChatSession, delChatSession } from "../services/ChatSessionApi";
+import { getChatSessions, createChatSession, delChatSession, getChatSessionByDocId } from "../services/ChatSessionApi";
 import { ChatSessionInit } from "../types/ChatSessionInit";
 import { TypingIndicator } from "../components/TypingIndicator";
+import { useSearchParams } from "react-router-dom";
+import { fetchDocAsFile } from "../services/DocumentApi";
 
 const DocumentQA: React.FC = () => {
     // ====== STATE ======
@@ -21,11 +23,12 @@ const DocumentQA: React.FC = () => {
     const [loading, setLoading] = useState(false);
     const [chatSelected, setChatSelected] = useState<ChatSessionDto | null>(null);
     const [conversations, setConversations] = useState<Conversation[]>([]);
-    // const [filesSelected, setFilesSelected] = useState<File[]>([]);
     const [filesInput, setFilesInput] = useState<File[]>([]);
     const [filesUploaded, setFilesUploaded] = useState<AssistantFile[]>([]);
     const [showUploadedFiles, setShowUploadedFiles] = useState(false);
     const [pageSessionNumber, setPageSessionNumber] = useState(0);
+    const [searchParams] = useSearchParams();
+    const documentId = searchParams.get("documentId");
     const [chatSessionPage, setChatSessionPage] = useState<PageResponse<ChatSessionDto>>({
         pageNo: 0,
         pageSize: 10,
@@ -163,9 +166,9 @@ const DocumentQA: React.FC = () => {
     // ====== INIT CHAT ======
     const initChatSession = async () => {
         setLoading(true);
+        const assistantFiles: AssistantFile[] = [];
         try {
             setConversations([{ id: null, question, answer: "", chatSessionId: null }]);            // Upload files
-            const assistantFiles: AssistantFile[] = [];
             const filesWillUpload = [...filesInput];
             setFilesInput([]);
             for (const file of filesWillUpload) {
@@ -183,12 +186,12 @@ const DocumentQA: React.FC = () => {
                     expirationTime: uploaded.expirationTime,
                     createTime: uploaded.createTime,
                     chatSessionId: 0,
+                    documentId: Number(documentId),
                 });
             }
             const parts = assistantFiles.map((f) => ({
-                fileData: { fileUri: f.uri, mimeType: f.mimeType },
+                fileData: { fileUri: f.uri, mimeType: f.mimeType?.split(";")[0] },
             }));
-
             const response = await ai.models.generateContentStream({
                 model: "gemini-2.5-flash-preview-04-17",
                 contents: {
@@ -223,6 +226,7 @@ const DocumentQA: React.FC = () => {
                 deleteListFileCloudAI(assistantFiles);
             }
         } catch (err) {
+            deleteListFileCloudAI(assistantFiles);
             console.error(err);
             toast.error("Đã xảy ra lỗi trong quá trình khởi tạo cuộc trò chuyện.");
         } finally {
@@ -280,6 +284,7 @@ const DocumentQA: React.FC = () => {
                     expirationTime: uploaded.expirationTime,
                     createTime: uploaded.createTime,
                     chatSessionId: chatSelected.id,
+                    documentId: Number(documentId),
                 });
             }
             // CHUA CAC FILE DA UPLOAD LEN CLOUD AI VA LUU VAO DATABASE
@@ -439,6 +444,55 @@ const DocumentQA: React.FC = () => {
     useEffect(() => {
         scrollToBottom(); // Scroll tới cuối khi render hoặc khi có tin nhắn mới
     }, [conversations, loading]);
+
+    useEffect(() => {
+        if (documentId) {
+            getChatSessionByDocId(Number(documentId))
+                .then((res) => {
+                    if (res.status === 200) {
+                        // Cập nhật chatSessionsPage trước khi select
+                        setChatSessionPage(prev => ({
+                            ...prev,
+                            items: [res.data, ...prev.items]
+                        }));
+                        handleChatSelect(res.data);
+                    } else {
+                        fetchDocNotExisted();
+                    }
+                })
+                .catch(() => {
+                    toast.error("Lỗi khi tải cuộc trò chuyện.");
+                })
+        }
+    }, [documentId]);
+
+    const fetchDocNotExisted = async () => {
+        fetchDocAsFile(Number(documentId))
+            .then((file) => {
+                console.log("file", file);
+                if (file) {
+                    // Kiểm tra type của file, bỏ qua charset
+                    const fileType = file.type.split(';')[0];
+                    if (fileType !== "application/pdf") {
+                        toast.error("Tài liệu không phải định dạng PDF.");
+                        return;
+                    }
+                    // Tạo file mới với type đã được xử lý
+                    const fileWithCorrectType = new File([file], file.name, {
+                        type: fileType
+                    });
+                    setFilesInput([fileWithCorrectType]);
+                }
+            })
+            .catch((error) => {
+                console.error("Error:", error);
+                toast.error("Không thể tải tài liệu. Vui lòng thử lại.");
+            }).finally(() => {
+                const url = new URL(window.location.href);
+                url.searchParams.delete("documentId");
+                window.history.replaceState({}, "", url);
+            })
+    }
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
             {/* Sidebar */}

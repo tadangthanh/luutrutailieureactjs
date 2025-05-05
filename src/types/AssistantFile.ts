@@ -7,4 +7,5 @@ export interface AssistantFile {
     createTime: string | undefined;
     chatSessionId: number | null;
     mimeType: string | undefined;
+    documentId: number | null;
 }

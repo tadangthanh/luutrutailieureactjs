@@ -12,3 +12,6 @@ export const delChatSession = async (id: number) => {
 export const getChatSessions = async (page = 0, size = 10) => {
     return await api.get(`${apiUrl}/chat-session?page=${page}&size=${size}`);
 }
+export const getChatSessionByDocId = async (docId: number) => {
+    return (await api.get(`${apiUrl}/chat-session/doc/${docId}`)).data;
+}
