@@ -52,41 +52,42 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ emailPage, setPageNoEmail: 
         <div className="relative" ref={dropdownRef}>
             <button
                 onClick={() => setIsOpen(prev => !prev)}
-                className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200 transition-all duration-200 shadow-sm"
             >
-                {selectedEmail || "Người"} <ChevronDown size={16} />
+                {selectedEmail || "Người"} <ChevronDown size={16} className="text-gray-500 dark:text-gray-400" />
             </button>
 
             {isOpen && (
-                <div className="absolute bg-white dark:bg-neutral-dark border dark:border-gray-700 rounded shadow-md w-64 z-50 p-2">
-                    <input
-                        type="text"
-                        placeholder="Tìm email..."
-                        value={filter}
-                        onChange={(e) => {
-                            setFilter(e.target.value);
-                            if (e.target.value.trim() === "") {
-                                onSearch(filter.trim());
-                            }
-                        }}
-                        onKeyDown={(e) => {
-                            if (e.key === "Enter") {
-                                e.preventDefault();
-                                onSearch(filter.trim());
-                            }
-                        }}
-                        className="w-full px-3 py-2 mb-2 border rounded text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                    />
+                <div className="absolute mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg w-72 z-50 overflow-hidden">
+                    <div className="p-3 border-b border-gray-100 dark:border-gray-700">
+                        <input
+                            type="text"
+                            placeholder="Tìm email..."
+                            value={filter}
+                            onChange={(e) => {
+                                setFilter(e.target.value);
+                                if (e.target.value.trim() === "") {
+                                    onSearch(filter.trim());
+                                }
+                            }}
+                            onKeyDown={(e) => {
+                                if (e.key === "Enter") {
+                                    e.preventDefault();
+                                    onSearch(filter.trim());
+                                }
+                            }}
+                            className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                        />
+                    </div>
                     <ul className="max-h-60 overflow-y-auto">
-                        {/* Thêm lựa chọn "Tất cả" */}
                         <li
                             onClick={() => {
-                                setSelectedEmail(""); // Nếu chọn "Tất cả", reset email đã chọn
-                                onSelect(""); // Trả về giá trị "" cho "Tất cả"
+                                setSelectedEmail("");
+                                onSelect("");
                                 setIsOpen(false);
-                                setFilter(""); // Xóa filter khi chọn "Tất cả"
+                                setFilter("");
                             }}
-                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
+                            className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer text-sm text-gray-700 dark:text-gray-200 transition-colors duration-200"
                         >
                             Tất cả
                         </li>
@@ -95,23 +96,23 @@ const UserDropdown: React.FC<UserDropdownProps> = ({ emailPage, setPageNoEmail: 
                                 <li
                                     key={email}
                                     onClick={() => handleSelectEmail(email)}
-                                    className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer text-sm"
+                                    className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer text-sm text-gray-700 dark:text-gray-200 transition-colors duration-200"
                                 >
                                     {email}
                                 </li>
                             ))
                         ) : (
-                            <li className="px-4 py-2 text-sm text-gray-500 dark:text-gray-400">
+                            <li className="px-4 py-2.5 text-sm text-gray-500 dark:text-gray-400">
                                 Không tìm thấy email
                             </li>
                         )}
                     </ul>
 
                     {emailPage.hasNext && (
-                        <div className="mt-1 text-center">
+                        <div className="p-3 border-t border-gray-100 dark:border-gray-700">
                             <button
                                 onClick={() => setPageEmail(prev => prev + 1)}
-                                className="text-primary hover:underline text-sm"
+                                className="w-full text-center text-sm text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors duration-200"
                             >
                                 Xem thêm
                             </button>

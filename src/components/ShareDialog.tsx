@@ -223,23 +223,23 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
     }
     return (
         <>
-            <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50" onClick={onClose}>
-                <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
+            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
                     {/* Close button */}
-                    <button onClick={() => setShowSettings(true)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white">
+                    <button onClick={() => setShowSettings(true)} className="absolute top-4 right-4 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
                         <Settings size={20} />
                     </button>
 
-                    <h2 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Quyền truy cập</h2>
+                    <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Quyền truy cập</h2>
 
                     {/* Input thêm người */}
-                    <div className="flex flex-col gap-2 mb-4 relative">
+                    <div className="flex flex-col gap-3 mb-6 relative">
                         <div className="flex items-center gap-2">
                             <div className="relative flex-1">
                                 <input
                                     type="email"
                                     placeholder="Nhập email"
-                                    className="w-full p-2 border rounded dark:bg-gray-700 dark:text-white"
+                                    className="w-full px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                     value={email}
                                     onChange={(e) => {
                                         setEmail(e.target.value);
@@ -247,12 +247,12 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                                     }}
                                 />
                                 {loadingSuggest && (
-                                    <Loader2 className="absolute top-1/2 right-2 -translate-y-1/2 animate-spin text-gray-400" size={18} />
+                                    <Loader2 className="absolute top-1/2 right-3 -translate-y-1/2 animate-spin text-gray-400" size={18} />
                                 )}
                             </div>
 
                             <select
-                                className="p-2 border rounded dark:bg-gray-700 dark:text-white"
+                                className="px-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 value={permission}
                                 onChange={(e) => setPermission(e.target.value as "viewer" | "editor")}
                             >
@@ -260,7 +260,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                                 <option value="editor">Người chỉnh sửa</option>
                             </select>
                             <button
-                                className="bg-primary hover:bg-primary-dark text-white p-2 rounded"
+                                className="bg-blue-600 hover:bg-blue-700 text-white p-2.5 rounded-xl transition-all duration-200 shadow-sm"
                                 onClick={handleAddPermission}
                             >
                                 <UserPlus size={18} />
@@ -269,29 +269,29 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
 
                         {/* Suggest user list */}
                         {suggestUserPage.items.length > 0 && (
-                            <div className="custom-scrollbar absolute top-full mt-1 left-0 w-full bg-white dark:bg-gray-700 border rounded shadow z-50 max-h-60 overflow-y-auto">
+                            <div className="custom-scrollbar absolute top-full mt-1 left-0 w-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg z-50 max-h-60 overflow-y-auto">
                                 {suggestUserPage.items.map((user, index) => (
                                     <div
                                         key={index}
                                         onClick={() => handleSelectUser(user)}
-                                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-600 cursor-pointer flex items-center gap-2"
+                                        className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex items-center gap-3 transition-colors duration-200"
                                     >
                                         {user.user.avatarUrl ? (
                                             <img
                                                 src={user.user.avatarUrl}
                                                 alt={user.user.fullName}
-                                                className="w-8 h-8 rounded-full object-cover"
+                                                className="w-10 h-10 rounded-xl object-cover"
                                             />
                                         ) : (
-                                            <div className="w-8 h-8 rounded-full bg-gray-300 dark:bg-gray-600"></div>
+                                            <div className="w-10 h-10 rounded-xl bg-gray-200 dark:bg-gray-700"></div>
                                         )}
                                         <div className="flex-1">
                                             <div
-                                                className="font-semibold text-gray-900 dark:text-white"
+                                                className="font-medium text-gray-900 dark:text-white"
                                                 dangerouslySetInnerHTML={{ __html: user.highlights?.fullName?.[0] || user.user.fullName }}
                                             />
                                             <div
-                                                className="text-sm text-gray-600 dark:text-gray-300"
+                                                className="text-sm text-gray-600 dark:text-gray-400"
                                                 dangerouslySetInnerHTML={{ __html: user.highlights?.email?.[0] || user.user.email }}
                                             />
                                         </div>
@@ -300,8 +300,8 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                                 {/* Nút xem thêm */}
                                 {suggestUserPage.hasNext && (
                                     <div
-                                        className="text-primary text-center py-2 cursor-pointer hover:underline"
-                                        onClick={() => setPageNoSuggest((pre) => pre + 1)} // Hàm này sẽ load thêm user
+                                        className="text-blue-600 dark:text-blue-400 text-center py-3 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
+                                        onClick={() => setPageNoSuggest((pre) => pre + 1)}
                                     >
                                         Xem thêm
                                     </div>
@@ -311,24 +311,24 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                     </div>
 
                     {/* Danh sách đã chia sẻ */}
-                    <div className="max-h-60 overflow-y-auto space-y-2">
+                    <div className="max-h-60 overflow-y-auto space-y-3">
                         {loadingPermissions ? (
-                            <p className="text-gray-600 dark:text-gray-300">Đang tải...</p>
+                            <p className="text-gray-600 dark:text-gray-400">Đang tải...</p>
                         ) : permissionPage.items.length === 0 ? (
-                            <p className="text-gray-600 dark:text-gray-300">Chưa chia sẻ với ai</p>
+                            <p className="text-gray-600 dark:text-gray-400">Chưa chia sẻ với ai</p>
                         ) : (
                             permissionPage.items.map((p) => (
-                                <div key={p.id} className="flex items-center justify-between p-2 border rounded dark:border-gray-700">
-                                    <span className="text-gray-800 dark:text-white truncate">{p.email}</span>
+                                <div key={p.id} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-800/50 border border-gray-200 dark:border-gray-700 rounded-xl">
+                                    <span className="text-gray-700 dark:text-gray-200 truncate">{p.email}</span>
                                     <select
-                                        className="p-1 border rounded dark:bg-gray-700 dark:text-white"
+                                        className="px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                         value={p.permission}
                                         onChange={(e) => handleChangePermission(p, e.target.value as "viewer" | "editor")}
                                     >
                                         <option value="viewer">Người xem</option>
                                         <option value="editor">Người chỉnh sửa</option>
                                     </select>
-                                    <button onClick={() => handleRemovePermission(p)} className="text-red-500 hover:text-red-700">
+                                    <button onClick={() => handleRemovePermission(p)} className="text-red-500 hover:text-red-600 transition-colors duration-200">
                                         <Trash2 size={16} />
                                     </button>
                                 </div>
@@ -338,7 +338,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                             currentPage={pageNoPermission + 1}
                             totalPages={permissionPage.totalPage}
                             onPageChange={(page) => {
-                                setPageNoPermission(page - 1); // lưu ý mình đang dùng pageNo (bắt đầu từ 0)
+                                setPageNoPermission(page - 1);
                             }}
                         />
                     </div>
@@ -346,7 +346,7 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                     {/* Nút Xong ở dưới cùng bên phải */}
                     <button
                         onClick={handleApplyChanges}
-                        className="absolute bottom-4 right-4 bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded"
+                        className="absolute bottom-4 right-4 bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-5 rounded-xl transition-all duration-200 shadow-sm"
                     >
                         Xong
                     </button>
@@ -355,34 +355,24 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
 
             {/* Cửa sổ Cài đặt */}
             {showSettings && (
-                <div className="fixed inset-0 bg-black bg-opacity-30 flex items-center justify-center z-50" onClick={handleSettingsClose}>
-                    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="text-xl font-semibold mb-4 text-gray-900 dark:text-white">Chế độ cài đặt</h3>
+                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50" onClick={handleSettingsClose}>
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
+                        <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Chế độ cài đặt</h3>
                         <div className="flex flex-col gap-4">
-                            <label className="flex items-center gap-2">
+                            <label className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700">
                                 <input
                                     type="checkbox"
                                     name="canChangePermissions"
                                     checked={settings.canChangePermissions}
                                     onChange={handleSettingChange}
-                                    className="rounded"
+                                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 transition-colors duration-200"
                                 />
-                                <span className="text-white/80">Người chỉnh sửa có thể thay đổi quyền và chia sẻ</span>
+                                <span className="text-gray-700 dark:text-gray-200">Người chỉnh sửa có thể thay đổi quyền và chia sẻ</span>
                             </label>
-                            {/* <label className="flex items-center gap-2">
-                                <input
-                                    type="checkbox"
-                                    name="limitAccess"
-                                    checked={settings.limitAccess}
-                                    onChange={handleSettingChange}
-                                    className="rounded"
-                                />
-                                <span className="text-white/80">Giới hạn quyền truy cập, một số người có thể mất quyền truy cập. Chỉ chủ sở hữu và những người được thêm trực tiếp vào thư mục này mới có thể mở thư mục</span>
-                            </label> */}
                         </div>
                         <button
                             onClick={handleSettingsClose}
-                            className="bg-primary hover:bg-primary-dark text-white py-2 px-4 rounded mt-4"
+                            className="bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-5 rounded-xl transition-all duration-200 shadow-sm mt-6"
                         >
                             Quay lại
                         </button>

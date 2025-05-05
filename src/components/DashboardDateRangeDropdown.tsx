@@ -55,44 +55,44 @@ export const DashboardDateRangeDropdown: React.FC<DashboardDateRangeDropdownProp
         <div ref={dropdownRef} className="relative">
             <button
                 onClick={handleToggle}
-                className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200 transition-all duration-200 shadow-sm"
             >
-                {displayLabel} <ChevronDown size={16} />
+                {displayLabel} <ChevronDown size={16} className="text-gray-500 dark:text-gray-400" />
             </button>
 
             {isOpen && (
-                <div className="absolute bg-white dark:bg-neutral-dark border dark:border-gray-700 rounded shadow-md w-60 z-50">
+                <div className="absolute mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg w-72 z-50 overflow-hidden">
                     <ul>
                         {Array.from(options.entries()).map(([key]) => (
                             <li
                                 key={key}
                                 onClick={() => handleSelect(key)}
-                                className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center"
+                                className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex justify-between items-center text-gray-700 dark:text-gray-200 transition-colors duration-200"
                             >
-                                <span>{key}</span>
+                                <span className="text-sm">{key}</span>
                                 {selectedKey === key && <Check size={16} className="text-blue-500" />}
                             </li>
                         ))}
                     </ul>
 
                     {selectedKey === "Ngày tùy chỉnh" && (
-                        <div className="p-3 border-t dark:border-gray-600 space-y-2 text-sm">
+                        <div className="p-4 border-t border-gray-100 dark:border-gray-700 space-y-3">
                             <div>
-                                <label className="block mb-1">Từ ngày</label>
+                                <label className="block mb-2 text-sm text-gray-700 dark:text-gray-200">Từ ngày</label>
                                 <input
                                     type="date"
                                     value={customStartDate}
                                     onChange={(e) => setCustomStartDate(e.target.value)}
-                                    className="w-full border p-1 rounded dark:bg-neutral-dark dark:text-white"
+                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 />
                             </div>
                             <div>
-                                <label className="block mb-1">Đến ngày</label>
+                                <label className="block mb-2 text-sm text-gray-700 dark:text-gray-200">Đến ngày</label>
                                 <input
                                     type="date"
                                     value={customEndDate}
                                     onChange={(e) => setCustomEndDate(e.target.value)}
-                                    className="w-full border p-1 rounded dark:bg-neutral-dark dark:text-white"
+                                    className="w-full px-4 py-2.5 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                                 />
                             </div>
                             <button
@@ -103,7 +103,7 @@ export const DashboardDateRangeDropdown: React.FC<DashboardDateRangeDropdownProp
                                     onChange(from, to);
                                     setOpenId(null);
                                 }}
-                                className="w-full bg-primary-light text-white rounded py-1 mt-1 hover:bg-primary-dark disabled:opacity-50 disabled:cursor-not-allowed transition"
+                                className="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-xl py-2.5 text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 shadow-sm"
                             >
                                 Áp dụng
                             </button>

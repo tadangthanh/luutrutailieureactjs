@@ -188,8 +188,8 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
 
 
     return (
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-4">
-            <div className="flex flex-wrap gap-2 items-center text-sm text-gray-800 dark:text-gray-200">
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
+            <div className="flex flex-wrap gap-3 items-center text-sm">
                 <DashboardDropdown
                     id={1}
                     label="Loại"
@@ -214,36 +214,35 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                 />
             </div>
 
-            <div className="flex items-center gap-2 w-full md:w-auto">
-                <div className="relative w-full md:w-64">
+            <div className="flex items-center gap-3 w-full md:w-auto">
+                <div className="relative w-full md:w-72">
                     <span className="absolute inset-y-0 left-3 flex items-center text-gray-500 dark:text-gray-400">
-                        <Search size={16} />
+                        <Search size={18} />
                     </span>
                     <input
-                        onFocus={() => setIsSearchResultsVisible(true)} // Khi focus vào input, hiển thị kết quả
+                        onFocus={() => setIsSearchResultsVisible(true)}
                         ref={searchInputRef}
                         type="text"
                         placeholder="Tìm kiếm tài liệu..."
                         value={searchInput}
                         onChange={(e) => setSearchInput(e.target.value)}
-                        className="w-full pl-10 pr-4 py-2 rounded-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-neutral-dark text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-primary-light"
+                        className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-sm text-gray-800 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 shadow-sm"
                     />
 
-                    {/* Hiển thị kết quả tìm kiếm */}
                     {debouncedKeyword && isSearchResultsVisible && searchResults.length > 0 && (
-                        <div ref={searchResultsRef} className="absolute z-50 right-0 mt-1 w-[50vw] bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-md shadow-lg max-h-64 overflow-auto">
+                        <div ref={searchResultsRef} className="absolute z-50 right-0 mt-2 w-[50vw] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-80 overflow-auto">
                             {searchResults.map((result, index) => (
                                 <button
                                     key={index}
                                     onClick={() => handleSelectDocument(result.document?.id || 0)}
-                                    className="w-full text-left px-3 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                                    className="w-full text-left px-4 py-3 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200 border-b border-gray-100 dark:border-gray-700 last:border-0"
                                 >
-                                    <div className="text-sm font-medium text-primary-dark truncate">
+                                    <div className="text-sm font-medium text-blue-600 dark:text-blue-400 truncate">
                                         {result.document?.name || "Không có tên"}
                                     </div>
                                     {result.highlights &&
                                         Object.entries(result.highlights as Record<string, string[]>).map(([field, highlights]) => (
-                                            <div key={field} className="text-xs text-gray-500 dark:text-gray-400">
+                                            <div key={field} className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                                 {highlights.map((text, idx) => (
                                                     <span key={idx} dangerouslySetInnerHTML={{ __html: text }} className="block" />
                                                 ))}
@@ -254,37 +253,36 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                         </div>
                     )}
 
-                    {/* Hiển thị loading spinner ở cạnh phải ô input */}
                     {loading && searchInput && (
                         <div className="absolute right-4 top-1/2 transform -translate-y-1/2 flex items-center justify-center w-6 h-6">
-                            <div className="spinner-border animate-spin inline-block w-6 h-6 border-4 border-solid border-primary-dark border-t-transparent rounded-full" role="status">
-                                {/* <span className="visually-hidden">Loading...</span> */}
+                            <div className="spinner-border animate-spin inline-block w-6 h-6 border-4 border-solid border-blue-500 border-t-transparent rounded-full" role="status">
                             </div>
                         </div>
                     )}
                 </div>
 
-                <div className="flex gap-1">
+                <div className="flex gap-2">
                     <button
                         onClick={() => setLayout("grid")}
-                        className={`p-2 rounded transition-colors duration-200 ${layout === "grid"
-                            ? "bg-primary-light text-primary-dark"
-                            : "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                        className={`p-2.5 rounded-xl transition-all duration-200 ${layout === "grid"
+                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm"
+                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                            }`}
                     >
                         <LayoutGrid size={20} />
                     </button>
                     <button
                         onClick={() => setLayout("list")}
-                        className={`p-2 rounded transition-colors duration-200 ${layout === "list"
-                            ? "bg-primary-light text-primary-dark"
-                            : "text-gray-800 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"}`}
+                        className={`p-2.5 rounded-xl transition-all duration-200 ${layout === "list"
+                            ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shadow-sm"
+                            : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                            }`}
                     >
                         <List size={20} />
                     </button>
                 </div>
             </div>
         </div>
-
     );
 };
 

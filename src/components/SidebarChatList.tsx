@@ -80,22 +80,20 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
 
     return (
         <motion.div
-            animate={{ width: isCollapsed ? 56 : 256 }} // 56px ≈ w-14, 256px = w-64
+            animate={{ width: isCollapsed ? 56 : 256 }}
             transition={{ duration: 0.3, ease: "easeInOut" }}
             className={`flex flex-col h-full pt-4 ${isCollapsed ? "px-1" : "px-2 sm:px-4"}`}
         >
             {/* Nút thu gọn/mở rộng */}
-            <div className={`flex justify-${isCollapsed ? "center" : "end"} mb-2`}>
+            <div className={`flex justify-${isCollapsed ? "center" : "end"} mb-4`}>
                 <button
                     onClick={() => setIsCollapsed(!isCollapsed)}
-                    className="p-2 sm:p-2.5 rounded-2xl border border-primary bg-white dark:bg-neutral-900 text-primary hover:bg-primary hover:text-white transition-all shadow-sm hover:shadow-md"
+                    className="p-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200 transition-all duration-200 shadow-sm"
                     title={isCollapsed ? "Mở rộng" : "Thu gọn"}
                 >
-                    {isCollapsed ? <ChevronRight size={22} /> : <ChevronLeft size={22} />}
+                    {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
                 </button>
-
             </div>
-
 
             {/* Các phần còn lại sẽ ẩn nếu đang collapsed */}
             {!isCollapsed && (
@@ -103,7 +101,7 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
                     {/* Nút tạo mới */}
                     <button
                         onClick={onCreateNewChat}
-                        className="flex items-center justify-center gap-2 text-white bg-primary hover:bg-primary-dark transition rounded-xl py-2.5 font-medium mb-4 sm:mb-6"
+                        className="flex items-center justify-center gap-2 text-white bg-blue-600 hover:bg-blue-700 transition-all duration-200 rounded-xl py-2.5 font-medium mb-6 shadow-sm"
                     >
                         <Plus size={18} /> Tạo cuộc trò chuyện
                     </button>
@@ -115,10 +113,10 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
                             return (
                                 <div
                                     key={chat.id}
-                                    className={`group relative cursor-pointer flex items-center justify-between px-2 py-3 text-sm shadow-sm transition rounded-xl 
+                                    className={`group relative cursor-pointer flex items-center justify-between px-4 py-3 text-sm transition-all duration-200 rounded-xl 
                                     ${isSelected
-                                            ? "bg-primary/10 border border-primary text-primary dark:border-primary"
-                                            : "bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-gray-800 dark:text-white"
+                                            ? "bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 text-blue-600 dark:text-blue-400"
+                                            : "bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200"
                                         }`}
                                 >
                                     <span
@@ -135,7 +133,7 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
                                             setOpenMenuId(prev => prev === chat.id ? null : chat.id);
                                             setMenuPosition({ top: rect.bottom + window.scrollY + 4, left: rect.left + window.scrollX });
                                         }}
-                                        className="text-gray-500 hover:text-gray-800 dark:hover:text-white transition ml-2"
+                                        className="text-gray-500 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200 ml-2"
                                         title="Tùy chọn"
                                     >
                                         <MoreHorizontal size={18} />
@@ -147,14 +145,14 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
                         {chatSessionsPage.hasNext && !isLoadingMore && (
                             <button
                                 onClick={handleLoadMore}
-                                className="text-primary hover:text-primary-dark mt-4 px-4 py-2 rounded-xl font-medium transition w-full text-center"
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 mt-4 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 w-full text-center bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700/50"
                             >
                                 Xem thêm
                             </button>
                         )}
 
                         {isLoadingMore && (
-                            <div className="text-center text-gray-500 mt-4">Đang tải thêm...</div>
+                            <div className="text-center text-gray-500 dark:text-gray-400 mt-4">Đang tải thêm...</div>
                         )}
                     </div>
                 </>
@@ -164,7 +162,7 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
             {!isCollapsed && openMenuId !== null && menuPosition && (
                 <div
                     ref={menuRef}
-                    className="fixed z-50 w-40 bg-white dark:bg-neutral-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700"
+                    className="fixed z-50 w-48 bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden"
                     style={{ top: menuPosition.top, left: menuPosition.left }}
                 >
                     <button
@@ -173,38 +171,38 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
                             handleRename(openMenuId, chat?.name);
                             setOpenMenuId(null);
                         }}
-                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
+                        className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
                     >
-                        <Pen size={14} /> Đổi tên
+                        <Pen size={16} /> Đổi tên
                     </button>
                     <button
                         onClick={() => {
                             handleDelete(openMenuId);
                             setOpenMenuId(null);
                         }}
-                        className="w-full text-left flex items-center gap-2 px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-neutral-700 transition"
+                        className="w-full text-left flex items-center gap-2 px-4 py-2.5 text-sm text-red-500 hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors duration-200"
                     >
-                        <Trash2 size={14} /> Xóa
+                        <Trash2 size={16} /> Xóa
                     </button>
                 </div>
             )}
 
-            {/* Modals giữ nguyên */}
+            {/* Modals */}
             {!isCollapsed && showConfirmId !== null && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
-                    <div className="bg-white dark:bg-neutral-800 p-6 rounded-xl shadow-lg w-[90%] max-w-sm text-center space-y-4">
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg w-[90%] max-w-sm text-center space-y-4">
                         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Xác nhận xóa</h2>
                         <p className="text-sm text-gray-600 dark:text-gray-300">Bạn có chắc chắn muốn xóa cuộc trò chuyện này không?</p>
                         <div className="flex justify-center gap-4 mt-4">
                             <button
                                 onClick={() => setShowConfirmId(null)}
-                                className="px-4 py-2 rounded-xl text-sm bg-gray-200 dark:bg-neutral-700 hover:bg-gray-300 dark:hover:bg-neutral-600 text-gray-800 dark:text-white"
+                                className="px-4 py-2.5 rounded-xl text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition-all duration-200"
                             >
                                 Hủy
                             </button>
                             <button
                                 onClick={() => confirmDelete(showConfirmId)}
-                                className="px-4 py-2 rounded-xl text-sm bg-red-500 hover:bg-red-600 text-white"
+                                className="px-4 py-2.5 rounded-xl text-sm bg-red-500 hover:bg-red-600 text-white transition-all duration-200"
                             >
                                 Xóa
                             </button>
@@ -214,26 +212,26 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
             )}
 
             {!isCollapsed && renameTarget && (
-                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40">
-                    <div className="bg-white dark:bg-neutral-800 p-6 rounded-xl shadow-lg w-[90%] max-w-sm text-center space-y-4">
+                <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/40 backdrop-blur-sm">
+                    <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-lg w-[90%] max-w-sm text-center space-y-4">
                         <h2 className="text-lg font-semibold text-gray-800 dark:text-white">Đổi tên cuộc trò chuyện</h2>
                         <input
                             value={newName}
                             onChange={(e) => setNewName(e.target.value)}
-                            className="w-full px-4 py-2 text-sm rounded-lg border border-gray-300 dark:border-gray-600 bg-neutral-100 dark:bg-neutral-700 text-gray-800 dark:text-white"
+                            className="w-full px-4 py-2.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
                             placeholder="Nhập tên mới"
                             autoFocus
                         />
                         <div className="flex justify-center gap-4 mt-4">
                             <button
                                 onClick={() => setRenameTarget(null)}
-                                className="px-4 py-2 rounded-xl text-sm bg-gray-200 dark:bg-neutral-700 hover:bg-gray-300 dark:hover:bg-neutral-600 text-gray-800 dark:text-white"
+                                className="px-4 py-2.5 rounded-xl text-sm bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition-all duration-200"
                             >
                                 Hủy
                             </button>
                             <button
                                 onClick={confirmRename}
-                                className="px-4 py-2 rounded-xl text-sm bg-primary hover:bg-primary-dark text-white"
+                                className="px-4 py-2.5 rounded-xl text-sm bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200"
                             >
                                 Đổi tên
                             </button>
@@ -241,7 +239,6 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
                     </div>
                 </div>
             )}
-            {/* </div> */}
         </motion.div>
     );
 

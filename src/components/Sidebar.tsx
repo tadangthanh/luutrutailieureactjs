@@ -14,9 +14,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ setActiveMenu }) => {
     const location = useLocation();
     const currentPath = location.pathname;
 
-    // Only for mobile
     const sidebarVariants = {
-        open: { width: "16rem", opacity: 1, transition: { duration: 0.3 } },
+        open: { width: "18rem", opacity: 1, transition: { duration: 0.3 } },
         closed: { width: "0", opacity: 0, transition: { duration: 0.3 } }
     };
 
@@ -29,13 +28,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ setActiveMenu }) => {
         <>
             {/* Mobile Toggle Button */}
             <button
-                className="md:hidden fixed top-4 left-4 z-50 p-2 rounded-lg bg-white dark:bg-gray-800 shadow-md hover:shadow-lg transition-shadow"
+                className="md:hidden fixed top-4 left-4 z-50 p-2.5 rounded-xl bg-white dark:bg-gray-800 shadow-lg hover:shadow-xl transition-all duration-200"
                 onClick={() => setIsOpen(!isOpen)}
             >
                 {isOpen ? (
-                    <X size={24} className="text-gray-700 dark:text-gray-200" />
+                    <X size={22} className="text-gray-700 dark:text-gray-200" />
                 ) : (
-                    <Menu size={24} className="text-gray-700 dark:text-gray-200" />
+                    <Menu size={22} className="text-gray-700 dark:text-gray-200" />
                 )}
             </button>
 
@@ -47,7 +46,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ setActiveMenu }) => {
                         initial="closed"
                         animate="open"
                         exit="closed"
-                        className="fixed inset-0 bg-black/30 z-30 md:hidden"
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm z-30 md:hidden"
                         onClick={() => setIsOpen(false)}
                     />
                 )}
@@ -58,13 +57,13 @@ export const Sidebar: React.FC<SidebarProps> = ({ setActiveMenu }) => {
                 variants={sidebarVariants}
                 initial="closed"
                 animate={isOpen ? "open" : "closed"}
-                className="fixed top-0 left-0 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 overflow-hidden md:hidden"
+                className="fixed top-0 left-0 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 overflow-hidden md:hidden shadow-xl"
             >
                 <SidebarContent setActiveMenu={setActiveMenu} setIsOpen={setIsOpen} currentPath={currentPath} setActiveLink={setActiveLink} activeLink={activeLink} />
             </motion.aside>
 
             {/* Sidebar for desktop (always visible) */}
-            <aside className="hidden md:block w-64 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40">
+            <aside className="hidden md:block w-72 h-screen bg-white dark:bg-gray-800 border-r border-gray-200 dark:border-gray-700 z-40 shadow-lg">
                 <SidebarContent setActiveMenu={setActiveMenu} setIsOpen={undefined} currentPath={currentPath} setActiveLink={setActiveLink} activeLink={activeLink} />
             </aside>
         </>
@@ -81,13 +80,13 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
     return (
         <div className="flex flex-col h-full">
             {/* Logo/Title */}
-            <div className="p-4 flex items-center justify-between border-b border-gray-200 dark:border-gray-700">
-                <div className="text-xl font-bold text-primary dark:text-white">
+            <div className="p-6 flex items-center justify-between  border-gray-200 dark:border-gray-700">
+                <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300">
                     Drive
                 </div>
                 {setIsOpen && (
                     <button
-                        className="md:hidden p-2 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
+                        className="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                         onClick={() => setIsOpen(false)}
                     >
                         <X size={20} className="text-gray-700 dark:text-gray-200" />
@@ -95,7 +94,7 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
                 )}
             </div>
             {/* Navigation */}
-            <nav className="flex-1 overflow-y-auto py-4 px-2 space-y-1">
+            <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-2">
                 <NavItem
                     to="/"
                     icon={<Home size={20} />}
@@ -162,13 +161,15 @@ const NavItem = ({
             onClick();
             setActiveMenu(label);
         }}
-        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all duration-200
+        className={`flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all duration-200
             ${active
-                ? "bg-primary/10 text-primary dark:bg-primary/20 dark:text-white border-l-4 border-primary"
-                : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700"
+                ? "bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 font-medium shadow-sm"
+                : "text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50"
             }`}
     >
-        <div className={`${active ? "text-primary" : "text-gray-500 dark:text-gray-400"}`}>
+        <div className={`${active
+            ? "text-blue-600 dark:text-blue-400"
+            : "text-gray-500 dark:text-gray-400"}`}>
             {icon}
         </div>
         <span className="font-medium">{label}</span>

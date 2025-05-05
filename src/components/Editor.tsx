@@ -59,7 +59,7 @@ export const Editor: React.FC = () => {
                             id: config.user.id,
                             name: config.user.name,
                         },
-                        callbackUrl: `https://campus-latvia-taking-accounting.trycloudflare.com/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`,
+                        callbackUrl: `https://blocked-alternatives-install-casa.trycloudflare.com/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`,
                         customization: {
                             forcesave: true,
                         }

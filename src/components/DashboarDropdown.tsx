@@ -50,20 +50,20 @@ export const DashboardDropdown: React.FC<DashboardDropdownProps> = ({
         <div ref={dropdownRef} className="relative">
             <button
                 onClick={handleToggle}
-                className="flex items-center gap-1 px-3 py-1 rounded hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
+                className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-50 dark:bg-gray-800 hover:bg-gray-100 dark:hover:bg-gray-700/50 text-gray-700 dark:text-gray-200 transition-all duration-200 shadow-sm"
             >
-                {displayLabel} <ChevronDown size={16} />
+                {displayLabel} <ChevronDown size={16} className="text-gray-500 dark:text-gray-400" />
             </button>
 
             {isOpen && (
-                <ul className="absolute bg-white dark:bg-neutral-dark border dark:border-gray-700 rounded shadow-md w-40 z-50">
+                <ul className="absolute mt-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg w-48 z-50 overflow-hidden">
                     {Array.from(options.entries()).map(([key]) => (
                         <li
                             key={key}
                             onClick={() => handleSelect(key)}
-                            className="px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer flex justify-between items-center"
+                            className="px-4 py-2.5 hover:bg-gray-50 dark:hover:bg-gray-700/50 cursor-pointer flex justify-between items-center text-gray-700 dark:text-gray-200 transition-colors duration-200"
                         >
-                            <span>{key}</span>
+                            <span className="text-sm">{key}</span>
                             {selectedKey === key && <Check size={16} className="text-blue-500" />}
                         </li>
                     ))}
