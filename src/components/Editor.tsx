@@ -14,7 +14,7 @@ export const Editor: React.FC = () => {
             try {
                 const decodedConfig = decodeURIComponent(configParam);
                 const parsedConfig: OnlyOfficeConfig = JSON.parse(decodedConfig);
-                console.log("url", parsedConfig.documentUrl)
+                console.log("url", encodeURI(parsedConfig.documentUrl))
                 setConfig(parsedConfig);
             } catch (err) {
                 setError("Không thể đọc cấu hình editor");
@@ -50,7 +50,7 @@ export const Editor: React.FC = () => {
                         fileType: config.fileType,
                         key: config.documentKey,
                         title: config.documentTitle,
-                        url: config.documentUrl,
+                        url: encodeURI(config.documentUrl),
                     },
                     documentType: config.documentType,
                     editorConfig: {
@@ -59,7 +59,7 @@ export const Editor: React.FC = () => {
                             id: config.user.id,
                             name: config.user.name,
                         },
-                        callbackUrl: `https://momentum-pharmacies-fell-brooklyn.trycloudflare.com/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`,
+                        callbackUrl: `https://resources-bosnia-spring-includes.trycloudflare.com/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`,
                         customization: {
                             forcesave: true,
                         }

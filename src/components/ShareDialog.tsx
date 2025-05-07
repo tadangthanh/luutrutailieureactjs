@@ -8,7 +8,6 @@ import { searchUser } from "../services/UserSearchApi";
 import { useDebounce } from "use-debounce"; // <== thêm
 import { User } from "../types/User";
 import { toast } from "sonner";
-import Pagination from "./Pagination";
 import { PendingPermission } from "../types/PendingPermission";
 
 interface ShareDialogProps {
@@ -334,13 +333,13 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                                 </div>
                             ))
                         )}
-                        <Pagination
+                        {/* <Pagination
                             currentPage={pageNoPermission + 1}
                             totalPages={permissionPage.totalPage}
-                            onPageChange={(page) => {
+                            onPageChange={(page: number) => {
                                 setPageNoPermission(page - 1);
                             }}
-                        />
+                        /> */}
                     </div>
 
                     {/* Nút Xong ở dưới cùng bên phải */}

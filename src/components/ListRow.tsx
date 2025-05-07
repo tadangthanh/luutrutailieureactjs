@@ -5,7 +5,7 @@ import {
     FolderClosed,
     History,
     Bookmark,
-    MessageSquare
+    LucideBotMessageSquare
 } from "lucide-react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
@@ -93,7 +93,6 @@ const ListRow: React.FC<ListRowProps> = ({
 
     // Trong component
     const navigate = useNavigate();
-
     const handleAsk = (id: number) => {
         navigate(`/document-assistant?documentId=${id}`);
     };
@@ -137,7 +136,7 @@ const ListRow: React.FC<ListRowProps> = ({
                             className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                             title="AI hỏi đáp"
                         >
-                            <MessageSquare size={16} />
+                            <LucideBotMessageSquare size={16} />
                         </button>
                     }
 

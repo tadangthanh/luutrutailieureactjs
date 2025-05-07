@@ -9,11 +9,13 @@ import {
     UserPlus,
     File,
     History,
+    LucideBotMessageSquare,
 } from "lucide-react";
 import React, { useState, useRef, useEffect } from "react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
 import { motion, AnimatePresence } from "framer-motion";
+import { useNavigate } from "react-router-dom";
 interface FileCardProps {
     doc: ItemResponse;
     layout: "grid" | "list";
@@ -57,7 +59,11 @@ const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
-
+    // Trong component
+    const navigate = useNavigate();
+    const handleAsk = (id: number) => {
+        navigate(`/document-assistant?documentId=${id}`);
+    };
     return (
         <div
             onClick={() => onClick(doc)}
@@ -106,7 +112,10 @@ const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
                             <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(doc.id)} />
                             {doc.itemType !== "FOLDER" && (
                                 <>
-                                    <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(doc.id)} />
+                                    <Option label="AI hỏi đáp" icon={<LucideBotMessageSquare size={16} />} onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleAsk(doc.id);
+                                    }} />
                                     <Option label="Lịch sử phiên bản" icon={<History size={16} />} onClick={() => handleVersionHistory(doc.id)} />
                                 </>
                             )}

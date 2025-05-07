@@ -230,7 +230,7 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
                     />
 
                     {debouncedKeyword && isSearchResultsVisible && searchResults.length > 0 && (
-                        <div ref={searchResultsRef} className="absolute z-50 right-0 mt-2 w-[50vw] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-80 overflow-auto">
+                        <div ref={searchResultsRef} className="absolute z-50 right-0 mt-2 w-[50vw] bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl shadow-lg max-h-80 overflow-auto custom-scrollbar">
                             {searchResults.map((result, index) => (
                                 <button
                                     key={index}

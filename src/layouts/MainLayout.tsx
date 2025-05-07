@@ -11,6 +11,7 @@ import { UploadProgress } from "../components/UploadProgress";
 import { ItemContext } from "../contexts/ItemContext";
 import { getItems } from "../services/ItemApi";
 import { createFolder } from "../services/FolderApi";
+import { useLocation } from "react-router-dom";
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
     const [activeMenu, setActiveMenu] = useState<string>("Tài liệu của tôi");
@@ -240,6 +241,12 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     const onCancelNotificationBottomLeft = () => {
         onCancelRef.current();
     };
+    const [activeLink, setActiveLink] = useState<string>("");
+    const location = useLocation();
+    useEffect(() => {
+        setActiveLink(location.pathname);
+        setItems([]);
+    }, [location.pathname])
     return (
         <ItemContext.Provider
             value={{
@@ -268,7 +275,9 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 newFolderName,
                 setNewFolderName,
                 handleCreateFolder,
-                onCancelNotificationBottomLeft
+                onCancelNotificationBottomLeft,
+                setActiveLink,
+                activeLink
             }}
         >
             <div className="flex h-screen relative">

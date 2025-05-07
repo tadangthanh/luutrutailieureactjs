@@ -1,8 +1,9 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Asterisk, Home, Share2, Trash2, Menu, Bookmark, X } from "lucide-react";
+import { Asterisk, Home,  Trash2, Menu, Bookmark, X } from "lucide-react";
 import { JSX } from "react";
 import { motion, AnimatePresence } from "framer-motion";
+import { useItemContext } from "../contexts/ItemContext";
 
 interface SidebarProps {
     setActiveMenu: (menu: string) => void;
@@ -10,7 +11,7 @@ interface SidebarProps {
 
 export const Sidebar: React.FC<SidebarProps> = ({ setActiveMenu }) => {
     const [isOpen, setIsOpen] = useState(false);
-    const [activeLink, setActiveLink] = useState<string>("");
+    const { activeLink, setActiveLink } = useItemContext();
     const location = useLocation();
     const currentPath = location.pathname;
 
@@ -103,14 +104,14 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
                     onClick={() => setActiveLink("/")}
                     setActiveMenu={setActiveMenu}
                 />
-                <NavItem
+                {/* <NavItem
                     to="/shared"
                     icon={<Share2 size={20} />}
                     label="Đã chia sẻ"
                     active={activeLink === "/shared"}
                     onClick={() => setActiveLink("/shared")}
                     setActiveMenu={setActiveMenu}
-                />
+                /> */}
                 <NavItem
                     to="/saved"
                     icon={<Bookmark size={20} />}

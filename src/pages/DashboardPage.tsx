@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import DashboardFilterBar from "../components/DashboardFilterBar";
 import DashboardListView from "../components/DashboardListView";
 import DashboardGridView from "../components/DashboardGridView";
@@ -197,6 +197,9 @@ const DashboardPage = () => {
         }
     };
 
+    useEffect(() => {
+
+    }, [])
     const buildFilters = (parentId: number | null) =>
         (prev: string[]) => {
             const base = prev.filter(i => !i.startsWith('parent.id:'));
