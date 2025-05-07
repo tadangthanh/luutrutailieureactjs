@@ -39,7 +39,7 @@ export const Editor: React.FC = () => {
             </div>
         );
     }
-
+    const baseUrl = "https://resources-bosnia-spring-includes.trycloudflare.com";
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <DocumentEditor
@@ -50,7 +50,7 @@ export const Editor: React.FC = () => {
                         fileType: config.fileType,
                         key: config.documentKey,
                         title: config.documentTitle,
-                        url: encodeURI(config.documentUrl),
+                        url: `${baseUrl}/api/v1/documents/${config.documentId}/download/${localStorage.getItem("accessToken")}`,
                     },
                     documentType: config.documentType,
                     editorConfig: {
@@ -59,10 +59,10 @@ export const Editor: React.FC = () => {
                             id: config.user.id,
                             name: config.user.name,
                         },
-                        callbackUrl: `https://resources-bosnia-spring-includes.trycloudflare.com/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`,
+                        callbackUrl: `${baseUrl}/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`,
                         customization: {
                             forcesave: true,
-                        }
+                        },
                     }
                 }}
                 width="100%"
