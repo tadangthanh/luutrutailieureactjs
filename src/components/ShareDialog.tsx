@@ -112,17 +112,17 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
 
 
     const handleSelectUser = (user: UserIndexResponse) => {
-        setEmail(user.user.email);
-        const userSelected = { ...user.user, id: +user.user.id }
-        setUserSelected(userSelected);
-        setSuggestUserPage({
-            pageNo: 0,
-            pageSize: 10,
-            totalPage: 0,
-            hasNext: false,
-            totalItems: 0,
-            items: [],
-        });
+        // setEmail(user.user.email);
+        // const userSelected = { ...user.user, id: +user.user.id, totalDocuments: 0, createdBy: null, createdAt: null, updatedBy: null, updatedAt: null }
+        // setUserSelected(userSelected);
+        // setSuggestUserPage({
+        //     pageNo: 0,
+        //     pageSize: 10,
+        //     totalPage: 0,
+        //     hasNext: false,
+        //     totalItems: 0,
+        //     items: [],
+        // });
     };
 
     const handleAddPermission = async () => {

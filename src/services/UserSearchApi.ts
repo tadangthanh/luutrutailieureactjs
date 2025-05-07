@@ -9,3 +9,10 @@ export const searchUser = async (query: string, page = 0, size = 10) => {
         toast.error("Failed to fetch users.");
     }
 }
+export const getUserProfile = async () => {
+    try {
+        return (await api.get(`${apiUrl}/user/info`)).data;
+    } catch (error) {
+        toast.error("Failed to fetch users.");
+    }
+}
