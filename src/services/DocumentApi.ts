@@ -61,9 +61,9 @@ export const downloadDoc = async (documentId: number) => {
         toast.error("Failed to download document.");
     }
 };
-export const fetchDocAsFile = async (documentId: number): Promise<File | null> => {
+export const fetchDocAsFilePdf = async (documentId: number): Promise<File | null> => {
     try {
-        const response = await api.get(`/documents/${documentId}/download`, {
+        const response = await api.get(`/documents/${documentId}/download-as-pdf`, {
             responseType: "blob",
         });
 

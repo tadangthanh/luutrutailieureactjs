@@ -14,7 +14,8 @@ import { getChatSessions, createChatSession, delChatSession, getChatSessionByDoc
 import { ChatSessionInit } from "../types/ChatSessionInit";
 import { TypingIndicator } from "../components/TypingIndicator";
 import { useSearchParams } from "react-router-dom";
-import { fetchDocAsFile } from "../services/DocumentApi";
+import { fetchDocAsFilePdf } from "../services/DocumentApi";
+import FullScreenLoading from "../components/FullScreenLoading";
 
 const DocumentQA: React.FC = () => {
     // ====== STATE ======
@@ -37,6 +38,7 @@ const DocumentQA: React.FC = () => {
         totalItems: 0,
         items: [],
     });
+    const [isLoadingDoc, setIsLoadingDoc] = useState(false);
 
     // ====== REF ======
     const filesInputRef = useRef<HTMLInputElement>(null);
@@ -186,7 +188,7 @@ const DocumentQA: React.FC = () => {
                     expirationTime: uploaded.expirationTime,
                     createTime: uploaded.createTime,
                     chatSessionId: 0,
-                    documentId: Number(documentId),
+                    documentId: documentId ? Number(documentId) : null,
                 });
             }
             const parts = assistantFiles.map((f) => ({
@@ -284,7 +286,7 @@ const DocumentQA: React.FC = () => {
                     expirationTime: uploaded.expirationTime,
                     createTime: uploaded.createTime,
                     chatSessionId: chatSelected.id,
-                    documentId: Number(documentId),
+                    documentId: documentId ? Number(documentId) : null,
                 });
             }
             // CHUA CAC FILE DA UPLOAD LEN CLOUD AI VA LUU VAO DATABASE
@@ -467,34 +469,35 @@ const DocumentQA: React.FC = () => {
     }, [documentId]);
 
     const fetchDocNotExisted = async () => {
-        fetchDocAsFile(Number(documentId))
-            .then((file) => {
-                console.log("file", file);
-                if (file) {
-                    // Kiểm tra type của file, bỏ qua charset
-                    const fileType = file.type.split(';')[0];
-                    if (fileType !== "application/pdf") {
-                        toast.error("Tài liệu không phải định dạng PDF.");
-                        return;
-                    }
-                    // Tạo file mới với type đã được xử lý
-                    const fileWithCorrectType = new File([file], file.name, {
-                        type: fileType
-                    });
-                    setFilesInput([fileWithCorrectType]);
+        setIsLoadingDoc(true);
+        try {
+            const file = await fetchDocAsFilePdf(Number(documentId));
+            if (file) {
+                // Kiểm tra type của file, bỏ qua charset
+                const fileType = file.type.split(';')[0];
+                if (fileType !== "application/pdf") {
+                    toast.error("Tài liệu không phải định dạng PDF.");
+                    return;
                 }
-            })
-            .catch((error) => {
-                console.error("Error:", error);
-                toast.error("Không thể tải tài liệu. Vui lòng thử lại.");
-            }).finally(() => {
-                const url = new URL(window.location.href);
-                url.searchParams.delete("documentId");
-                window.history.replaceState({}, "", url);
-            })
+                // Tạo file mới với type đã được xử lý
+                const fileWithCorrectType = new File([file], file.name, {
+                    type: fileType
+                });
+                setFilesInput([fileWithCorrectType]);
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            toast.error("Không thể tải tài liệu. Vui lòng thử lại.");
+        } finally {
+            setIsLoadingDoc(false);
+            const url = new URL(window.location.href);
+            url.searchParams.delete("documentId");
+            window.history.replaceState({}, "", url);
+        }
     }
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
+            {isLoadingDoc && <FullScreenLoading />}
             {/* Sidebar */}
             <div className="md:w-auto md:mt-20 dark:bg-gray-900 flex-shrink-0">
                 <SidebarChatList

@@ -176,7 +176,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             webSocketService.unsubscribeUploadProgress();
             webSocketService.unsubscribeUploadSuccess();
         }
-    }, [handleMessage]);
+    }, [handleMessage, handleUploadCompleted, handleUploadFailure]);
     useEffect(() => {
         window.addEventListener("dragover", handleDragOver);
         window.addEventListener("dragleave", handleDragLeave);
