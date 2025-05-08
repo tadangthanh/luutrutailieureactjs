@@ -20,6 +20,9 @@ import { OnlyOfficeConfig } from "../types/OnlyOfficeConfig";
 import { useNavigate } from "react-router-dom";
 import { removeItem, saveItem } from "../services/ItemSavedApi";
 import { useItemContext } from "../contexts/ItemContext";
+import FullScreenLoading from "../components/FullScreenLoading";
+import { hasPermissionEditor } from "../services/PermissionApi";
+import { useDelayedLoading } from "../utils/Loading";
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
@@ -143,12 +146,32 @@ const DashboardPage = () => {
 
         }, 3000);
     };
+
     const [openShareDialog, setOpenShareDialog] = useState(false);
     const [idItemToShare, setIdItemToShare] = useState<number | null>(null); // ID của item đang chia sẻ
+    const [isLoading, setIsLoading] = useState(false);
+    const showLoading = useDelayedLoading(isLoading); // dùng hook
+
     const handleShare = (id: number) => {
-        setOpenMenuId(null);
-        setIdItemToShare(id);
-        setOpenShareDialog(true);
+        // kiem tra xem nguoi dung co quyen chinh sua hay k
+        setIsLoading(true);
+        hasPermissionEditor(id).then((res) => {
+
+            if (res.status === 200) {
+                if (res.data === true) {
+                    setOpenMenuId(null);
+                    setIdItemToShare(id);
+                    setOpenShareDialog(true);
+                    return;
+                }
+            } else {
+                setIsLoading(false);
+                toast.error("Bạn không có quyền chỉnh sửa tài liệu này");
+            }
+        }).finally(() => {
+            setIsLoading(false)
+        })
+
     }
     const [infoItem, setInfoItem] = useState<ItemResponse | null>(null);
     const [isInfoLoading, setIsInfoLoading] = useState(false);
@@ -303,6 +326,7 @@ const DashboardPage = () => {
             }}
             onClick={() => contextMenu.visible && setContextMenu({ ...contextMenu, visible: false })}
             className="relative width-full h-full flex flex-col gap-4 p-4">
+            {showLoading && <FullScreenLoading />}
             {contextMenu.visible && (
                 <EmptyAreaContextMenu
                     x={contextMenu.x}

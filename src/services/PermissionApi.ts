@@ -10,7 +10,13 @@ export const getPagePermissionByItemId = async (itemId: number, page = 0, size =
         toast.error("Failed to fetch permission items.");
     }
 }
-
+export const hasPermissionEditor = async (id: number) => {
+    try {
+        return (await api.get(`${apiUrl}/permissions/has-permission/${id}`)).data;
+    } catch (error) {
+        toast.error("Failed to check permission.");
+    }
+}
 export const addPermission = async (itemId: number, permissionRequest: PermissionRequest) => {
     try {
         return (await api.post(`${apiUrl}/permissions/item/${itemId}`, permissionRequest)).data;

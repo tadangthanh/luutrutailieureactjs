@@ -38,6 +38,7 @@ export const getTrash = async (page = 0, size = 10) => {
         toast.error("Failed to fetch trash items.");
     }
 }
+
 export const cleanTrash = async () => {
     try {
         return (await api.delete(`${apiUrl}/items/clean-trash`)).data;

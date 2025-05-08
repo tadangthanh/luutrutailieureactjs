@@ -47,7 +47,7 @@ const UserSlideOver: React.FC<UserSlideOverProps> = ({ isOpen, onClose }) => {
                 className={`fixed inset-y-0 right-0 w-full max-w-md bg-white dark:bg-gray-800 shadow-xl transform transition-transform duration-300 ease-in-out ${isOpen ? 'translate-x-0' : 'translate-x-full'
                     }`}
             >
-                <div className="h-full flex flex-col">
+                <div className="h-full  flex flex-col">
                     {/* Header */}
                     <div className="px-6 py-4 border-b border-gray-200 dark:border-gray-700 flex items-center justify-between">
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Thông tin tài khoản</h2>
@@ -60,7 +60,7 @@ const UserSlideOver: React.FC<UserSlideOverProps> = ({ isOpen, onClose }) => {
                     </div>
 
                     {/* Content */}
-                    <div className="flex-1 overflow-y-auto p-6">
+                    <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
                         {user ? (
                             <div className="space-y-6">
                                 <div className="flex flex-col items-center">

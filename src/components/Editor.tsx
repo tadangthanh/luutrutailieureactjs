@@ -39,7 +39,7 @@ export const Editor: React.FC = () => {
             </div>
         );
     }
-    const baseUrl = "https://resources-bosnia-spring-includes.trycloudflare.com";
+    const baseUrl = "https://survivors-fonts-resistance-surrey.trycloudflare.com";
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <DocumentEditor
