@@ -22,7 +22,7 @@ import { removeItem, saveItem } from "../services/ItemSavedApi";
 import { useItemContext } from "../contexts/ItemContext";
 import FullScreenLoading from "../components/FullScreenLoading";
 import { hasPermissionEditor } from "../services/PermissionApi";
-import { useDelayedLoading } from "../utils/Loading";
+import { useDelayedLoading } from "../hooks/Loading";
 const DashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);

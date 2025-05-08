@@ -16,6 +16,7 @@ import { TypingIndicator } from "../components/TypingIndicator";
 import { useSearchParams } from "react-router-dom";
 import { fetchDocAsFilePdf } from "../services/DocumentApi";
 import FullScreenLoading from "../components/FullScreenLoading";
+import { useFullscreenLoading } from "../hooks/UseFullscreenLoading";
 
 const DocumentQA: React.FC = () => {
     // ====== STATE ======
@@ -38,7 +39,6 @@ const DocumentQA: React.FC = () => {
         totalItems: 0,
         items: [],
     });
-    const [isLoadingDoc, setIsLoadingDoc] = useState(false);
 
     // ====== REF ======
     const filesInputRef = useRef<HTMLInputElement>(null);
@@ -110,8 +110,16 @@ const DocumentQA: React.FC = () => {
             await deleteFileStorageAi(file.name);
         }
     };
+    const {
+        isLoading,
+        message,
+        startLoading,
+        stopLoading,
+    } = useFullscreenLoading();
     //====== DELETE CHAT SESSION ======
     const handleChatDelete = async (id: number) => {
+        startLoading("Đang xóa cuộc trò chuyện...");
+
         const fileUploaded = await getAssistantFilesByChatSessionId(id)
             .then((res) => {
                 if (res.data.status === 200) {
@@ -135,7 +143,6 @@ const DocumentQA: React.FC = () => {
                 if (chatSelected?.id === id) setChatSelected(null);
                 setConversations([]);
                 setFilesUploaded([]);
-                // setFilesSelected([]);
                 setQuestion("");
                 setShowUploadedFiles(false);
                 setLoading(false);
@@ -145,6 +152,8 @@ const DocumentQA: React.FC = () => {
             }
         } catch (error) {
             toast.error("Lỗi khi xóa cuộc trò chuyện.");
+        } finally {
+            stopLoading();
         }
     };
 
@@ -469,7 +478,7 @@ const DocumentQA: React.FC = () => {
     }, [documentId]);
 
     const fetchDocNotExisted = async () => {
-        setIsLoadingDoc(true);
+        startLoading("Đang chuyển đổi tài liệu...")
         try {
             const file = await fetchDocAsFilePdf(Number(documentId));
             if (file) {
@@ -489,7 +498,7 @@ const DocumentQA: React.FC = () => {
             console.error("Error:", error);
             toast.error("Không thể tải tài liệu. Vui lòng thử lại.");
         } finally {
-            setIsLoadingDoc(false);
+            stopLoading();
             const url = new URL(window.location.href);
             url.searchParams.delete("documentId");
             window.history.replaceState({}, "", url);
@@ -497,7 +506,7 @@ const DocumentQA: React.FC = () => {
     }
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
-            {isLoadingDoc && <FullScreenLoading />}
+            {isLoading && <FullScreenLoading message={message} />}
             {/* Sidebar */}
             <div className="md:w-auto md:mt-20 dark:bg-gray-900 flex-shrink-0">
                 <SidebarChatList
