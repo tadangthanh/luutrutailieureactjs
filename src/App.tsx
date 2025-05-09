@@ -58,6 +58,12 @@ function App() {
                                 <MainLayout><SavedDocumentsPage /></MainLayout>
                             </PrivateRoute>
                         } />
+                        {/* shared with me */}
+                        <Route path="/shared-with-me" element={
+                            <PrivateRoute>
+                                <MainLayout><SharedDashboardPage /></MainLayout>
+                            </PrivateRoute>
+                        } />
                         <Route path="/editor" element={<Editor />} />
                     </Routes>
                 </Router>

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Asterisk, Home,  Trash2, Menu, Bookmark, X } from "lucide-react";
+import { Asterisk, Trash2, Menu, Bookmark, X, Users, Folder } from "lucide-react";
 import { JSX } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useItemContext } from "../contexts/ItemContext";
@@ -98,20 +98,20 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
             <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-2">
                 <NavItem
                     to="/"
-                    icon={<Home size={20} />}
+                    icon={<Folder size={20} />}
                     label="Tài liệu của tôi"
                     active={currentPath === "/"}
                     onClick={() => setActiveLink("/")}
                     setActiveMenu={setActiveMenu}
                 />
-                {/* <NavItem
-                    to="/shared"
-                    icon={<Share2 size={20} />}
-                    label="Đã chia sẻ"
-                    active={activeLink === "/shared"}
-                    onClick={() => setActiveLink("/shared")}
+                <NavItem
+                    to="/shared-with-me"
+                    icon={<Users size={20} />}
+                    label="Được chia sẻ với tôi"
+                    active={activeLink === "/shared-with-me"}
+                    onClick={() => setActiveLink("/shared-with-me")}
                     setActiveMenu={setActiveMenu}
-                /> */}
+                />
                 <NavItem
                     to="/saved"
                     icon={<Bookmark size={20} />}

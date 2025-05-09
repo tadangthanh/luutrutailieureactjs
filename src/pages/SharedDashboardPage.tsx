@@ -5,7 +5,7 @@ import DashboardGridView from "../components/DashboardGridView";
 import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
 import { ItemResponse } from "../types/ItemResponse";
-import { delItem, getItems, updateItem } from "../services/ItemApi";
+import { delItem, getItemsSharedWithMe, updateItem } from "../services/ItemApi";
 import ShareDialog from "../components/ShareDialog";
 import { copyDocument } from "../services/DocumentApi";
 import BottomLeftNotification from "../components/BottomLeftNotification";
@@ -30,10 +30,10 @@ const SharedDashboardPage = () => {
         items: [],
     });
 
-    // Lấy danh sách tài liệu đã chia sẻ
+    // Lấy danh sách tài liệu được chia sẻ với tôi
     useEffect(() => {
         setIsLoading(true);
-        getItems(pageNo, 20, [...items, "shared:true"])
+        getItemsSharedWithMe(pageNo, 20, items)
             .then((response) => {
                 if (response.status === 200) {
                     const newItems = response.data.items;
@@ -190,9 +190,9 @@ const SharedDashboardPage = () => {
 
     const handleVersionHistory = (id: number) => {
     }
+
     return (
         <div className="relative width-full h-full flex flex-col gap-4 p-4">
-
             <DashboardFilterBar
                 layout={layout}
                 setItems={setItems}
@@ -200,11 +200,6 @@ const SharedDashboardPage = () => {
                 openDropdownId={openDropdownId}
                 setOpenDropdownId={setOpenDropdownId}
             />
-
-            <div className="mb-4">
-                <h1 className="text-2xl font-bold text-secondary">Tài liệu đã chia sẻ</h1>
-                <p className="text-gray-600">Danh sách các tài liệu mà bạn đã chia sẻ với người khác</p>
-            </div>
 
             <AnimatePresence mode="wait">
                 <motion.div
