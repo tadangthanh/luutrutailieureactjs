@@ -12,40 +12,34 @@ import { Option } from "./Option";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDate, formatDateTime } from "../utils/FormatDateTimeUtil";
 import { useNavigate } from "react-router-dom";
+import { useDashboard } from "../contexts/DashboardContext";
 
 interface ListRowProps {
-    item: ItemResponse
+    item: ItemResponse;
     openMenuId: number | null;
     setOpenMenuId: (id: number | null) => void;
-    handleOpen(id: number): void;
-    handleRename(id: number): void;
-    handleDownload(id: number): void;
-    handleShare(id: number): void;
-    handleInfo(id: number): void;
-    handleCopy(id: number): void;
-    handleMoveToTrash(id: number): void;
-    handleVersionHistory(id: number): void;
-    onClick: (item: ItemResponse) => void;
-    handleSave: (id: number) => void;
-    handleUnSave: (id: number) => void;
 }
 
 const ListRow: React.FC<ListRowProps> = ({
     item,
     openMenuId,
     setOpenMenuId,
-    handleOpen,
-    handleRename,
-    handleDownload,
-    handleShare,
-    handleInfo,
-    handleCopy,
-    handleMoveToTrash,
-    handleVersionHistory,
-    onClick,
-    handleSave,
-    handleUnSave
 }) => {
+    const {
+        handleOpen,
+        handleRename,
+        handleDownload,
+        handleShare,
+        handleInfo,
+        handleCopy,
+        handleMoveToTrash,
+        handleVersionHistory,
+        handleItemClick,
+        handleSave,
+        handleUnSave,
+        isEditor
+    } = useDashboard();
+
     const menuRef = useRef<HTMLDivElement | null>(null);
     const isMenuOpen = openMenuId === item.id;
 
@@ -67,7 +61,6 @@ const ListRow: React.FC<ListRowProps> = ({
         setOpenMenuId(isMenuOpen ? null : item.id);
     };
 
-
     const renderIcon = () => item.itemType === "FOLDER"
         ? <FolderClosed size={16} className="mr-2" />
         : <FileText size={16} className="mr-2" />;
@@ -78,6 +71,7 @@ const ListRow: React.FC<ListRowProps> = ({
         }
         return ownerEmail;
     }
+
     function formatBytes(bytes: number | null, decimals = 2) {
         if (!bytes) return '--';
         if (bytes === 0) return '0 Bytes';
@@ -91,7 +85,6 @@ const ListRow: React.FC<ListRowProps> = ({
         return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i];
     }
 
-    // Trong component
     const navigate = useNavigate();
     const handleAsk = (id: number) => {
         navigate(`/document-assistant?documentId=${id}`);
@@ -99,7 +92,7 @@ const ListRow: React.FC<ListRowProps> = ({
 
     return (
         <div
-            onClick={() => onClick(item)}
+            onClick={() => handleItemClick(item)}
             className="group cursor-pointer grid grid-cols-6 items-center px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm text-gray-800 dark:text-gray-200 border-t border-gray-200 dark:border-gray-700"
         >
             {/* Cột tên */}
@@ -217,7 +210,7 @@ const ListRow: React.FC<ListRowProps> = ({
                                         <Option label="Lịch sử phiên bản" icon={<History size={16} />} onClick={() => handleVersionHistory(item.id)} />
                                     </>
                                 )}
-                                <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(item.id)} />
+                                {isEditor && <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(item.id)} />}
                             </ul>
                         </motion.div>
                     )}

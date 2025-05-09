@@ -9,7 +9,6 @@ import PublicRoute from "./routes/PublicRoute";
 import { WebSocketProvider } from "./components/WebSocketProvider";
 import { Toaster } from "sonner";
 import DocumentQA from "./pages/DocumentQA";
-import SharedDashboardPage from "./pages/SharedDashboardPage";
 import { Editor } from "./components/Editor";
 import SavedDocumentsPage from "./pages/SavedDocumentsPage";
 
@@ -31,7 +30,7 @@ function App() {
                         {/* Protected Routes */}
                         <Route path="/" element={
                             <PrivateRoute>
-                                <MainLayout><DashboardPage /></MainLayout>
+                                <MainLayout><DashboardPage isSharedView={false} /></MainLayout>
                             </PrivateRoute>
                         } />
                         {/* trash */}
@@ -55,7 +54,7 @@ function App() {
                         {/* shared with me */}
                         <Route path="/shared-with-me" element={
                             <PrivateRoute>
-                                <MainLayout><SharedDashboardPage /></MainLayout>
+                                <MainLayout><DashboardPage isSharedView={true} /></MainLayout>
                             </PrivateRoute>
                         } />
                         <Route path="/editor" element={<Editor />} />

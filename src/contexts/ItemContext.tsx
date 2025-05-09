@@ -6,6 +6,7 @@ type ItemContextType = {
     items: string[];
     setItems: (items: string[] | ((prev: string[]) => string[])) => void;
     itemPage: PageResponse<ItemResponse>;
+    pageNo: number;
     setActiveLink: (activeLink: string) => void;
     activeLink: string;
     setItemPage: (itemPage: PageResponse<ItemResponse> | ((prev: PageResponse<ItemResponse>) => PageResponse<ItemResponse>)) => void;

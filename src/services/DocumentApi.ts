@@ -36,7 +36,7 @@ export const copyDocument = async (documentId: number) => {
 }
 export const downloadDoc = async (documentId: number) => {
     try {
-        const response = await api.get(`/documents/${documentId}/download`, {
+        const response = await api.get(`/documents/${documentId}/download/${localStorage.getItem("accessToken")}`, {
             responseType: "blob",
         });
         const blob = new Blob([response.data]);

@@ -4,7 +4,7 @@ import DashboardListView from "../components/DashboardListView";
 import DashboardGridView from "../components/DashboardGridView";
 import { toast } from "sonner";
 import { ItemResponse } from "../types/ItemResponse";
-import { delItem, updateItem } from "../services/ItemApi";
+import { delItem, updateItem, getItems, getItemsSharedWithMe } from "../services/ItemApi";
 import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
 import { copyDocument, downloadDoc, getOnlyOfficeConfig } from "../services/DocumentApi";
@@ -23,14 +23,20 @@ import { useItemContext } from "../contexts/ItemContext";
 import FullScreenLoading from "../components/FullScreenLoading";
 import { hasPermissionEditor } from "../services/PermissionApi";
 import { useDelayedLoading } from "../hooks/Loading";
-const DashboardPage = () => {
+import { DashboardProvider } from "../contexts/DashboardContext";
+
+interface DashboardPageProps {
+    isSharedView?: boolean;
+}
+
+const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
     const [openMenuId, setOpenMenuId] = useState<number | null>(null);
     const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
     const [renamingItemId, setRenamingItemId] = useState<number | null>(null); // ID của item đang rename
     const [newName, setNewName] = useState<string>(""); // Giá trị tên mới
     const pathRef = useRef<Array<{ id: number; name: string }>>([
-        { id: 0, name: 'Kho lưu trữ của tôi' },
+        { id: 0, name: isSharedView ? "Kho lưu trữ chia sẻ" : "Kho lưu trữ của tôi" },
     ]);
     const [messageProcessing, setMessageProcessing] = useState<string | null>(null);
 
@@ -42,10 +48,9 @@ const DashboardPage = () => {
         x: number;
         y: number;
     }>({ visible: false, x: 0, y: 0 });
-    const { setItems, openCreateFolderModal, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isCreateFolder, setIsCreateFolder, newFolderName, setNewFolderName, handleCreateFolder, isProcessing, onCancelNotificationBottomLeft } = useItemContext();
+    const { setItems, items, pageNo, openCreateFolderModal, folderId, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isCreateFolder, setIsCreateFolder, newFolderName, setNewFolderName, handleCreateFolder, isProcessing, onCancelNotificationBottomLeft } = useItemContext();
 
     const [versionHistoryItemId, setVersionHistoryItemId] = useState<number | null>(null);
-
 
     const handleLoadMore = () => {
         if (itemPage.hasNext) setPageNo((prev: number) => prev + 1);
@@ -221,8 +226,28 @@ const DashboardPage = () => {
     };
 
     useEffect(() => {
+        const fetchData = async () => {
+            try {
+                const response = isSharedView
+                    ? await getItemsSharedWithMe(pageNo, 20, items)
+                    : await getItems(pageNo, 20, items);
 
-    }, [])
+                if (response.status === 200) {
+                    const newItems = response.data.items;
+                    setItemPage((prev) => ({
+                        ...response.data,
+                        items: [...prev.items, ...newItems],
+                    }));
+                } else {
+                    toast.error(response.message);
+                }
+            } catch (error) {
+                toast.error("Lỗi khi lấy dữ liệu");
+            }
+        };
+        fetchData();
+    }, [pageNo, items, isSharedView, setItemPage]);
+
     const buildFilters = (parentId: number | null) =>
         (prev: string[]) => {
             const base = prev.filter(i => !i.startsWith('parent.id:'));
@@ -242,11 +267,27 @@ const DashboardPage = () => {
         // 3) Rebuild your query filters
         setItems(buildFilters(id === 0 ? null : id));
     }
+    const [isEditor, setIsEditor] = useState(false);
+    useEffect(() => {
+        if (folderId) {
+            hasPermissionEditor(folderId).then((res) => {
+                if (res.status === 200) {
+                    setIsEditor(res.data);
+                }
+            })
+        } else {
+            setIsEditor(true);
+        }
+    }, [folderId])
     const handleItemClick = (item: ItemResponse) => {
         if (item.itemType === 'FOLDER') {
             // 1) Set the folder
             setFolderId(item.id);
-
+            hasPermissionEditor(item.id).then((res) => {
+                if (res.status === 200) {
+                    setIsEditor(res.data);
+                }
+            })
             // 2) Rebuild your query filters
             setItems(buildFilters(item.id));
 
@@ -315,166 +356,163 @@ const DashboardPage = () => {
         })
     }
 
+    const dashboardContextValue = {
+        isEditor,
+        handleSave,
+        handleUnSave,
+        handleVersionHistory,
+        handleItemClick,
+        handleCopy,
+        handleDownload,
+        handleInfo,
+        handleMoveToTrash,
+        handleOpen,
+        handleRename,
+        handleShare,
+        handleRestoreSuccess
+    };
+
     return (
-        <div
-            onContextMenu={(e) => {
-                e.preventDefault();
-                // Check nếu click vào vùng rỗng (not item)
-                if (e.target === e.currentTarget) {
-                    setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
-                }
-            }}
-            onClick={() => contextMenu.visible && setContextMenu({ ...contextMenu, visible: false })}
-            className="relative width-full h-full flex flex-col gap-4 p-4">
-            {showLoading && <FullScreenLoading />}
-            {contextMenu.visible && (
-                <EmptyAreaContextMenu
-                    x={contextMenu.x}
-                    y={contextMenu.y}
-                    onSelect={(action: any) => {
-                        if (action === "newFolder") openCreateFolderModal();
-                        else if (action === "uploadFile") triggerFileUpload();
-                        setContextMenu({ ...contextMenu, visible: false });
-                    }}
-                />
-            )}
-            {isCreateFolder && (
-                <TextInputModal
-                    title="Tạo thư mục mới"
-                    inputValue={newFolderName}
-                    setInputValue={setNewFolderName}
-                    onCancel={() => {
-                        setIsCreateFolder(false);
-                        setNewFolderName("");
-                    }}
-                    onConfirm={handleCreateFolder}
-                    confirmText="Lưu"
-                    placeholder="Nhập tên thư mục"
-                />
-            )}
-            <DashboardFilterBar
-                layout={layout}
-                setItems={setItems}
-                setLayout={setLayout}
-                openDropdownId={openDropdownId}
-                setOpenDropdownId={setOpenDropdownId}
-            />
-            <div>
-                {pathRef.current && pathRef.current.length > 1 && (
-                    <Breadcrumbs
-                        initialPath={pathRef.current}
-                        onClick={handleBreadCrumbsClick} // Cập nhật path khi click vào link
+        <DashboardProvider value={dashboardContextValue}>
+            <div
+                onContextMenu={(e) => {
+                    e.preventDefault();
+                    if (e.target === e.currentTarget) {
+                        setContextMenu({ visible: true, x: e.clientX, y: e.clientY });
+                    }
+                }}
+                onClick={() => contextMenu.visible && setContextMenu({ ...contextMenu, visible: false })}
+                className="relative width-full h-full flex flex-col gap-4 p-4">
+                {showLoading && <FullScreenLoading />}
+                {contextMenu.visible && (
+                    <EmptyAreaContextMenu
+                        x={contextMenu.x}
+                        y={contextMenu.y}
+                        onSelect={(action: any) => {
+                            if (action === "newFolder") openCreateFolderModal();
+                            else if (action === "uploadFile") triggerFileUpload();
+                            setContextMenu({ ...contextMenu, visible: false });
+                        }}
                     />
                 )}
-            </div>
-            <AnimatePresence mode="wait">
-                <motion.div
-                    key={layout}
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2 }}
-                >
-                    {layout === "list" ? (
-                        <DashboardListView
-                            handleSave={handleSave}
-                            handleUnSave={handleUnSave}
-                            handleVersionHistory={handleVersionHistory}
-                            onClick={handleItemClick}
-                            items={itemPage.items}
-                            openMenuId={openMenuId}
-                            setOpenMenuId={setOpenMenuId}
-                            handleCopy={handleCopy}
-                            handleDownload={handleDownload}
-                            handleInfo={handleInfo}
-                            handleMoveToTrash={handleMoveToTrash}
-                            handleOpen={handleOpen}
-                            handleRename={handleRename}
-                            handleShare={handleShare}
-                        />
-                    ) : (
-                        <DashboardGridView
-                            handleVersionHistory={handleVersionHistory}
-                            onClick={handleItemClick}
-                            items={itemPage.items}
-                            layout={layout}
-                            handleCopy={handleCopy}
-                            handleDownload={handleDownload}
-                            handleInfo={handleInfo}
-                            handleMoveToTrash={handleMoveToTrash}
-                            handleOpen={handleOpen}
-                            handleRename={handleRename}
-                            handleShare={handleShare}
+                {isCreateFolder && (
+                    <TextInputModal
+                        title="Tạo thư mục mới"
+                        inputValue={newFolderName}
+                        setInputValue={setNewFolderName}
+                        onCancel={() => {
+                            setIsCreateFolder(false);
+                            setNewFolderName("");
+                        }}
+                        onConfirm={handleCreateFolder}
+                        confirmText="Lưu"
+                        placeholder="Nhập tên thư mục"
+                    />
+                )}
+                <DashboardFilterBar
+                    layout={layout}
+                    setItems={setItems}
+                    setLayout={setLayout}
+                    openDropdownId={openDropdownId}
+                    setOpenDropdownId={setOpenDropdownId}
+                />
+                <div>
+                    {pathRef.current && pathRef.current.length > 1 && (
+                        <Breadcrumbs
+                            initialPath={pathRef.current}
+                            onClick={handleBreadCrumbsClick}
                         />
                     )}
-                </motion.div>
-            </AnimatePresence>
-            {itemPage.hasNext && (
-                <div className="bottom-4 left-4">
-                    <button
-                        onClick={handleLoadMore}
-                        className="text-primary hover:underline hover:cursor-pointer font-medium"
+                </div>
+                <AnimatePresence mode="wait">
+                    <motion.div
+                        key={layout}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
                     >
-                        Xem thêm
-                    </button>
-                </div>
-            )}
-
-            {/* Drag Overlay */}
-            {isDragging && (
-                <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center pointer-events-none animate-fadeIn">
-                    <div className="text-white text-2xl font-bold border-4 border-dashed border-white p-10 rounded-2xl animate-zoomIn">
-                        Thả tệp vào đây để tải lên
+                        {layout === "list" ? (
+                            <DashboardListView
+                                items={itemPage.items}
+                                openMenuId={openMenuId}
+                                setOpenMenuId={setOpenMenuId}
+                            />
+                        ) : (
+                            <DashboardGridView
+                                items={itemPage.items}
+                                layout={layout}
+                            />
+                        )}
+                    </motion.div>
+                </AnimatePresence>
+                {itemPage.hasNext && (
+                    <div className="bottom-4 left-4">
+                        <button
+                            onClick={handleLoadMore}
+                            className="text-primary hover:underline hover:cursor-pointer font-medium"
+                        >
+                            Xem thêm
+                        </button>
                     </div>
-                </div>
+                )}
 
-            )}
-            {renamingItemId && (
-                <TextInputModal
-                    title="Đổi tên"
-                    inputValue={newName}
-                    setInputValue={setNewName}
-                    onCancel={() => {
-                        setRenamingItemId(null);
-                        setNewName("");
-                    }}
-                    onConfirm={handleConfirmRename}
-                    confirmText="Lưu"
-                    placeholder="Nhập tên mới"
-                />
-            )}
+                {/* Drag Overlay */}
+                {isDragging && (
+                    <div className="absolute inset-0 bg-black/40 backdrop-blur-sm z-50 flex items-center justify-center pointer-events-none animate-fadeIn">
+                        <div className="text-white text-2xl font-bold border-4 border-dashed border-white p-10 rounded-2xl animate-zoomIn">
+                            Thả tệp vào đây để tải lên
+                        </div>
+                    </div>
 
-
-            {openShareDialog && (
-                <ShareDialog
-                    onClose={() => setOpenShareDialog(false)}
-                    idItemToShare={idItemToShare}
-                />
-            )}
-            {infoItem && (
-                <ItemInfoPanel
-                    item={infoItem}
-                    isLoading={isInfoLoading}
-                    onClose={() => setInfoItem(null)}
-                />
-            )}
-            {isProcessing && (
-                <BottomLeftNotification
-                    message={messageProcessing || ""}
-                    onCancel={onCancelNotificationBottomLeft}
-                />
-            )}
-
-            {versionHistoryItemId && (
-                <VersionHistoryDialog
-                    documentId={versionHistoryItemId}
-                    onClose={() => setVersionHistoryItemId(null)}
-                    onRestoreSuccess={handleRestoreSuccess}
-                />
-            )}
+                )}
+                {renamingItemId && (
+                    <TextInputModal
+                        title="Đổi tên"
+                        inputValue={newName}
+                        setInputValue={setNewName}
+                        onCancel={() => {
+                            setRenamingItemId(null);
+                            setNewName("");
+                        }}
+                        onConfirm={handleConfirmRename}
+                        confirmText="Lưu"
+                        placeholder="Nhập tên mới"
+                    />
+                )}
 
 
-        </div>
+                {openShareDialog && (
+                    <ShareDialog
+                        onClose={() => setOpenShareDialog(false)}
+                        idItemToShare={idItemToShare}
+                    />
+                )}
+                {infoItem && (
+                    <ItemInfoPanel
+                        item={infoItem}
+                        isLoading={isInfoLoading}
+                        onClose={() => setInfoItem(null)}
+                    />
+                )}
+                {isProcessing && (
+                    <BottomLeftNotification
+                        message={messageProcessing || ""}
+                        onCancel={onCancelNotificationBottomLeft}
+                    />
+                )}
+
+                {versionHistoryItemId && (
+                    <VersionHistoryDialog
+                        documentId={versionHistoryItemId}
+                        onClose={() => setVersionHistoryItemId(null)}
+                        onRestoreSuccess={handleRestoreSuccess}
+                    />
+                )}
+
+
+            </div>
+        </DashboardProvider>
     );
 };
 

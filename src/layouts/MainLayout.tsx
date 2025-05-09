@@ -9,7 +9,6 @@ import api from "../utils/api";
 import { uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
 import { UploadProgress } from "../components/UploadProgress";
 import { ItemContext } from "../contexts/ItemContext";
-import { getItems } from "../services/ItemApi";
 import { createFolder } from "../services/FolderApi";
 import { useLocation } from "react-router-dom";
 
@@ -191,21 +190,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     }, [handleDragOver, handleDragLeave, handleDrop, handleMessage]);
     const [pageNo, setPageNo] = useState(0);
     useEffect(() => {
-        getItems(pageNo, 20, items)
-            .then((response) => {
-                if (response.status === 200) {
-                    const newItems = response.data.items;
-                    setItemPage((prev) => ({
-                        ...response.data,
-                        items: [...prev.items, ...newItems],
-                    }));
-                } else {
-                    toast.error(response.message);
-                }
-            })
-            .catch(() => toast.error("Lỗi khi lấy dữ liệu"))
-    }, [pageNo, items]);
-    useEffect(() => {
         setPageNo(0);
         setItemPage({
             pageNo: 0,
@@ -253,6 +237,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 items,
                 setItems,
                 itemPage,
+                pageNo,
                 setItemPage,
                 setPageNo,
                 folderId,

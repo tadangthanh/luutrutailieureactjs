@@ -9,34 +9,12 @@ interface DashboardListViewProps {
     openMenuId: number | null;
     setOpenMenuId: (id: number | null) => void;
     items: ItemResponse[];
-    handleOpen(id: number): void;
-    handleRename(id: number): void;
-    handleDownload(id: number): void;
-    handleShare(id: number): void;
-    handleInfo(id: number): void;
-    handleCopy(id: number): void;
-    handleMoveToTrash(id: number): void;
-    handleVersionHistory(id: number): void;
-    handleSave: (id: number) => void;
-    handleUnSave: (id: number) => void;
-    onClick: (item: ItemResponse) => void;
 }
 
 const DashboardListView: React.FC<DashboardListViewProps> = ({
     openMenuId,
     setOpenMenuId,
     items,
-    handleOpen,
-    handleRename,
-    handleDownload,
-    handleShare,
-    handleInfo,
-    handleCopy,
-    handleUnSave,
-    handleMoveToTrash,
-    handleVersionHistory,
-    handleSave,
-    onClick
 }) => {
     const menuRef = useRef<HTMLDivElement | null>(null);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -126,20 +104,9 @@ const DashboardListView: React.FC<DashboardListViewProps> = ({
                     transition={{ duration: 0.2, delay: index * 0.03 }}
                 >
                     <ListRow
-                        onClick={onClick}
                         item={item}
-                        handleUnSave={handleUnSave}
                         openMenuId={openMenuId}
                         setOpenMenuId={setOpenMenuId}
-                        handleCopy={handleCopy}
-                        handleDownload={handleDownload}
-                        handleInfo={handleInfo}
-                        handleMoveToTrash={handleMoveToTrash}
-                        handleOpen={handleOpen}
-                        handleRename={handleRename}
-                        handleShare={handleShare}
-                        handleVersionHistory={handleVersionHistory}
-                        handleSave={handleSave}
                     />
                 </motion.div>
             ))}

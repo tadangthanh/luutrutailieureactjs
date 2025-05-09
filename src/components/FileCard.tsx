@@ -16,29 +16,27 @@ import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
 import { motion, AnimatePresence } from "framer-motion";
 import { useNavigate } from "react-router-dom";
+import { useDashboard } from "../contexts/DashboardContext";
+
 interface FileCardProps {
     doc: ItemResponse;
     layout: "grid" | "list";
-    handleOpen(id: number): void;
-    handleRename(id: number): void;
-    handleDownload(id: number): void;
-    handleShare(id: number): void;
-    handleInfo(id: number): void;
-    handleCopy(id: number): void;
-    onClick: (item: ItemResponse) => void;
-    handleMoveToTrash(id: number): void;
-    handleVersionHistory(id: number): void;
 }
 
-const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
-    handleRename,
-    handleDownload,
-    handleShare,
-    handleInfo,
-    onClick,
-    handleCopy,
-    handleVersionHistory,
-    handleMoveToTrash }) => {
+const FileCard: React.FC<FileCardProps> = ({ layout, doc }) => {
+    const {
+        handleOpen,
+        handleRename,
+        handleDownload,
+        handleShare,
+        handleInfo,
+        handleCopy,
+        handleMoveToTrash,
+        handleVersionHistory,
+        handleItemClick,
+        isEditor
+    } = useDashboard();
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -59,14 +57,15 @@ const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
             document.removeEventListener("mousedown", handleClickOutside);
         };
     }, []);
-    // Trong component
+
     const navigate = useNavigate();
     const handleAsk = (id: number) => {
         navigate(`/document-assistant?documentId=${id}`);
     };
+
     return (
         <div
-            onClick={() => onClick(doc)}
+            onClick={() => handleItemClick(doc)}
             className={`relative group rounded-2xl p-4 w-full shadow-sm hover:shadow-md cursor-pointer transition-all
             ${layout === "list"
                     ? "flex items-center gap-3 bg-neutral-light dark:bg-neutral-dark"
@@ -119,7 +118,7 @@ const FileCard: React.FC<FileCardProps> = ({ layout, doc, handleOpen,
                                     <Option label="Lịch sử phiên bản" icon={<History size={16} />} onClick={() => handleVersionHistory(doc.id)} />
                                 </>
                             )}
-                            <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(doc.id)} />
+                            {isEditor && <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(doc.id)} />}
                         </ul>
                     </motion.div>
                 )}

@@ -3,25 +3,25 @@ import React, { useState, useRef, useEffect } from "react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
 import { motion, AnimatePresence } from "framer-motion";
+import { useDashboard } from "../contexts/DashboardContext";
+
 interface FolderCardProps {
     folder: ItemResponse;
     layout: "grid" | "list";
-    handleOpen(id: number): void;
-    handleRename(id: number): void;
-    handleDownload(id: number): void;
-    handleShare(id: number): void;
-    handleInfo(id: number): void;
-    handleMoveToTrash(id: number): void;
-    onClick: (item: ItemResponse) => void;
 }
 
-const FolderCard: React.FC<FolderCardProps> = ({ folder, layout, handleOpen,
-    handleRename,
-    handleDownload,
-    handleShare,
-    handleInfo,
-    onClick,
-    handleMoveToTrash }) => {
+const FolderCard: React.FC<FolderCardProps> = ({ folder, layout }) => {
+    const {
+        handleOpen,
+        handleRename,
+        handleDownload,
+        handleShare,
+        handleInfo,
+        handleMoveToTrash,
+        handleItemClick,
+        isEditor
+    } = useDashboard();
+
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const menuRef = useRef<HTMLDivElement | null>(null);
 
@@ -43,9 +43,8 @@ const FolderCard: React.FC<FolderCardProps> = ({ folder, layout, handleOpen,
         };
     }, []);
 
-
     return (
-        <div onClick={() => onClick(folder)}
+        <div onClick={() => handleItemClick(folder)}
             className={`relative group rounded-2xl p-4 w-full shadow-sm hover:shadow-md cursor-pointer transition-all
             ${layout === "list"
                     ? "flex items-center gap-3 bg-secondary/30 dark:bg-secondary/40"
@@ -88,7 +87,7 @@ const FolderCard: React.FC<FolderCardProps> = ({ folder, layout, handleOpen,
                             <Option label="Thông tin" icon={<Info size={16} />} onClick={() => handleInfo(folder.id)} />
                             <Option label="Tải xuống" icon={<Download size={16} />} onClick={() => handleDownload(folder.id)} />
                             <Option label="Chia sẻ" icon={<UserPlus size={16} />} onClick={() => handleShare(folder.id)} />
-                            <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(folder.id)} />
+                            {isEditor && <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(folder.id)} />}
                         </ul>
                     </motion.div>
                 )}
