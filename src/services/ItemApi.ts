@@ -10,6 +10,13 @@ export const getItems = async (page = 0, size = 10, items: string[]) => {
         toast.error("Failed to fetch folder items.");
     }
 }
+export const getItemsSharedWithMe = async (page = 0, size = 10, items: string[]) => {
+    try {
+        return (await api.get(`${apiUrl}/items/shared-with-me?page=${page}&size=${size}&items=${items}`,)).data;
+    } catch (error) {
+        toast.error("Failed to fetch shared with me items.");
+    }
+}
 export const updateItem = async (id: number, data: ItemRequest) => {
     try {
         return (await api.put(`${apiUrl}/items/${id}`, data)).data;

@@ -39,7 +39,7 @@ export const Editor: React.FC = () => {
             </div>
         );
     }
-    const baseUrl = "https://survivors-fonts-resistance-surrey.trycloudflare.com";
+    const baseUrl = "https://hierarchy-configuring-screening-dk.trycloudflare.com";
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <DocumentEditor
