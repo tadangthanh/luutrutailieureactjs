@@ -13,6 +13,7 @@ import { downloadFolder } from "../services/FolderApi";
 import { AnimatePresence, motion } from "framer-motion";
 import TextInputModal from "../components/TextInputModal";
 import { ItemInfoPanel } from "../components/ItemInfoPanel";
+import { useItemContext } from "../contexts/ItemContext";
 
 const SharedDashboardPage = () => {
     const [layout, setLayout] = useState<"grid" | "list">("list");
@@ -21,6 +22,7 @@ const SharedDashboardPage = () => {
     const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
     const [pageNo, setPageNo] = useState<number>(0);
     const [items, setItems] = useState<string[]>([]);
+    // const { items, setItems } = useItemContext();
     const [itemPage, setItemPage] = useState<PageResponse<ItemResponse>>({
         pageNo: 0,
         pageSize: 10,

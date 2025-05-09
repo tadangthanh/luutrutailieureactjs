@@ -40,12 +40,6 @@ function App() {
                                 <MainLayout><TrashPage /></MainLayout>
                             </PrivateRoute>
                         } />
-                        {/* shared */}
-                        <Route path="/shared" element={
-                            <PrivateRoute>
-                                <MainLayout><SharedDashboardPage /></MainLayout>
-                            </PrivateRoute>
-                        } />
                         {/* document assistant */}
                         <Route path="/document-assistant" element={
                             <PrivateRoute>
