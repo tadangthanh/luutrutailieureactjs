@@ -4,6 +4,7 @@ import { Asterisk, Trash2, Menu, Bookmark, X, Users, Folder } from "lucide-react
 import { JSX } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useItemContext } from "../contexts/ItemContext";
+import AddButton from "./AddButton";
 
 interface SidebarProps {
     setActiveMenu: (menu: string) => void;
@@ -81,19 +82,27 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
     return (
         <div className="flex flex-col h-full">
             {/* Logo/Title */}
-            <div className="p-6 flex items-center justify-between  border-gray-200 dark:border-gray-700">
-                <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300">
-                    Drive
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                <div className="flex items-center justify-between mb-4">
+                    <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300">
+                        Drive
+                    </div>
+                    {setIsOpen && (
+                        <button
+                            className="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                            onClick={() => setIsOpen(false)}
+                        >
+                            <X size={20} className="text-gray-700 dark:text-gray-200" />
+                        </button>
+                    )}
                 </div>
-                {setIsOpen && (
-                    <button
-                        className="md:hidden p-2 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                        onClick={() => setIsOpen(false)}
-                    >
-                        <X size={20} className="text-gray-700 dark:text-gray-200" />
-                    </button>
-                )}
+
+                {/* Add Button */}
+                <div className="relative">
+                    <AddButton />
+                </div>
             </div>
+
             {/* Navigation */}
             <nav className="flex-1 overflow-y-auto py-6 px-3 space-y-2">
                 <NavItem

@@ -6,6 +6,7 @@ import { getUserProfile } from '../services/UserSearchApi';
 import { User as UserType } from '../types/User';
 import { formatDateTime } from '../utils/FormatDateTimeUtil';
 import { useNavigate } from 'react-router-dom';
+import SearchBar from "./SearchBar";
 
 interface HeaderProps {
     activeMenu: string;
@@ -38,13 +39,13 @@ export const Header: React.FC<HeaderProps> = ({ activeMenu }) => {
 
     return (
         <>
-            <header className="bg-white dark:bg-gray-800 shadow-lg px-8 py-5 flex flex-col md:flex-row md:justify-between md:items-center gap-4 sticky top-0 z-30 border-b border-gray-200 dark:border-gray-700">
-                <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300 tracking-tight">
+            <header className="bg-white dark:bg-gray-900  px-8 pt-2 flex flex-col md:flex-row md:justify-between md:items-center gap-4 sticky top-0 z-30  ">
+                {/* <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300 tracking-tight">
                     {activeMenu}
-                </h1>
-
+                </h1> */}
+                <SearchBar />
                 <div className="flex flex-wrap items-center gap-4">
-                    <button
+                    {/* <button
                         onClick={triggerFileUpload}
                         className="flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-medium px-5 py-2.5 rounded-xl shadow-md hover:shadow-lg transition-all duration-200">
                         <Upload size={18} />
@@ -56,7 +57,7 @@ export const Header: React.FC<HeaderProps> = ({ activeMenu }) => {
                         className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-800 dark:text-white font-medium px-5 py-2.5 rounded-xl shadow-sm hover:shadow-md transition-all duration-200">
                         <FolderPlus size={18} />
                         Tạo thư mục
-                    </button>
+                    </button> */}
 
                     {isLoggedIn ? (
                         <button
