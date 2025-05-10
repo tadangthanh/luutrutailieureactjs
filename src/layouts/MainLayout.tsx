@@ -232,12 +232,17 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     const [activeLink, setActiveLink] = useState<string>("");
     useEffect(() => {
         setActiveLink(location.pathname);
-        // setItems([]);
+        setItems([...items.filter(item => !item.includes("parent.id:"))]);
         setPageNo(0);
+        pathRef.current = [{ id: 0, name: "Kho lưu trữ" }];
     }, [location.pathname])
+    const pathRef = useRef<Array<{ id: number; name: string }>>([
+        { id: 0, name: "Kho lưu trữ" },
+    ]);
     return (
         <ItemContext.Provider
             value={{
+                pathRef,
                 items,
                 setItems,
                 itemPage,

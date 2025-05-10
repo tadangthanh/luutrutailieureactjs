@@ -32,6 +32,8 @@ type ItemContextType = {
     setNewFolderName: (newFolderName: string) => void;
     handleCreateFolder: () => void;
     onCancelNotificationBottomLeft: () => void;
+    pathRef: React.MutableRefObject<Array<{ id: number; name: string }>>;
+
 }
 export const ItemContext = createContext<ItemContextType | null>(null);
 export const useItemContext = () => {

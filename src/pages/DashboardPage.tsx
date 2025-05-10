@@ -35,9 +35,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
     const [openDropdownId, setOpenDropdownId] = useState<number | null>(null);
     const [renamingItemId, setRenamingItemId] = useState<number | null>(null); // ID của item đang rename
     const [newName, setNewName] = useState<string>(""); // Giá trị tên mới
-    const pathRef = useRef<Array<{ id: number; name: string }>>([
-        { id: 0, name: isSharedView ? "Kho lưu trữ chia sẻ" : "Kho lưu trữ của tôi" },
-    ]);
+
     const [messageProcessing, setMessageProcessing] = useState<string | null>(null);
 
     const downloadTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -48,7 +46,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         x: number;
         y: number;
     }>({ visible: false, x: 0, y: 0 });
-    const { setItems, items, pageNo, openCreateFolderModal, folderId, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isProcessing, onCancelNotificationBottomLeft } = useItemContext();
+    const { setItems, items, pageNo, openCreateFolderModal, folderId, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isProcessing, pathRef, onCancelNotificationBottomLeft } = useItemContext();
 
     const [versionHistoryItemId, setVersionHistoryItemId] = useState<number | null>(null);
 
@@ -399,20 +397,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                         }}
                     />
                 )}
-                {/* {isCreateFolder && (
-                    <TextInputModal
-                        title="Tạo thư mục mới"
-                        inputValue={newFolderName}
-                        setInputValue={setNewFolderName}
-                        onCancel={() => {
-                            setIsCreateFolder(false);
-                            setNewFolderName("");
-                        }}
-                        onConfirm={handleCreateFolder}
-                        confirmText="Lưu"
-                        placeholder="Nhập tên thư mục"
-                    />
-                )} */}
                 <DashboardFilterBar
                     layout={layout}
                     setItems={setItems}
