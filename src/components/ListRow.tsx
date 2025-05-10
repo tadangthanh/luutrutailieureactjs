@@ -132,7 +132,7 @@ const ListRow: React.FC<ListRowProps> = ({
                             <LucideBotMessageSquare size={16} />
                         </button>
                     }
-
+                    {/* download */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();
@@ -143,7 +143,7 @@ const ListRow: React.FC<ListRowProps> = ({
                     >
                         <Download size={16} />
                     </button>
-
+                    {/* share */}
                     <button
                         onClick={(e) => {
                             e.stopPropagation();

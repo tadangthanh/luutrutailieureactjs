@@ -79,12 +79,13 @@ const VersionHistoryDialog: React.FC<VersionHistoryDialogProps> = ({ documentId,
     };
 
     return (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
             <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
                 className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-4xl max-h-[80vh] overflow-hidden"
+                onClick={e => e.stopPropagation()}
             >
                 <div className="p-6">
                     <div className="flex justify-between items-center mb-4">
@@ -184,12 +185,13 @@ const VersionHistoryDialog: React.FC<VersionHistoryDialogProps> = ({ documentId,
 
             {/* Confirmation Dialog */}
             {showConfirmDialog && (
-                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+                <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={() => setShowConfirmDialog(false)}>
                     <motion.div
                         initial={{ opacity: 0, scale: 0.95 }}
                         animate={{ opacity: 1, scale: 1 }}
                         exit={{ opacity: 0, scale: 0.95 }}
                         className="bg-white dark:bg-gray-800 rounded-lg shadow-xl p-6 max-w-md w-full"
+                        onClick={e => e.stopPropagation()}
                     >
                         <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                             Xác nhận khôi phục phiên bản

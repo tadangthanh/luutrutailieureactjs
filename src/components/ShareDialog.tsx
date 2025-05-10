@@ -9,6 +9,7 @@ import { useDebounce } from "use-debounce"; // <== thêm
 import { User } from "../types/User";
 import { toast } from "sonner";
 import { PendingPermission } from "../types/PendingPermission";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface ShareDialogProps {
     onClose: () => void;
@@ -231,9 +232,22 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
         }
     }
     return (
-        <>
-            <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50" onClick={onClose}>
-                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg p-6 relative" onClick={(e) => e.stopPropagation()}>
+        <AnimatePresence>
+            <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+                onClick={onClose}
+            >
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                    transition={{ duration: 0.2 }}
+                    className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-lg p-6 relative"
+                    onClick={(e) => e.stopPropagation()}
+                >
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Quyền truy cập</h2>
@@ -370,38 +384,53 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                             </button>
                         </div>
                     </div>
-                </div>
-            </div>
+                </motion.div>
+            </motion.div>
 
             {/* Settings dialog */}
-            {showSettings && (
-                <div className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50" onClick={handleSettingsClose}>
-                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6 relative" onClick={(e) => e.stopPropagation()}>
-                        <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Chế độ cài đặt</h3>
-                        <div className="space-y-4">
-                            <label className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors duration-200 cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    name="canChangePermissions"
-                                    checked={settings.canChangePermissions}
-                                    onChange={handleSettingChange}
-                                    className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 transition-colors duration-200"
-                                />
-                                <span className="text-gray-700 dark:text-gray-200">Người chỉnh sửa có thể thay đổi quyền và chia sẻ</span>
-                            </label>
-                        </div>
-                        <div className="mt-6 flex justify-end">
-                            <button
-                                onClick={handleSettingsClose}
-                                className="bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-6 rounded-xl transition-all duration-200 shadow-sm font-medium"
-                            >
-                                Quay lại
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </>
+            <AnimatePresence>
+                {showSettings && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+                        onClick={handleSettingsClose}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6 relative"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Chế độ cài đặt</h3>
+                            <div className="space-y-4">
+                                <label className="flex items-center gap-3 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-200 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700/50 transition-colors duration-200 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        name="canChangePermissions"
+                                        checked={settings.canChangePermissions}
+                                        onChange={handleSettingChange}
+                                        className="w-4 h-4 rounded border-gray-300 dark:border-gray-600 text-blue-600 focus:ring-blue-500 transition-colors duration-200"
+                                    />
+                                    <span className="text-gray-700 dark:text-gray-200">Người chỉnh sửa có thể thay đổi quyền và chia sẻ</span>
+                                </label>
+                            </div>
+                            <div className="mt-6 flex justify-end">
+                                <button
+                                    onClick={handleSettingsClose}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white py-2.5 px-6 rounded-xl transition-all duration-200 shadow-sm font-medium"
+                                >
+                                    Quay lại
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+        </AnimatePresence>
     );
 };
 

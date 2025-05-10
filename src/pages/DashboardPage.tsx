@@ -160,22 +160,22 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         // kiem tra xem nguoi dung co quyen chinh sua hay k
         setIsLoading(true);
         hasPermissionEditor(id).then((res) => {
-
             if (res.status === 200) {
                 if (res.data === true) {
                     setOpenMenuId(null);
                     setIdItemToShare(id);
                     setOpenShareDialog(true);
-                    return;
+                } else {
+                    toast.error("Bạn không có quyền chia sẻ tài liệu này. Chỉ người có quyền chỉnh sửa mới có thể chia sẻ.");
                 }
             } else {
-                setIsLoading(false);
-                toast.error("Bạn không có quyền chỉnh sửa tài liệu này");
+                toast.error("Không thể kiểm tra quyền truy cập. Vui lòng thử lại sau.");
             }
+        }).catch((error) => {
+            toast.error("Có lỗi xảy ra khi kiểm tra quyền truy cập.");
         }).finally(() => {
-            setIsLoading(false)
-        })
-
+            setIsLoading(false);
+        });
     }
     const [infoItem, setInfoItem] = useState<ItemResponse | null>(null);
     const [isInfoLoading, setIsInfoLoading] = useState(false);

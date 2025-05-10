@@ -17,6 +17,7 @@ import { useSearchParams } from "react-router-dom";
 import { fetchDocAsFilePdf } from "../services/DocumentApi";
 import FullScreenLoading from "../components/FullScreenLoading";
 import { useFullscreenLoading } from "../hooks/UseFullscreenLoading";
+import { motion, AnimatePresence } from "framer-motion";
 
 const DocumentQA: React.FC = () => {
     // ====== STATE ======
@@ -505,7 +506,7 @@ const DocumentQA: React.FC = () => {
         }
     }
     return (
-        <div className="flex flex-col md:flex-row min-h-screen bg-neutral-light dark:bg-gray-900">
+        <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 dark:bg-gray-900">
             {isLoading && <FullScreenLoading message={message} />}
             {/* Sidebar */}
             <div className="md:w-auto md:mt-20 dark:bg-gray-900 flex-shrink-0">
@@ -522,37 +523,49 @@ const DocumentQA: React.FC = () => {
             {/* Main Content */}
             <div className="flex-1 px-4 sm:px-6 md:px-10 py-6">
                 <div className="px-4 sm:px-6 py-6 space-y-6 bg-white dark:bg-gray-900 rounded-2xl mt-4 md:mt-12 shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300">
-                    <h1 className="text-2xl sm:text-3xl font-extrabold text-primary dark:text-white tracking-tight">
-                        🤖 AI Hỏi đáp
-                    </h1>
+                    <div className="flex items-center justify-between">
+                        <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-600 tracking-tight">
+                            🤖 AI Hỏi đáp
+                        </h1>
+                        {chatSelected && (
+                            <span className="text-sm text-gray-500 dark:text-gray-400">
+                                Cuộc trò chuyện: {chatSelected.name}
+                            </span>
+                        )}
+                    </div>
 
-                    <div className="relative"> {/* Container chính, chứa toàn bộ */}
+                    <div className="relative">
                         <div
                             onScroll={handleScroll}
                             ref={containerRef}
-                            className="h-[24rem] sm:h-96 overflow-y-auto bg-neutral-100 dark:bg-neutral-800 p-4 sm:p-5 rounded-xl space-y-4 border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar"
+                            className="h-[24rem] sm:h-96 overflow-y-auto bg-gray-50 dark:bg-gray-800/50 p-4 sm:p-5 rounded-xl space-y-4 border border-gray-200 dark:border-gray-700 shadow-inner custom-scrollbar"
                         >
                             {conversations.map((conv) => (
-                                <div key={conv.id} className="space-y-4">
+                                <motion.div
+                                    key={conv.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    className="space-y-4"
+                                >
                                     <div className="flex justify-end">
-                                        <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-primary text-white rounded-br-none">
+                                        <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-br-none">
                                             <ReactMarkdown>{conv.question}</ReactMarkdown>
                                         </div>
                                     </div>
 
                                     {conv.answer && (
                                         <div className="flex justify-start">
-                                            <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
+                                            <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm whitespace-pre-wrap shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none border border-gray-100 dark:border-gray-600">
                                                 <ReactMarkdown>{conv.answer}</ReactMarkdown>
                                             </div>
                                         </div>
                                     )}
-                                </div>
+                                </motion.div>
                             ))}
 
                             {loading && (
                                 <div className="flex justify-start">
-                                    <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none">
+                                    <div className="max-w-[90%] sm:max-w-[80%] px-4 py-3 rounded-2xl text-sm shadow-md bg-white dark:bg-gray-700 text-gray-800 dark:text-white rounded-bl-none border border-gray-100 dark:border-gray-600">
                                         <TypingIndicator />
                                     </div>
                                 </div>
@@ -561,18 +574,19 @@ const DocumentQA: React.FC = () => {
                             <div ref={messagesEndRef} />
                         </div>
 
-                        {/* Đặt nút scroll ở ngoài khung scroll */}
                         {showScrollButton && (
-                            <button
+                            <motion.button
+                                initial={{ opacity: 0, y: 10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 10 }}
                                 onClick={scrollToBottom}
-                                className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-primary text-white p-2 rounded-full shadow-lg hover:bg-primary-dark transition"
+                                className="absolute bottom-4 left-1/2 -translate-x-1/2 z-10 bg-gradient-to-r from-blue-600 to-blue-700 text-white p-2 rounded-full shadow-lg hover:from-blue-700 hover:to-blue-800 transition-all duration-200"
                                 aria-label="Scroll to bottom"
                             >
                                 <ArrowDown size={20} />
-                            </button>
+                            </motion.button>
                         )}
                     </div>
-
 
                     <div className="space-y-4">
                         {/* Upload tài liệu */}
@@ -585,15 +599,15 @@ const DocumentQA: React.FC = () => {
                                 <button
                                     type="button"
                                     onClick={() => filesInputRef.current?.click()}
-                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-primary hover:bg-primary-dark text-white transition"
+                                    className="flex items-center justify-center w-10 h-10 rounded-full bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white transition-all duration-200 shadow-md hover:shadow-lg"
                                     title="Tải tài liệu lên"
                                 >
                                     <Plus size={20} />
                                 </button>
 
                                 {filesInput.length > 0 && (
-                                    <div className="flex flex-wrap items-center gap-2 bg-gray-100 dark:bg-neutral-700 px-3 py-1.5 rounded-lg w-full sm:w-auto">
-                                        <FileText size={20} className="text-primary" />
+                                    <div className="flex flex-wrap items-center gap-2 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 rounded-lg w-full sm:w-auto border border-gray-200 dark:border-gray-700">
+                                        <FileText size={20} className="text-blue-500" />
                                         {filesInput.map((file, index) => (
                                             <div key={index} className="flex items-center gap-2">
                                                 <span className="text-sm text-gray-800 dark:text-white truncate max-w-[150px]">{file.name}</span>
@@ -633,16 +647,17 @@ const DocumentQA: React.FC = () => {
                                 }}
                                 rows={1}
                                 placeholder="Hỏi bất kỳ điều gì"
-                                className="custom-scrollbar w-full resize-none max-h-[200px] overflow-auto bg-gray-50 dark:bg-neutral-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-primary/50 rounded-xl p-4 border border-gray-300 dark:border-gray-600 transition"
+                                className="custom-scrollbar w-full resize-none max-h-[200px] overflow-auto bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 outline-none focus:ring-2 focus:ring-blue-500/50 rounded-xl p-4 border border-gray-200 dark:border-gray-700 transition-all duration-200"
                             />
                         </div>
-                        <div className=" bottom-4 right-20">
-                            <div className="bg-white dark:bg-neutral-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 w-64 max-w-full">
+
+                        <div className="relative">
+                            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-200 dark:border-gray-700 w-64 max-w-full">
                                 <button
                                     onClick={() => setShowUploadedFiles(!showUploadedFiles)}
-                                    className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-800 dark:text-white hover:bg-gray-100 dark:hover:bg-neutral-700 rounded-t-xl transition w-full"
+                                    className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-gray-800 dark:text-white hover:bg-gray-50 dark:hover:bg-gray-700/50 rounded-t-xl transition w-full"
                                 >
-                                    <FileText size={16} />
+                                    <FileText size={16} className="text-blue-500" />
                                     <span>Tài liệu đã tải lên</span>
                                     <ChevronDown
                                         size={16}
@@ -650,21 +665,31 @@ const DocumentQA: React.FC = () => {
                                     />
                                 </button>
 
-                                {showUploadedFiles && (
-                                    <div className="max-h-48 sm:max-h-64 overflow-y-auto border-t border-gray-200 dark:border-gray-600">
-                                        <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
-                                            {filesUploaded.map((file) => (
-                                                <li
-                                                    key={file.id}
-                                                    className="px-4 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-neutral-700  truncate"
-                                                    title={file.originalFileName}
-                                                >
-                                                    📎 {file.originalFileName}
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                )}
+                                <AnimatePresence>
+                                    {showUploadedFiles && (
+                                        <motion.div
+                                            initial={{ height: 0, opacity: 0 }}
+                                            animate={{ height: "auto", opacity: 1 }}
+                                            exit={{ height: 0, opacity: 0 }}
+                                            className="overflow-hidden"
+                                        >
+                                            <div className="max-h-48 sm:max-h-64 overflow-y-auto border-t border-gray-200 dark:border-gray-600">
+                                                <ul className="divide-y divide-gray-200 dark:divide-gray-700 text-sm">
+                                                    {filesUploaded.map((file) => (
+                                                        <li
+                                                            key={file.id}
+                                                            className="px-4 py-2.5 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50 truncate flex items-center gap-2"
+                                                            title={file.originalFileName}
+                                                        >
+                                                            <FileText size={16} className="text-blue-500 flex-shrink-0" />
+                                                            <span className="truncate">{file.originalFileName}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </div>
                     </div>
@@ -675,8 +700,8 @@ const DocumentQA: React.FC = () => {
                             onClick={handleAsk}
                             disabled={(filesUploaded.length === 0 && filesInput.length === 0) || !question || loading}
                             className={`inline-flex items-center px-5 py-2.5 rounded-xl text-white text-sm font-medium transition-all duration-200 ${(filesUploaded.length === 0 && filesInput.length === 0) || !question || loading
-                                ? "bg-primary/50 cursor-not-allowed"
-                                : "bg-primary hover:bg-primary-dark"
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-md hover:shadow-lg"
                                 }`}
                         >
                             Gửi câu hỏi
