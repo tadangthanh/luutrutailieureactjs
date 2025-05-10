@@ -11,6 +11,7 @@ import { UploadProgress } from "../components/UploadProgress";
 import { ItemContext } from "../contexts/ItemContext";
 import { createFolder } from "../services/FolderApi";
 import { useLocation } from "react-router-dom";
+import TextInputModal from "../components/TextInputModal";
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
     const [activeMenu, setActiveMenu] = useState<string>("Tài liệu của tôi");
@@ -294,6 +295,20 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                     />
                 )}
             </div>
+            {isCreateFolder && (
+                <TextInputModal
+                    title="Tạo thư mục mới"
+                    inputValue={newFolderName}
+                    setInputValue={setNewFolderName}
+                    onCancel={() => {
+                        setIsCreateFolder(false);
+                        setNewFolderName("");
+                    }}
+                    onConfirm={handleCreateFolder}
+                    confirmText="Lưu"
+                    placeholder="Nhập tên thư mục"
+                />
+            )}
         </ItemContext.Provider>
     );
 };

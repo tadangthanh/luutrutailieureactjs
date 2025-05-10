@@ -48,7 +48,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         x: number;
         y: number;
     }>({ visible: false, x: 0, y: 0 });
-    const { setItems, items, pageNo, openCreateFolderModal, folderId, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isCreateFolder, setIsCreateFolder, newFolderName, setNewFolderName, handleCreateFolder, isProcessing, onCancelNotificationBottomLeft } = useItemContext();
+    const { setItems, items, pageNo, openCreateFolderModal, folderId, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isProcessing, onCancelNotificationBottomLeft } = useItemContext();
 
     const [versionHistoryItemId, setVersionHistoryItemId] = useState<number | null>(null);
 
@@ -233,11 +233,16 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                     : await getItems(pageNo, 20, items);
 
                 if (response.status === 200) {
-                    const newItems = response.data.items;
-                    setItemPage((prev) => ({
-                        ...response.data,
-                        items: [...prev.items, ...newItems],
-                    }));
+                    if (pageNo === 0) {
+                        // Nếu là trang đầu tiên, set trực tiếp
+                        setItemPage(response.data);
+                    } else {
+                        // Nếu là trang tiếp theo, append vào
+                        setItemPage((prev) => ({
+                            ...response.data,
+                            items: [...prev.items, ...response.data.items],
+                        }));
+                    }
                 } else {
                     toast.error(response.message);
                 }
@@ -395,7 +400,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                         }}
                     />
                 )}
-                {isCreateFolder && (
+                {/* {isCreateFolder && (
                     <TextInputModal
                         title="Tạo thư mục mới"
                         inputValue={newFolderName}
@@ -408,7 +413,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                         confirmText="Lưu"
                         placeholder="Nhập tên thư mục"
                     />
-                )}
+                )} */}
                 <DashboardFilterBar
                     layout={layout}
                     setItems={setItems}
