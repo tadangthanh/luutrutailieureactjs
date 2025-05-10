@@ -82,7 +82,7 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
     return (
         <div className="flex flex-col h-full">
             {/* Logo/Title */}
-            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+            <div className="p-6  border-gray-200 dark:border-gray-700">
                 <div className="flex items-center justify-between mb-4">
                     <div className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-blue-400 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-300">
                         Drive

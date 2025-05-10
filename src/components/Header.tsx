@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { Settings, Upload, FolderPlus, User, Mail, Calendar, FileText, LogOut, X } from "lucide-react";
-import { useItemContext } from "../contexts/ItemContext";
+import { Settings, User, Mail, Calendar, FileText, LogOut, X } from "lucide-react";
 import { useState } from "react";
 import { getUserProfile } from '../services/UserSearchApi';
 import { User as UserType } from '../types/User';
@@ -16,7 +15,6 @@ export const Header: React.FC<HeaderProps> = ({ activeMenu }) => {
     const [isOpen, setIsOpen] = useState(false);
     const [user, setUser] = useState<UserType>();
     const isLoggedIn = !!localStorage.getItem("accessToken");
-    const { openCreateFolderModal, triggerFileUpload } = useItemContext();
     const navigate = useNavigate();
 
     const handleOpenProfile = () => {

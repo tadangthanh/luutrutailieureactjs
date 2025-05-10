@@ -20,6 +20,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     const folderIdRef = useRef<number | null>(null);
     const [isProcessing, setIsProcessing] = useState(false);
     const [messageProcessing, setMessageProcessing] = useState<string | null>(null);
+    const location = useLocation();
     const onCancelRef = useRef<() => void>(() => {
     });
     useEffect(() => {
@@ -84,18 +85,20 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         } else {
             toast.success("Tải lên hoàn tất!");
             if (msg.documents && Array.isArray(msg.documents)) {
-                setItemPage(prev => ({
-                    ...prev,
-                    items: [...msg.documents, ...prev.items], // thêm vào đầu danh sách
-                    totalItems: prev.totalItems + msg.documents.length
-                }));
+                if (location.pathname === "/") {
+                    setItemPage(prev => ({
+                        ...prev,
+                        items: [...msg.documents, ...prev.items], // thêm vào đầu danh sách
+                        totalItems: prev.totalItems + msg.documents.length
+                    }));
+                }
             }
         }
 
         setTimeout(() => setUploadProgress(null), 2000);
         webSocketService.unsubscribeUploadProgress();
         webSocketService.unsubscribeUploadSuccess();
-    }, []);
+    }, [location.pathname]);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const triggerFileUpload = () => {
         fileInputRef.current?.click();
@@ -226,10 +229,10 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         onCancelRef.current();
     };
     const [activeLink, setActiveLink] = useState<string>("");
-    const location = useLocation();
     useEffect(() => {
         setActiveLink(location.pathname);
         setItems([]);
+        setPageNo(0);
     }, [location.pathname])
     return (
         <ItemContext.Provider

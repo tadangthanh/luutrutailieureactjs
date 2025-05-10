@@ -39,7 +39,7 @@ export const Editor: React.FC = () => {
             </div>
         );
     }
-    const baseUrl = "https://energy-poem-emperor-peers.trycloudflare.com";
+    const baseUrl = "https://ccd-soft-recognize-finished.trycloudflare.com";
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <DocumentEditor
