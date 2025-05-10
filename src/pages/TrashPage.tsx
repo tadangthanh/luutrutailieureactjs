@@ -72,22 +72,53 @@ const TrashPage = () => {
     };
 
     const handleCleanTrash = async () => {
-        try {
-            cleanTrash().then((res) => {
-                if (res.status === 200) {
-                    toast.success("Đã dọn sạch thùng rác");
-                    setItemPage((prev) => ({
-                        ...prev,
-                        items: [],
-                        totalItems: 0,
-                    }));
-                } else {
-                    toast.error(res.message);
-                }
-            })
-        } catch (error) {
-            toast.error("Không thể dọn sạch thùng rác");
-        }
+        toast.custom((t) => (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700">
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-gray-100 mb-4">
+                    Xác nhận dọn sạch thùng rác
+                </h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-6">
+                    Bạn có chắc chắn muốn dọn sạch thùng rác? Hành động này không thể hoàn tác.
+                </p>
+                <div className="flex justify-end gap-3">
+                    <button
+                        onClick={() => toast.dismiss(t)}
+                        className="px-4 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors"
+                    >
+                        Hủy
+                    </button>
+                    <button
+                        onClick={() => {
+                            toast.dismiss(t);
+                            toast.promise(
+                                cleanTrash().then((res) => {
+                                    if (res.status === 200) {
+                                        setItemPage((prev) => ({
+                                            ...prev,
+                                            items: [],
+                                            totalItems: 0,
+                                        }));
+                                        return "Đã dọn sạch thùng rác";
+                                    }
+                                    throw new Error(res.message);
+                                }),
+                                {
+                                    loading: 'Đang dọn sạch thùng rác...',
+                                    success: (message: string) => message,
+                                    error: (error: string) => error,
+                                }
+                            );
+                        }}
+                        className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-lg transition-colors"
+                    >
+                        Dọn sạch
+                    </button>
+                </div>
+            </div>
+        ), {
+            duration: Infinity,
+            position: "top-center",
+        });
     };
 
     const getItemIcon = (itemType: string) => {

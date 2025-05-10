@@ -70,7 +70,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                     navigate("/"); // Điều hướng về trang chính nếu có lỗi
                 }
             }).catch((error) => {
-                console.error("Lỗi khi lấy cấu hình OnlyOffice:", error);
                 toast.error("Lỗi khi lấy cấu hình tài liệu.");
                 navigate("/"); // Điều hướng về trang chính nếu có lỗi
             })

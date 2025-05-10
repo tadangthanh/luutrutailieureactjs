@@ -232,7 +232,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     const [activeLink, setActiveLink] = useState<string>("");
     useEffect(() => {
         setActiveLink(location.pathname);
-        setItems([]);
+        // setItems([]);
         setPageNo(0);
     }, [location.pathname])
     return (

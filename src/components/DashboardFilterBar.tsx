@@ -6,7 +6,6 @@ import { getEmailsShared } from "../services/ItemApi";
 import { PageResponse } from "../types/PageResponse";
 import { toast } from "sonner";
 import { DashboardDateRangeDropdown } from "./DashboardDateRangeDropdown";
-import { useLocation } from "react-router-dom";
 
 interface DashboardFilterBarProps {
     layout: "grid" | "list";
@@ -109,10 +108,6 @@ const DashboardFilterBar: React.FC<DashboardFilterBarProps> = ({
             return [...filteredItems, `updatedAt:${from}..${to}`];
         });
     };
-    const location = useLocation();
-    useEffect(() => {
-        console.log("url", location.pathname);
-    }, [location.pathname])
     return (
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <div className="flex flex-wrap gap-3 items-center text-sm">
