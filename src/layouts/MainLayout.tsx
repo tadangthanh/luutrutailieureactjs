@@ -230,18 +230,20 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         onCancelRef.current();
     };
     const [activeLink, setActiveLink] = useState<string>("");
-    useEffect(() => {
-        setActiveLink(location.pathname);
-        setItems([...items.filter(item => !item.includes("parent.id:"))]);
-        setPageNo(0);
-        pathRef.current = [{ id: 0, name: "Kho lưu trữ" }];
-    }, [location.pathname])
     const pathRef = useRef<Array<{ id: number; name: string }>>([
         { id: 0, name: "Kho lưu trữ" },
     ]);
+    const [isSharedView, setIsSharedView] = useState<boolean>(false);
+    useEffect(() => {
+        setItems(prevItems => prevItems.filter(item => !item.includes("parent.id:")));
+        setPageNo(0);
+        pathRef.current = [{ id: 0, name: isSharedView ? "Kho lưu trữ chia sẻ" : "Kho lưu trữ của tôi" }];
+        setFolderId(null);
+    }, [isSharedView])
     return (
         <ItemContext.Provider
             value={{
+                setIsSharedView,
                 pathRef,
                 items,
                 setItems,

@@ -46,7 +46,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         x: number;
         y: number;
     }>({ visible: false, x: 0, y: 0 });
-    const { setItems, items, pageNo, openCreateFolderModal, folderId, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isProcessing, pathRef, onCancelNotificationBottomLeft } = useItemContext();
+    const { setItems, items, pageNo, setIsSharedView, openCreateFolderModal, folderId, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isProcessing, pathRef, onCancelNotificationBottomLeft } = useItemContext();
 
     const [versionHistoryItemId, setVersionHistoryItemId] = useState<number | null>(null);
 
@@ -76,7 +76,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         setRenamingItemId(id);
         setNewName(itemPage.items.find(item => item.id === id)?.name || "");
     };
-
+    useEffect(() => {
+        setIsSharedView(!!isSharedView); // ép kiểu về boolean nếu cần
+    }, [isSharedView, setIsSharedView]);
     const showNotificationBottomLeft = (message: string, onCancel: () => void) => {
         setIsProcessing(true);
         setMessageProcessing(message);

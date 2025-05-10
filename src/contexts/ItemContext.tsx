@@ -33,7 +33,7 @@ type ItemContextType = {
     handleCreateFolder: () => void;
     onCancelNotificationBottomLeft: () => void;
     pathRef: React.MutableRefObject<Array<{ id: number; name: string }>>;
-
+    setIsSharedView: (isSharedView: boolean) => void;
 }
 export const ItemContext = createContext<ItemContextType | null>(null);
 export const useItemContext = () => {
