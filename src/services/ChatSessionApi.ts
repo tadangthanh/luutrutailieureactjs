@@ -1,3 +1,4 @@
+import { ChatSessionDto } from "../types/ChatSessionDto";
 import { ChatSessionInit } from "../types/ChatSessionInit";
 import api from "../utils/api";
 import { apiUrl } from "../utils/ApiUtil";
@@ -14,4 +15,7 @@ export const getChatSessions = async (page = 0, size = 10) => {
 }
 export const getChatSessionByDocId = async (docId: number) => {
     return (await api.get(`${apiUrl}/chat-session/doc/${docId}`)).data;
+}
+export const updateChatSession = async (id: number, chatSession: ChatSessionDto) => {
+    return (await api.put(`${apiUrl}/chat-session/${id}`, chatSession)).data;
 }

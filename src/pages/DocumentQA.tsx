@@ -10,7 +10,7 @@ import { PageResponse } from "../types/PageResponse";
 import { Conversation } from "../types/Conversation";
 import { addConversation, getConversations } from "../services/ConversationApi";
 import { ChatSessionDto } from "../types/ChatSessionDto";
-import { getChatSessions, createChatSession, delChatSession, getChatSessionByDocId } from "../services/ChatSessionApi";
+import { getChatSessions, createChatSession, delChatSession, getChatSessionByDocId, updateChatSession } from "../services/ChatSessionApi";
 import { ChatSessionInit } from "../types/ChatSessionInit";
 import { TypingIndicator } from "../components/TypingIndicator";
 import { useSearchParams } from "react-router-dom";
@@ -505,6 +505,20 @@ const DocumentQA: React.FC = () => {
             window.history.replaceState({}, "", url);
         }
     }
+    const handleChatRename = (id: number, newName: string) => {
+        if (newName) {
+            updateChatSession(id, { name: newName, id: id })
+                .then((res) => {
+                    if (res.status === 200) {
+                        setChatSessionPage((prev) => ({
+                            ...prev,
+                            items: prev.items.map((item) => (item.id === id ? { ...item, name: newName } : item))
+                        }));
+                    }
+                })
+                .catch(() => toast.error("Lỗi khi đổi tên cuộc trò chuyện."));
+        }
+    }
     return (
         <div className="flex flex-col md:flex-row min-h-screen bg-gray-50 dark:bg-gray-900">
             {isLoading && <FullScreenLoading message={message} />}
@@ -516,6 +530,7 @@ const DocumentQA: React.FC = () => {
                     onChatDelete={handleChatDelete}
                     onCreateNewChat={handleCreateNewChat}
                     chatSessionsPage={chatSessionPage}
+                    onChatRename={handleChatRename}
                     onLoadMore={() => setPageSessionNumber((prev) => prev + 1)}
                 />
             </div>
@@ -525,7 +540,7 @@ const DocumentQA: React.FC = () => {
                 <div className="px-4 sm:px-6 py-6 space-y-6 bg-white dark:bg-gray-900 rounded-2xl mt-4 md:mt-12 shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-600 tracking-tight">
-                            🤖 AI Hỏi đáp
+                            AI Hỏi đáp
                         </h1>
                         {chatSelected && (
                             <span className="text-sm text-gray-500 dark:text-gray-400">
