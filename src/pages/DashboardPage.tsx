@@ -24,6 +24,7 @@ import FullScreenLoading from "../components/FullScreenLoading";
 import { hasPermissionEditor } from "../services/PermissionApi";
 import { useDelayedLoading } from "../hooks/Loading";
 import { DashboardProvider } from "../contexts/DashboardContext";
+import DashboardSkeleton from "../components/DashboardSkeleton";
 
 interface DashboardPageProps {
     isSharedView?: boolean;
@@ -153,7 +154,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
 
     const [openShareDialog, setOpenShareDialog] = useState(false);
     const [idItemToShare, setIdItemToShare] = useState<number | null>(null); // ID của item đang chia sẻ
-    const [isLoading, setIsLoading] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
     const showLoading = useDelayedLoading(isLoading); // dùng hook
 
     const handleShare = (id: number) => {
@@ -234,16 +235,15 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                 newItems = items.filter(item => !item.startsWith("parent.id:"));
             }
             try {
+                setIsLoading(true);
                 const response = isSharedView
                     ? await getItemsSharedWithMe(pageNo, 20, newItems)
                     : await getItems(pageNo, 20, newItems);
 
                 if (response.status === 200) {
                     if (pageNo === 0) {
-                        // Nếu là trang đầu tiên, set trực tiếp
                         setItemPage(response.data);
                     } else {
-                        // Nếu là trang tiếp theo, append vào
                         setItemPage((prev) => ({
                             ...response.data,
                             items: [...prev.items, ...response.data.items],
@@ -257,6 +257,8 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                 }
             } catch (error) {
                 toast.error("Lỗi khi lấy dữ liệu");
+            } finally {
+                setIsLoading(false);
             }
         };
         fetchData();
@@ -429,7 +431,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                         exit={{ opacity: 0, y: -10 }}
                         transition={{ duration: 0.2 }}
                     >
-                        {layout === "list" ? (
+                        {isLoading ? (
+                            <DashboardSkeleton layout={layout} />
+                        ) : layout === "list" ? (
                             <DashboardListView
                                 items={itemPage.items}
                                 openMenuId={openMenuId}
@@ -443,7 +447,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                         )}
                     </motion.div>
                 </AnimatePresence>
-                {itemPage.hasNext && (
+                {itemPage.hasNext && !isLoading && (
                     <div className="bottom-4 left-4">
                         <button
                             onClick={handleLoadMore}

@@ -77,25 +77,28 @@ const SavedDocumentsPage = () => {
         }
     };
     const navigate = useNavigate();
-    const handleOpen = (itemId: number) => () => {
-        getOnlyOfficeConfig(itemId)
-            .then((response) => {
-                if (response.status === 200) {
-                    const config: OnlyOfficeConfig = response.data;
-                    // Mở editor trong tab mới
-                    const editorUrl = `/editor?config=${encodeURIComponent(JSON.stringify(config))}`;
-                    window.open(editorUrl, '_blank');
-                } else {
-                    toast.error(response.message); // Hiển thị thông báo lỗi nếu không thành công
+    const handleItemClick = (item: ItemResponse) => () => {
+        if (item.itemType === "FOLDER") {
+            navigate(`/folders/${item.id}`);
+        } else if (item.itemType === "DOCUMENT") {
+            getOnlyOfficeConfig(item.id)
+                .then((response) => {
+                    if (response.status === 200) {
+                        const config: OnlyOfficeConfig = response.data;
+                        // Mở editor trong tab mới
+                        const editorUrl = `/editor?config=${encodeURIComponent(JSON.stringify(config))}`;
+                        window.open(editorUrl, '_blank');
+                    } else {
+                        toast.error(response.message); // Hiển thị thông báo lỗi nếu không thành công
+                        navigate("/"); // Điều hướng về trang chính nếu có lỗi
+                    }
+                }).catch((error) => {
+                    console.error("Lỗi khi lấy cấu hình OnlyOffice:", error);
+                    toast.error("Lỗi khi lấy cấu hình tài liệu.");
                     navigate("/"); // Điều hướng về trang chính nếu có lỗi
-                }
-            }).catch((error) => {
-                console.error("Lỗi khi lấy cấu hình OnlyOffice:", error);
-                toast.error("Lỗi khi lấy cấu hình tài liệu.");
-                navigate("/"); // Điều hướng về trang chính nếu có lỗi
-            })
+                })
+        }
     }
-
 
     return (
         <div className="p-6 max-w-7xl mx-auto">
@@ -127,7 +130,7 @@ const SavedDocumentsPage = () => {
                     ) : (
                         savedItems.items.map((savedItem) => (
                             <motion.div
-                                onClick={handleOpen(savedItem.id)}
+                                onClick={handleItemClick(savedItem)}
                                 key={savedItem.id}
                                 variants={itemVariants}
                                 className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 hover:shadow-lg transition-shadow duration-300 cursor-pointer"
