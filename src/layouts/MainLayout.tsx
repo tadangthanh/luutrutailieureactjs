@@ -235,12 +235,14 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     ]);
     const [isSharedView, setIsSharedView] = useState<boolean>(false);
     useEffect(() => {
-        setActiveLink(location.pathname);
         setItems(prevItems => prevItems.filter(item => !item.includes("parent.id:")));
         setPageNo(0);
         pathRef.current = [{ id: 0, name: isSharedView ? "Kho lưu trữ chia sẻ" : "Kho lưu trữ của tôi" }];
         setFolderId(null);
-    }, [isSharedView, location.pathname])
+    }, [isSharedView])
+    useEffect(() => {
+        setActiveLink(location.pathname);
+    }, [location.pathname])
     return (
         <ItemContext.Provider
             value={{
