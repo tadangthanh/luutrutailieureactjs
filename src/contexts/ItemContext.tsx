@@ -1,6 +1,7 @@
 import { createContext, useContext } from "react";
 import { ItemResponse } from "../types/ItemResponse";
 import { PageResponse } from "../types/PageResponse";
+import { PageItemResponse } from "../types/PageItemResponse";
 
 type ItemContextType = {
     items: string[];
@@ -9,7 +10,7 @@ type ItemContextType = {
     pageNo: number;
     setActiveLink: (activeLink: string) => void;
     activeLink: string;
-    setItemPage: (itemPage: PageResponse<ItemResponse> | ((prev: PageResponse<ItemResponse>) => PageResponse<ItemResponse>)) => void;
+    setItemPage: (itemPage: PageItemResponse<ItemResponse> | ((prev: PageItemResponse<ItemResponse>) => PageItemResponse<ItemResponse>)) => void;
     setPageNo: (pageNo: number | ((prev: number) => number)) => void;
     folderId: number | null;
     setFolderId: (folderId: number | null) => void;

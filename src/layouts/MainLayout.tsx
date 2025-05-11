@@ -1,7 +1,6 @@
 import { ReactNode, useCallback, useEffect, useRef, useState } from "react";
 import { Sidebar } from "../components/Sidebar";
 import { Header } from "../components/Header";
-import { PageResponse } from "../types/PageResponse";
 import { ItemResponse } from "../types/ItemResponse";
 import webSocketService from "../services/WebSocketService";
 import { toast } from "sonner";
@@ -12,6 +11,8 @@ import { ItemContext } from "../contexts/ItemContext";
 import { createFolder } from "../services/FolderApi";
 import { useLocation } from "react-router-dom";
 import TextInputModal from "../components/TextInputModal";
+import { PageItemResponse } from "../types/PageItemResponse";
+import { BreadcrumbDto } from "../types/BreadcrumbDto";
 
 const MainLayout = ({ children }: { children: ReactNode }) => {
     const [activeMenu, setActiveMenu] = useState<string>("Tài liệu của tôi");
@@ -34,13 +35,14 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         total: number;
     } | null>(null);
 
-    const [itemPage, setItemPage] = useState<PageResponse<ItemResponse>>({
+    const [itemPage, setItemPage] = useState<PageItemResponse<ItemResponse>>({
         pageNo: 0,
         pageSize: 10,
         totalPage: 0,
         hasNext: false,
         totalItems: 0,
         items: [],
+        breadcrumbs: [],
     });
     const handleMessage = useCallback((message: string) => {
         const msg = JSON.parse(message);
@@ -202,6 +204,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             hasNext: false,
             totalItems: 0,
             items: [],
+            breadcrumbs: [],
         });
     }, [items]);
     const [isCreateFolder, setIsCreateFolder] = useState<boolean>(false);
@@ -230,7 +233,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         onCancelRef.current();
     };
     const [activeLink, setActiveLink] = useState<string>("");
-    const pathRef = useRef<Array<{ id: number; name: string }>>([
+    const pathRef = useRef<BreadcrumbDto[]>([
         { id: 0, name: "Kho lưu trữ" },
     ]);
     const [isSharedView, setIsSharedView] = useState<boolean>(false);
@@ -243,6 +246,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     useEffect(() => {
         setActiveLink(location.pathname);
     }, [location.pathname])
+
     return (
         <ItemContext.Provider
             value={{

@@ -1,17 +1,18 @@
 import React, { useEffect, useState } from "react";
+import { BreadcrumbDto } from "../types/BreadcrumbDto";
 
 interface BreadcrumbsProps {
-    initialPath: Array<{ id: number; name: string }>;
+    initialPath: BreadcrumbDto[];
     onClick: (id: number) => void; // Callback khi click vào link
 }
 
 const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ initialPath, onClick }) => {
     const [path, setPath] = useState(initialPath);
 
-    const handleClick = (index: number) => {
+    const handleClick = (breadcrumb: BreadcrumbDto) => {
         // Cắt bớt danh sách path từ index trở đi
-        setPath(path.slice(0, index + 1)); // Sửa lại để giữ lại từ index đến cuối
-        onClick(path[index].id); // Gọi callback khi click vào link
+        setPath(path.slice(0, path.findIndex(b => b.id === breadcrumb.id) + 1)); // Sửa lại để giữ lại từ index đến cuối
+        onClick(breadcrumb.id); // Gọi callback khi click vào link
     };
     useEffect(() => {
         setPath(initialPath);
@@ -19,19 +20,19 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({ initialPath, onClick }) => {
     return (
         <nav className="text-sm text-gray-700 dark:text-gray-300 mb-4">
             <ol className="flex items-center space-x-2">
-                {path.map((folder, index) => {
+                {path.map((breadcrumb, index) => {
                     const isLast = index === path.length - 1;
 
                     return (
-                        <React.Fragment key={folder.id}>
+                        <React.Fragment key={breadcrumb.id}>
                             {isLast ? (
-                                <span className="text-gray-500">{folder.name}</span> // Nếu là phần tử cuối, không phải link
+                                <span className="text-gray-500">{breadcrumb.name}</span> // Nếu là phần tử cuối, không phải link
                             ) : (
                                 <span
                                     className="text-primary hover:underline cursor-pointer transition-all duration-300 ease-in-out"
-                                    onClick={() => handleClick(index)} // Gọi callback khi click vào link
+                                    onClick={() => handleClick(breadcrumb)} // Gọi callback khi click vào link
                                 >
-                                    {folder.name}
+                                    {breadcrumb.name}
                                 </span>
                             )}
                             {!isLast && (

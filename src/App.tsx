@@ -33,6 +33,11 @@ function App() {
                                 <MainLayout><DashboardPage isSharedView={false} /></MainLayout>
                             </PrivateRoute>
                         } />
+                        <Route path="/folders/:id" element={
+                            <PrivateRoute>
+                                <MainLayout><DashboardPage isSharedView={false} /></MainLayout>
+                            </PrivateRoute>
+                        } />
                         {/* trash */}
                         <Route path="/trash" element={
                             <PrivateRoute>

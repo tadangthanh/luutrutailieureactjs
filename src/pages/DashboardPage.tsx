@@ -17,7 +17,7 @@ import { ItemInfoPanel } from "../components/ItemInfoPanel";
 import VersionHistoryDialog from '../components/VersionHistoryDialog';
 import { DocumentVersionResponse } from "../types/DocumentVersionResponse";
 import { OnlyOfficeConfig } from "../types/OnlyOfficeConfig";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { removeItem, saveItem } from "../services/ItemSavedApi";
 import { useItemContext } from "../contexts/ItemContext";
 import FullScreenLoading from "../components/FullScreenLoading";
@@ -223,13 +223,20 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
             setNewName("");
         }
     };
+    const { id } = useParams();
 
     useEffect(() => {
         const fetchData = async () => {
+            let newItems = items;
+            if (id !== undefined && !isNaN(Number(id))) {
+                newItems = [...items.filter(item => item !== `parent.id:${id}`), `parent.id:${id}`]
+            } else {
+                newItems = items.filter(item => !item.startsWith("parent.id:"));
+            }
             try {
                 const response = isSharedView
-                    ? await getItemsSharedWithMe(pageNo, 20, items)
-                    : await getItems(pageNo, 20, items);
+                    ? await getItemsSharedWithMe(pageNo, 20, newItems)
+                    : await getItems(pageNo, 20, newItems);
 
                 if (response.status === 200) {
                     if (pageNo === 0) {
@@ -242,7 +249,10 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                             items: [...prev.items, ...response.data.items],
                         }));
                     }
+                    pathRef.current = [{ id: 0, name: isSharedView ? "Kho lưu trữ chia sẻ" : "Kho lưu trữ của tôi" }];
+                    pathRef.current.push(...response.data.breadcrumbs);
                 } else {
+                    navigate("/");
                     toast.error(response.message);
                 }
             } catch (error) {
@@ -250,7 +260,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
             }
         };
         fetchData();
-    }, [pageNo, items, isSharedView, setItemPage]);
+    }, [pageNo, items, isSharedView, setItemPage, id, pathRef, navigate]);
 
     const buildFilters = (parentId: number | null) =>
         (prev: string[]) => {
@@ -259,17 +269,13 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         };
 
     const handleBreadCrumbsClick = (id: number) => {
-        // 1) Set the folder (null for root)
-        setFolderId(id === 0 ? null : id);
-
-        // 2) Trim the crumb trail to the clicked one
-        const idx = pathRef.current.findIndex(p => p.id === id);
-        if (idx !== -1) {
-            pathRef.current = pathRef.current.slice(0, idx + 1);
+        // // 1) Set the folder (null for root)
+        // setFolderId(id === 0 ? null : id);
+        if (id) {
+            navigate(`/folders/${id}`);
+        } else {
+            navigate("/");
         }
-
-        // 3) Rebuild your query filters
-        setItems(buildFilters(id === 0 ? null : id));
     }
     const [isEditor, setIsEditor] = useState(false);
     useEffect(() => {
@@ -287,6 +293,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         if (item.itemType === 'FOLDER') {
             // 1) Set the folder
             setFolderId(item.id);
+            navigate(`/folders/${item.id}`);
             hasPermissionEditor(item.id).then((res) => {
                 if (res.status === 200) {
                     setIsEditor(res.data);
@@ -298,13 +305,13 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
             // 3) Maintain the crumb trail:
             //    – if already in the trail, slice back to it,
             //    – otherwise append it.
-            const idx = pathRef.current.findIndex(p => p.id === item.id);
-            if (idx !== -1) {
-                // clicking on a folder that's already in the crumb
-                pathRef.current = pathRef.current.slice(0, idx + 1);
-            } else {
-                pathRef.current.push({ id: item.id, name: item.name });
-            }
+            // const idx = pathRef.current.findIndex(p => p.id === item.id);
+            // if (idx !== -1) {
+            //     // clicking on a folder that's already in the crumb
+            //     pathRef.current = pathRef.current.slice(0, idx + 1);
+            // } else {
+            //     pathRef.current.push({ id: item.id, name: item.name });
+            // }
         } else if (item.itemType === 'DOCUMENT') {
             // Handle click on document item
             handleOpen(item.id);

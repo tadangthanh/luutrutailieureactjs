@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Asterisk, Trash2, Menu, Bookmark, X, Users, Folder } from "lucide-react";
 import { JSX } from "react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -79,6 +79,7 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
     setActiveLink: (link: string) => void,
     activeLink: string
 }) {
+    const navigate = useNavigate();
     return (
         <div className="flex flex-col h-full">
             {/* Logo/Title */}
@@ -110,7 +111,10 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
                     icon={<Folder size={20} />}
                     label="Tài liệu của tôi"
                     active={currentPath === "/"}
-                    onClick={() => setActiveLink("/")}
+                    onClick={() => {
+                        setActiveLink("/");
+                        navigate("/");
+                    }}
                     setActiveMenu={setActiveMenu}
                 />
                 <NavItem

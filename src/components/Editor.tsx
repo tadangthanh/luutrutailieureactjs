@@ -39,7 +39,7 @@ export const Editor: React.FC = () => {
             </div>
         );
     }
-    const baseUrl = "https://craft-content-spirit-concluded.trycloudflare.com";
+    const baseUrl = "https://len-posing-ed-shade.trycloudflare.com";
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <DocumentEditor
