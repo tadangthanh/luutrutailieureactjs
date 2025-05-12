@@ -26,7 +26,7 @@ export const Editor: React.FC = () => {
 
     if (error) {
         return (
-            <div className="flex items-center justify-center h-screen">
+        <div className="flex items-center justify-center h-screen">
                 <div className="text-red-500">{error}</div>
             </div>
         );

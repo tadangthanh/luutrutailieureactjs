@@ -230,7 +230,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         const fetchData = async () => {
             let newItems = items;
             if (id !== undefined && !isNaN(Number(id))) {
-                newItems = [...items.filter(item => item !== `parent.id:${id}`), `parent.id:${id}`]
+                newItems = [...items.filter(item => !item.startsWith("parent.id:")), `parent.id:${id}`]
             } else {
                 newItems = items.filter(item => !item.startsWith("parent.id:"));
             }
