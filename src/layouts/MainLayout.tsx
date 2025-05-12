@@ -288,7 +288,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFilesSelected}
-                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                    // accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                    {...{ webkitdirectory: "true" }}
                     multiple
                     className="hidden"
                 />

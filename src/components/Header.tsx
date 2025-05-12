@@ -1,11 +1,12 @@
 import { Link } from "react-router-dom";
-import { Settings, User, Mail, Calendar, FileText, LogOut, X } from "lucide-react";
+import { Settings, User, Mail, Calendar, FileText, LogOut, X, Moon, Sun } from "lucide-react";
 import { useState } from "react";
 import { getUserProfile } from '../services/UserSearchApi';
 import { User as UserType } from '../types/User';
 import { formatDateTime } from '../utils/FormatDateTimeUtil';
 import { useNavigate } from 'react-router-dom';
 import SearchBar from "./SearchBar";
+import { useTheme } from '../contexts/ThemeContext';
 
 interface HeaderProps {
     activeMenu: string;
@@ -16,6 +17,7 @@ export const Header: React.FC<HeaderProps> = ({ activeMenu }) => {
     const [user, setUser] = useState<UserType>();
     const isLoggedIn = !!localStorage.getItem("accessToken");
     const navigate = useNavigate();
+    const { theme, toggleTheme } = useTheme();
 
     const handleOpenProfile = () => {
         setIsOpen(true);
@@ -58,17 +60,30 @@ export const Header: React.FC<HeaderProps> = ({ activeMenu }) => {
                     </button> */}
 
                     {isLoggedIn ? (
-                        <button
-                            onClick={handleOpenProfile}
-                            className="flex items-center gap-3 px-4 py-1 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer border border-gray-200 dark:border-gray-600 shadow-sm"
-                        >
-                            <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                                <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                            </div>
-                            <span className="text-base font-medium text-gray-800 dark:text-white">
-                                Tài khoản
-                            </span>
-                        </button>
+                        <>
+                            <button
+                                onClick={toggleTheme}
+                                className="flex items-center gap-2 px-4 py-2 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer border border-gray-200 dark:border-gray-600 shadow-sm"
+                            >
+                                {theme === 'light' ? (
+                                    <Moon className="w-5 h-5 text-gray-700" />
+                                ) : (
+                                    <Sun className="w-5 h-5 text-yellow-400" />
+                                )}
+                            </button>
+
+                            <button
+                                onClick={handleOpenProfile}
+                                className="flex items-center gap-3 px-4 py-1 bg-gray-50 dark:bg-gray-700/50 rounded-xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all duration-200 cursor-pointer border border-gray-200 dark:border-gray-600 shadow-sm"
+                            >
+                                <div className="w-10 h-10 rounded-xl bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                    <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                                </div>
+                                <span className="text-base font-medium text-gray-800 dark:text-white">
+                                    Tài khoản
+                                </span>
+                            </button>
+                        </>
                     ) : (
                         <Link
                             to="/login"
