@@ -87,13 +87,28 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 if (location.pathname === "/" || location.pathname.startsWith("/folder")) {
                     setItemPage(prev => ({
                         ...prev,
-                        items: [...msg.documents, ...prev.items], // thêm vào đầu danh sách
-                        totalItems: prev.totalItems + msg.documents.length
+                        items: [...msg.items, ...prev.items], // thêm vào đầu danh sách
+                        totalItems: prev.totalItems + msg.items.length
                     }));
                 }
             }
         }
 
+        setTimeout(() => setUploadProgress(null), 2000);
+        webSocketService.unsubscribeUploadProgress();
+        webSocketService.unsubscribeUploadSuccess();
+    }, [location.pathname]);
+    const handleUploadFolderCompleted = useCallback((message: string) => {
+        const msg: ItemResponse = JSON.parse(message);
+        if (msg) {
+            if (location.pathname === "/" || location.pathname.startsWith("/folder")) {
+                setItemPage(prev => ({
+                    ...prev,
+                    items: [msg, ...prev.items], // thêm vào đầu danh sách
+                    totalItems: prev.totalItems + 1
+                }));
+            }
+        }
         setTimeout(() => setUploadProgress(null), 2000);
         webSocketService.unsubscribeUploadProgress();
         webSocketService.unsubscribeUploadSuccess();
@@ -115,7 +130,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         }
 
         webSocketService.subscribeUploadProgress(handleMessage);
-        webSocketService.subscribeUploadSuccess(handleUploadCompleted);
+        webSocketService.subscribeUploadFolderSuccess(handleUploadFolderCompleted);
         try {
             let res;
             if (folderIdRef.current) {
@@ -128,12 +143,12 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             } else {
                 toast.error("Tải tệp thất bại.");
                 webSocketService.unsubscribeUploadProgress();
-                webSocketService.unsubscribeUploadSuccess();
+                webSocketService.unsubscribeUploadFolderSuccess();
             }
         } catch (err) {
             toast.error("Tải tệp thất bại.");
             webSocketService.unsubscribeUploadProgress();
-            webSocketService.unsubscribeUploadSuccess();
+            webSocketService.unsubscribeUploadFolderSuccess();
         } finally {
             e.target.value = "";
         }

@@ -192,7 +192,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
     const handleMoveToTrash = (id: number) => {
         delItem(id).then((res) => {
             if (res.status === 200) {
-                toast.success("Đã chuyển vào thùng rác");
                 setItemPage(prev => ({
                     ...prev,
                     items: prev.items.filter(item => item.id !== id),

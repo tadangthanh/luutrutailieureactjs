@@ -74,6 +74,17 @@ export class WebSocketService {
             }
         );
     }
+    subscribeUploadFolderSuccess(onMessage: (message: string) => void) {
+        if (!this.client.connected) return;
+        this.completedSubscription = this.client.subscribe(
+            "/user/topic/upload-folder-success",
+            (message) => {
+                if (message.body) {
+                    onMessage(message.body);
+                }
+            }
+        );
+    }
 
     // ✅ Gọi khi kết thúc hoặc hủy upload
     unsubscribeUploadProgress() {
@@ -82,6 +93,10 @@ export class WebSocketService {
     }
 
     unsubscribeUploadSuccess() {
+        this.completedSubscription?.unsubscribe();
+        this.completedSubscription = null;
+    }
+    unsubscribeUploadFolderSuccess() {
         this.completedSubscription?.unsubscribe();
         this.completedSubscription = null;
     }
