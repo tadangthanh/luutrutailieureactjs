@@ -13,6 +13,18 @@ export const getFolderPage = async (page = 0, size = 10, folders: string[]) => {
 export const createFolder = async (folderRequest: FolderRequest) => {
     return (await api.post(`${apiUrl}/folders`, folderRequest)).data;
 }
+export const uploadFolderNullParent = async (formData: FormData) => {
+    return (await api.post(`${apiUrl}/folders/upload`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+    })).data;
+}
+
+export const uploadFolderWithParent = async (folderId: number, formData: FormData) => {
+    return (await api.post(`${apiUrl}/folders/upload/with-parent/${folderId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" }
+    })).data;
+}
+
 
 export const downloadFolder = async (folderId: number) => {
     try {

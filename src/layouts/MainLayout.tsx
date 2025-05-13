@@ -8,7 +8,7 @@ import api from "../utils/api";
 import { uploadEmptyParent, uploadWithParent } from "../services/DocumentApi";
 import { UploadProgress } from "../components/UploadProgress";
 import { ItemContext } from "../contexts/ItemContext";
-import { createFolder } from "../services/FolderApi";
+import { createFolder, uploadFolderNullParent, uploadFolderWithParent } from "../services/FolderApi";
 import { useLocation } from "react-router-dom";
 import TextInputModal from "../components/TextInputModal";
 import { PageItemResponse } from "../types/PageItemResponse";
@@ -88,7 +88,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         } else {
             toast.success("Tải lên hoàn tất!");
             if (msg.documents && Array.isArray(msg.documents)) {
-                if (location.pathname === "/") {
+                if (location.pathname === "/" || location.pathname.startsWith("/folder")) {
                     setItemPage(prev => ({
                         ...prev,
                         items: [...msg.documents, ...prev.items], // thêm vào đầu danh sách
@@ -103,8 +103,45 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         webSocketService.unsubscribeUploadSuccess();
     }, [location.pathname]);
     const fileInputRef = useRef<HTMLInputElement>(null);
+    const folderInputRef = useRef<HTMLInputElement>(null);
     const triggerFileUpload = () => {
         fileInputRef.current?.click();
+    }
+    const triggerFolderUpload = () => {
+        folderInputRef.current?.click();
+    }
+    const handleFolderSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = e.target.files;
+        if (!files || files.length === 0) return;
+        const formData = new FormData();
+        for (let i = 0; i < files.length; i++) {
+            formData.append("files", files[i], files[i].webkitRelativePath);
+        }
+
+        webSocketService.subscribeUploadProgress(handleMessage);
+        webSocketService.subscribeUploadSuccess(handleUploadCompleted);
+        try {
+            let res;
+            if (folderIdRef.current) {
+                res = await uploadFolderWithParent(folderIdRef.current, formData);
+            } else {
+                res = await uploadFolderNullParent(formData);
+            }
+            if (res.status === 200) {
+                setUploadId(res.data);
+            } else {
+                toast.error("Tải tệp thất bại.");
+                webSocketService.unsubscribeUploadProgress();
+                webSocketService.unsubscribeUploadSuccess();
+            }
+        } catch (err) {
+            toast.error("Tải tệp thất bại.");
+            webSocketService.unsubscribeUploadProgress();
+            webSocketService.unsubscribeUploadSuccess();
+        } finally {
+            e.target.value = "";
+        }
+
     }
     const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
@@ -133,6 +170,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             toast.error("Tải tệp thất bại.");
             webSocketService.unsubscribeUploadProgress();
             webSocketService.unsubscribeUploadSuccess();
+        } finally {
+            e.target.value = "";
         }
     };
     const [isDragging, setIsDragging] = useState(false);
@@ -250,6 +289,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     return (
         <ItemContext.Provider
             value={{
+                triggerFolderUpload,
                 setIsSharedView,
                 pathRef,
                 items,
@@ -288,7 +328,15 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                     type="file"
                     ref={fileInputRef}
                     onChange={handleFilesSelected}
-                    // accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                    accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.txt"
+                    // {...{ webkitdirectory: "true" }}
+                    multiple
+                    className="hidden"
+                />
+                <input
+                    type="file"
+                    ref={folderInputRef}
+                    onChange={handleFolderSelected}
                     {...{ webkitdirectory: "true" }}
                     multiple
                     className="hidden"

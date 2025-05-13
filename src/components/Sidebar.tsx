@@ -80,6 +80,7 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
     activeLink: string
 }) {
     const navigate = useNavigate();
+    const { setFolderId } = useItemContext();
     return (
         <div className="flex flex-col h-full">
             {/* Logo/Title */}
@@ -114,6 +115,7 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
                     onClick={() => {
                         setActiveLink("/");
                         navigate("/");
+                        setFolderId(null);
                     }}
                     setActiveMenu={setActiveMenu}
                 />
@@ -122,7 +124,10 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
                     icon={<Users size={20} />}
                     label="Được chia sẻ với tôi"
                     active={activeLink === "/shared-with-me"}
-                    onClick={() => setActiveLink("/shared-with-me")}
+                    onClick={() => {
+                        setActiveLink("/shared-with-me");
+                        setFolderId(null);
+                    }}
                     setActiveMenu={setActiveMenu}
                 />
                 <NavItem
@@ -130,7 +135,10 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
                     icon={<Bookmark size={20} />}
                     label="Tài liệu đã lưu"
                     active={activeLink === "/saved"}
-                    onClick={() => setActiveLink("/saved")}
+                    onClick={() => {
+                        setActiveLink("/saved");
+                        setFolderId(null);
+                    }}
                     setActiveMenu={setActiveMenu}
                 />
                 <NavItem
@@ -138,7 +146,10 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
                     icon={<Trash2 size={20} />}
                     label="Thùng rác"
                     active={activeLink === "/trash"}
-                    onClick={() => setActiveLink("/trash")}
+                    onClick={() => {
+                        setActiveLink("/trash");
+                        setFolderId(null);
+                    }}
                     setActiveMenu={setActiveMenu}
                 />
                 <NavItem
@@ -146,7 +157,10 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
                     icon={<Asterisk size={20} />}
                     label="AI Hỏi đáp"
                     active={activeLink === "/document-assistant"}
-                    onClick={() => setActiveLink("/document-assistant")}
+                    onClick={() => {
+                        setActiveLink("/document-assistant");
+                        setFolderId(null);
+                    }}
                     setActiveMenu={setActiveMenu}
                 />
             </nav>

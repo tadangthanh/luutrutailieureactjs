@@ -47,7 +47,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         x: number;
         y: number;
     }>({ visible: false, x: 0, y: 0 });
-    const { setItems, items, pageNo, setIsSharedView, openCreateFolderModal, folderId, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isProcessing, pathRef, onCancelNotificationBottomLeft } = useItemContext();
+    const { setItems, items, pageNo, setIsSharedView, openCreateFolderModal, folderId, setFolderId, itemPage, setItemPage, setPageNo, isDragging, setIsProcessing, onCancelRef, triggerFileUpload, isProcessing, pathRef, onCancelNotificationBottomLeft, triggerFolderUpload } = useItemContext();
 
     const [versionHistoryItemId, setVersionHistoryItemId] = useState<number | null>(null);
 
@@ -404,6 +404,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                         onSelect={(action: any) => {
                             if (action === "newFolder") openCreateFolderModal();
                             else if (action === "uploadFile") triggerFileUpload();
+                            else if (action === "uploadFolder") triggerFolderUpload();
                             setContextMenu({ ...contextMenu, visible: false });
                         }}
                     />

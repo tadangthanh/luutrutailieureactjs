@@ -35,6 +35,7 @@ type ItemContextType = {
     onCancelNotificationBottomLeft: () => void;
     pathRef: React.MutableRefObject<Array<{ id: number; name: string }>>;
     setIsSharedView: (isSharedView: boolean) => void;
+    triggerFolderUpload: () => void;
 }
 export const ItemContext = createContext<ItemContextType | null>(null);
 export const useItemContext = () => {

@@ -33,6 +33,13 @@ export const EmptyAreaContextMenu: React.FC<EmptyAreaContextMenuProps> = ({ x, y
                         <Upload className="w-4 h-4" />
                         Tải lên tệp
                     </li>
+                    <li
+                        onClick={() => onSelect("uploadFolder")}
+                        className="flex items-center gap-2 px-4 py-2 hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer"
+                    >
+                        <FolderPlus className="w-4 h-4" />
+                        Tải lên thư mục
+                    </li>
                 </ul>
             </motion.div>
         </AnimatePresence>
