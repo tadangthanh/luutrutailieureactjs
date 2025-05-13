@@ -30,9 +30,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     }, [folderId]);
     const [uploadProgress, setUploadProgress] = useState<{
         fileName: string;
-        percent: number;
-        currentChunk: number;
-        total: number;
+        totalFileUploaded: number;
+        totalFile: number;
     } | null>(null);
 
     const [itemPage, setItemPage] = useState<PageItemResponse<ItemResponse>>({
@@ -46,14 +45,11 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     });
     const handleMessage = useCallback((message: string) => {
         const msg = JSON.parse(message);
-        if (msg.progressPercent !== undefined) {
-            setUploadProgress({
-                fileName: msg.fileName,
-                percent: msg.progressPercent,
-                currentChunk: msg.currentChunk,
-                total: msg.totalChunks,
-            });
-        }
+        setUploadProgress({
+            fileName: msg.fileName,
+            totalFileUploaded: msg.totalFileUploaded,
+            totalFile: msg.totalFile
+        });
     }, []);
     const handleUploadFailure = useCallback((message: string) => {
         const msg = JSON.parse(message);
@@ -351,9 +347,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
                 {uploadProgress && (
                     <UploadProgress
                         fileName={uploadProgress.fileName}
-                        percent={uploadProgress.percent}
-                        currentChunk={uploadProgress.currentChunk}
-                        total={uploadProgress.total}
+                        totalFileUploaded={uploadProgress.totalFileUploaded}
+                        totalFile={uploadProgress.totalFile}
                         onCancel={handleCancelUpload}
                     />
                 )}
