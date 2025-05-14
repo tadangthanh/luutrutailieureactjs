@@ -98,13 +98,12 @@ const TrashPage = () => {
                                             items: [],
                                             totalItems: 0,
                                         }));
-                                        return "Đã dọn sạch thùng rác";
+                                        return;
                                     }
                                     throw new Error(res.message);
                                 }),
                                 {
                                     loading: 'Đang dọn sạch thùng rác...',
-                                    success: (message: string) => message,
                                     error: (error: string) => error,
                                 }
                             );
