@@ -271,7 +271,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
 
     const handleBreadCrumbsClick = (id: number) => {
         // // 1) Set the folder (null for root)
-        // setFolderId(id === 0 ? null : id);
+        setFolderId(id === 0 ? null : id);
         if (id) {
             navigate(`/folders/${id}`);
         } else {
@@ -303,16 +303,6 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
             // 2) Rebuild your query filters
             setItems(buildFilters(item.id));
 
-            // 3) Maintain the crumb trail:
-            //    – if already in the trail, slice back to it,
-            //    – otherwise append it.
-            // const idx = pathRef.current.findIndex(p => p.id === item.id);
-            // if (idx !== -1) {
-            //     // clicking on a folder that's already in the crumb
-            //     pathRef.current = pathRef.current.slice(0, idx + 1);
-            // } else {
-            //     pathRef.current.push({ id: item.id, name: item.name });
-            // }
         } else if (item.itemType === 'DOCUMENT') {
             // Handle click on document item
             handleOpen(item.id);

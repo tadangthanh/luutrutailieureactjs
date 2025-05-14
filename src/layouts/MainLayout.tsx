@@ -27,6 +27,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     });
     useEffect(() => {
         folderIdRef.current = folderId;
+        console.log(folderId);
     }, [folderId]);
     const [uploadProgress, setUploadProgress] = useState<{
         fileName: string;

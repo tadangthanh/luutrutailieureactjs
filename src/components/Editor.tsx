@@ -26,7 +26,7 @@ export const Editor: React.FC = () => {
 
     if (error) {
         return (
-        <div className="flex items-center justify-center h-screen">
+            <div className="flex items-center justify-center h-screen">
                 <div className="text-red-500">{error}</div>
             </div>
         );
@@ -39,7 +39,7 @@ export const Editor: React.FC = () => {
             </div>
         );
     }
-    const baseUrl = "https://clips-candles-denver-max.trycloudflare.com";
+    const baseUrl = "https://tips-sequence-aging-this.trycloudflare.com";
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <DocumentEditor
