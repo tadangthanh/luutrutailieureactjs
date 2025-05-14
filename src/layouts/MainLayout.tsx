@@ -124,13 +124,28 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     const handleFolderSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;
+
+        const allowedExtensions = [
+            "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx", "txt", "odt", "rtf"
+        ];
+
         const formData = new FormData();
         for (let i = 0; i < files.length; i++) {
-            formData.append("files", files[i], files[i].webkitRelativePath);
+            const file = files[i];
+            const ext = file.name.split('.').pop()?.toLowerCase();
+            if (ext && allowedExtensions.includes(ext)) {
+                formData.append("files", file, file.webkitRelativePath);
+            }
+        }
+
+        if (!formData.has("files")) {
+            toast.warning("Không có file tài liệu hợp lệ để upload.");
+            return;
         }
 
         webSocketService.subscribeUploadProgress(handleMessage);
         webSocketService.subscribeUploadFolderSuccess(handleUploadFolderCompleted);
+
         try {
             let res;
             if (folderIdRef.current) {
@@ -152,8 +167,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         } finally {
             e.target.value = "";
         }
-
     }
+
     const handleFilesSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
         const files = e.target.files;
         if (!files || files.length === 0) return;

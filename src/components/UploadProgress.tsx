@@ -18,7 +18,7 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
     return (
         <div className="absolute bottom-4 right-4 bg-white dark:bg-gray-800 shadow-lg rounded-lg p-4 z-50 w-72">
             <p className="text-sm text-primary font-semibold mb-2 truncate">
-                Đang upload: {fileName}
+                Đang tải lên: {fileName}
             </p>
             <progress className="w-full h-3" value={percent} max={100} />
             <div className="flex justify-between items-center mt-1">
