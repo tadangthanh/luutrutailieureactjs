@@ -27,7 +27,6 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
     });
     useEffect(() => {
         folderIdRef.current = folderId;
-        console.log(folderId);
     }, [folderId]);
     const [uploadProgress, setUploadProgress] = useState<{
         fileName: string;
@@ -84,8 +83,8 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             toast.warning("Upload đã bị huỷ.");
         } else {
             toast.success("Tải lên hoàn tất!");
-            if (msg.documents && Array.isArray(msg.documents)) {
-                if (location.pathname === "/" || location.pathname.startsWith("/folder")) {
+            if (msg.items && Array.isArray(msg.items)) {
+                if (location.pathname === "/" || location.pathname.startsWith("/folders")) {
                     setItemPage(prev => ({
                         ...prev,
                         items: [...msg.items, ...prev.items], // thêm vào đầu danh sách
