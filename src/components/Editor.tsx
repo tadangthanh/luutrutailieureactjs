@@ -62,7 +62,7 @@ export const Editor: React.FC = () => {
                         callbackUrl: `${baseUrl}/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`,
                         customization: {
                             forcesave: true,
-                        },
+                        }
                     }
                 }}
                 width="100%"

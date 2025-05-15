@@ -147,7 +147,6 @@ const DocumentQA: React.FC = () => {
                 setQuestion("");
                 setShowUploadedFiles(false);
                 setLoading(false);
-                toast.success(res.data.message);
             } else {
                 toast.error(res.data.message);
             }

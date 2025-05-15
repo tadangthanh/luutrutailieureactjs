@@ -20,7 +20,6 @@ export interface OnlyOfficeConfig {
     documentType: string;    // Loại tài liệu cho OnlyOffice (ví dụ: "word", "pdf", "excel")
     documentUrl: string;     // URL để xem tài liệu
     callbackUrl: string;     // URL để nhận sự kiện "save" từ OnlyOffice
-
     permissions: Permissions; // Quyền của người dùng đối với tài liệu
     user: User;               // Thông tin người dùng
 }
