@@ -1,5 +1,5 @@
 export interface CreateSharedLinkRequest {
     itemId: number;
-    expiresAt?: Date;
+    expiresAt?: string; // ISO date string
     maxViews?: number;
 }

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { UserPlus, Trash2, Loader2, Settings } from "lucide-react";
+import { UserPlus, Trash2, Loader2, Settings, Link2 } from "lucide-react";
 import { PermissionResponse } from "../types/PermissionResponse";
 import { PageResponse } from "../types/PageResponse";
 import { UserIndexResponse } from "../types/UserIndexResponse";
@@ -10,13 +10,20 @@ import { User } from "../types/User";
 import { toast } from "sonner";
 import { PendingPermission } from "../types/PendingPermission";
 import { AnimatePresence, motion } from "framer-motion";
+import { createSharedLink, getAllSharedLink, disableSharedLink, enableSharedLink, deleteSharedLink, updateSharedLink } from "../services/SharedLinkApi";
+import { CreateSharedLinkRequest } from "../types/CreateSharedLinkRequest";
+import { SharedLinkResponse } from "../types/SharedLinkResponse";
+import { UpdateSharedLinkRequest } from "../types/UpdateSharedLinkRequest";
+import SharedLinkItem from './SharedLinkItem';
+import SharedLinkSuccessPopup from './SharedLinkSuccessPopup';
 
 interface ShareDialogProps {
     onClose: () => void;
     idItemToShare: number | null;
+    itemType: string;
 }
 
-const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => {
+const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare, itemType }) => {
     const [email, setEmail] = useState("");
     const [debouncedEmail] = useDebounce(email, 400); // <== thêm debounce
     const [permission, setPermission] = useState<"viewer" | "editor">("viewer");
@@ -42,8 +49,27 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
     const [pendingPermissions, setPendingPermissions] = useState<PendingPermission[]>([]);
     const [pageNoPermission, setPageNoPermission] = useState(0);
     const [pageNoSuggest, setPageNoSuggest] = useState(0);
-
-
+    const [showLinkSettings, setShowLinkSettings] = useState(false);
+    const [linkSettings, setLinkSettings] = useState({
+        expiresAt: "",
+        maxViews: 0
+    });
+    const [sharedLink, setSharedLink] = useState<SharedLinkResponse | null>(null);
+    const [showLinkPopup, setShowLinkPopup] = useState(false);
+    const [sharedLinks, setSharedLinks] = useState<PageResponse<SharedLinkResponse>>({
+        pageNo: 0,
+        pageSize: 10,
+        totalPage: 0,
+        hasNext: false,
+        totalItems: 0,
+        items: [],
+    });
+    const [showUpdateDialog, setShowUpdateDialog] = useState(false);
+    const [selectedLink, setSelectedLink] = useState<SharedLinkResponse | null>(null);
+    const [updateSettings, setUpdateSettings] = useState({
+        expiresAt: "",
+        maxViews: 0
+    });
 
     useEffect(() => {
         if (!debouncedEmail || userSelected) {
@@ -111,6 +137,28 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
         fetchSuggestUsers(email);
     }, [pageNoSuggest])
 
+    // Fetch shared links when dialog opens
+    useEffect(() => {
+        if (idItemToShare) {
+            fetchSharedLinks(0);
+        }
+    }, [idItemToShare]);
+
+    const fetchSharedLinks = async (page: number) => {
+        if (idItemToShare) {
+            try {
+                const response = await getAllSharedLink(idItemToShare, page, 1);
+                console.log(response);
+                if (response.status === 200) {
+                    setSharedLinks(response.data);
+                } else {
+                    toast.error(response.message);
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+    };
 
     const handleSelectUser = (user: UserIndexResponse) => {
         setEmail(user.user.email);
@@ -231,6 +279,81 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
             }
         }
     }
+
+    const handleCreateLink = async () => {
+        if (!idItemToShare) return;
+
+        try {
+            const request: CreateSharedLinkRequest = {
+                itemId: idItemToShare,
+                expiresAt: linkSettings.expiresAt || undefined,
+                maxViews: linkSettings.maxViews ? linkSettings.maxViews : undefined
+            };
+            const response = await createSharedLink(request);
+            if (response) {
+                if (response.status === 201) {
+                    setSharedLink(response.data);
+                    setShowLinkPopup(true);
+                    setLinkSettings({
+                        expiresAt: "",
+                        maxViews: 0
+                    });
+                    fetchSharedLinks(0); // Refresh the list
+                } else {
+                    toast.error(response.message);
+                }
+            }
+        } catch (error) {
+            toast.error('Không thể tạo link chia sẻ');
+        }
+    };
+
+    const handleCopyLink = () => {
+        if (sharedLink) {
+            const shareUrl = `${window.location.origin}/shared/${sharedLink.accessToken}`;
+            navigator.clipboard.writeText(shareUrl);
+            toast.success('Đã sao chép link!');
+        }
+    };
+
+    const handleToggleLinkStatus = async (link: SharedLinkResponse) => {
+        try {
+            if (link.isActive) {
+                await disableSharedLink(link.id);
+            } else {
+                await enableSharedLink(link.id);
+            }
+            fetchSharedLinks(0);
+        } catch (error) {
+            toast.error('Không thể thay đổi trạng thái link');
+        }
+    };
+
+    const handleDeleteLink = async (link: SharedLinkResponse) => {
+        try {
+            await deleteSharedLink(link.id);
+            fetchSharedLinks(0);
+        } catch (error) {
+            toast.error('Không thể xóa link');
+        }
+    };
+
+    const handleUpdateLink = async () => {
+        if (!selectedLink) return;
+
+        try {
+            const request: UpdateSharedLinkRequest = {
+                expiresAt: updateSettings.expiresAt ? new Date(updateSettings.expiresAt) : undefined,
+                maxViews: updateSettings.maxViews || undefined
+            };
+            await updateSharedLink(selectedLink.id, request);
+            setShowUpdateDialog(false);
+            fetchSharedLinks(0);
+        } catch (error) {
+            toast.error('Không thể cập nhật link');
+        }
+    };
+
     return (
         <AnimatePresence>
             <motion.div
@@ -251,9 +374,20 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                     {/* Header */}
                     <div className="flex items-center justify-between mb-6">
                         <h2 className="text-xl font-semibold text-gray-900 dark:text-white">Quyền truy cập</h2>
-                        <button onClick={() => setShowSettings(true)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
-                            <Settings size={20} />
-                        </button>
+                        <div className="flex items-center gap-3">
+                            {itemType !== 'FOLDER' && (
+                                <button
+                                    onClick={() => setShowLinkSettings(true)}
+                                    className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors duration-200 flex items-center gap-2"
+                                >
+                                    <Link2 size={20} />
+                                    <span>Tạo link</span>
+                                </button>
+                            )}
+                            <button onClick={() => setShowSettings(true)} className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-white transition-colors duration-200">
+                                <Settings size={20} />
+                            </button>
+                        </div>
                     </div>
 
                     {/* Input section */}
@@ -386,6 +520,203 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare }) => 
                     </div>
                 </motion.div>
             </motion.div>
+
+            {/* Link Settings Dialog */}
+            <AnimatePresence>
+                {showLinkSettings && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+                        onClick={() => setShowLinkSettings(false)}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6 relative"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Tạo link chia sẻ</h3>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Thời gian hết hạn (không bắt buộc)
+                                    </label>
+                                    <input
+                                        type="datetime-local"
+                                        value={linkSettings.expiresAt}
+                                        onChange={(e) => setLinkSettings(prev => ({ ...prev, expiresAt: e.target.value }))}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Số lần truy cập tối đa (không bắt buộc)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={linkSettings.maxViews}
+                                        onChange={(e) => setLinkSettings(prev => ({ ...prev, maxViews: parseInt(e.target.value) }))}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Nhập số lần truy cập tối đa"
+                                    />
+                                </div>
+                            </div>
+
+                            {/* Existing Links List */}
+                            <div className="mt-6">
+                                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Links đã tạo</h4>
+                                <div className="space-y-3">
+                                    {sharedLinks?.items?.map((link) => (
+                                        <SharedLinkItem
+                                            key={link.id}
+                                            link={link}
+                                            onEdit={(link) => {
+                                                setSelectedLink(link);
+                                                setUpdateSettings({
+                                                    expiresAt: link.expiresAt ? new Date(link.expiresAt).toISOString().slice(0, 16) : '',
+                                                    maxViews: link.maxViews || 0
+                                                });
+                                                setShowUpdateDialog(true);
+                                            }}
+                                            onToggleStatus={handleToggleLinkStatus}
+                                            onDelete={handleDeleteLink}
+                                        />
+                                    ))}
+                                    {(!sharedLinks?.items || sharedLinks.items.length === 0) && (
+                                        <p className="text-gray-600 dark:text-gray-400 text-center py-4">Chưa có link chia sẻ nào</p>
+                                    )}
+                                </div>
+
+                                {/* Pagination */}
+                                {sharedLinks && sharedLinks.totalPage > 1 && (
+                                    <div className="mt-4 flex items-center justify-between">
+                                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                                            Hiển thị {sharedLinks.items.length} / {sharedLinks.totalItems} link
+                                        </div>
+                                        <div className="flex items-center gap-2">
+                                            <button
+                                                onClick={() => fetchSharedLinks(sharedLinks.pageNo - 1)}
+                                                disabled={sharedLinks.pageNo === 0}
+                                                className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                            >
+                                                Trước
+                                            </button>
+                                            <span className="text-sm text-gray-600 dark:text-gray-400">
+                                                Trang {sharedLinks.pageNo + 1} / {sharedLinks.totalPage}
+                                            </span>
+                                            <button
+                                                onClick={() => fetchSharedLinks(sharedLinks.pageNo + 1)}
+                                                disabled={!sharedLinks.hasNext}
+                                                className="px-3 py-1.5 text-sm rounded-lg border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-400 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 dark:hover:bg-gray-700/50"
+                                            >
+                                                Sau
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="mt-6 flex justify-end gap-3">
+                                <button
+                                    onClick={() => setShowLinkSettings(false)}
+                                    className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    onClick={handleCreateLink}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                                >
+                                    Tạo link
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* Link Created Popup */}
+            {showLinkPopup && sharedLink && (
+                <SharedLinkSuccessPopup
+                    link={sharedLink}
+                    onCopy={handleCopyLink}
+                    onClose={() => setShowLinkPopup(false)}
+                />
+            )}
+
+            {/* Update Link Dialog */}
+            <AnimatePresence>
+                {showUpdateDialog && selectedLink && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50"
+                        onClick={() => setShowUpdateDialog(false)}
+                    >
+                        <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                            transition={{ duration: 0.2 }}
+                            className="bg-white dark:bg-gray-800 rounded-xl shadow-lg w-full max-w-md p-6 relative"
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <h3 className="text-xl font-semibold mb-6 text-gray-900 dark:text-white">Cập nhật link chia sẻ</h3>
+
+                            <div className="space-y-4">
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Thời gian hết hạn (không bắt buộc)
+                                    </label>
+                                    <input
+                                        type="datetime-local"
+                                        value={updateSettings.expiresAt}
+                                        onChange={(e) => setUpdateSettings(prev => ({ ...prev, expiresAt: e.target.value }))}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                    />
+                                </div>
+
+                                <div>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                                        Số lần truy cập tối đa (không bắt buộc)
+                                    </label>
+                                    <input
+                                        type="number"
+                                        min="1"
+                                        value={updateSettings.maxViews}
+                                        onChange={(e) => setUpdateSettings(prev => ({ ...prev, maxViews: parseInt(e.target.value) }))}
+                                        className="w-full px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                        placeholder="Nhập số lần truy cập tối đa"
+                                    />
+                                </div>
+                            </div>
+
+                            <div className="mt-6 flex justify-end gap-3">
+                                <button
+                                    onClick={() => setShowUpdateDialog(false)}
+                                    className="px-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200"
+                                >
+                                    Hủy
+                                </button>
+                                <button
+                                    onClick={handleUpdateLink}
+                                    className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors duration-200"
+                                >
+                                    Cập nhật
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
             {/* Settings dialog */}
             <AnimatePresence>

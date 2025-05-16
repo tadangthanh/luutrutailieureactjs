@@ -463,6 +463,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                     <ShareDialog
                         onClose={() => setOpenShareDialog(false)}
                         idItemToShare={idItemToShare}
+                        itemType={itemPage.items.find(item => item.id === idItemToShare)?.itemType || ''}
                     />
                 )}
                 {infoItem && (

@@ -52,9 +52,9 @@ export const updateSharedLink = async (id: number, updateSharedLinkRequest: Upda
         toast.error("Failed to update shared link");
     }
 };
-export const getAllSharedLink = async (page: number, size: number) => {
+export const getAllSharedLink = async (itemId: number, page: number, size: number) => {
     try {
-        return (await api.get(`${apiUrl}/shared-link?page=${page}&size=${size}`)).data;
+        return (await api.get(`${apiUrl}/shared-link/items/${itemId}?page=${page}&size=${size}`)).data;
     } catch (error) {
         toast.error("Failed to get all shared links");
     }

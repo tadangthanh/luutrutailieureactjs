@@ -11,6 +11,7 @@ export const SharedEditor: React.FC = () => {
 
     useEffect(() => {
         if (token) {
+            console.log("token", token);
             accessSharedLink(token)
                 .then((response) => {
                     if (response.status === 200) {

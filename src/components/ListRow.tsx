@@ -1,11 +1,11 @@
 import React, { useEffect, useRef } from "react";
 import {
     MoreHorizontal, Download, Edit, File, Info, Trash, Copy, FileText,
-    UserPlus,
     FolderClosed,
     History,
     Bookmark,
-    LucideBotMessageSquare
+    LucideBotMessageSquare,
+    Share2
 } from "lucide-react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
@@ -152,7 +152,7 @@ const ListRow: React.FC<ListRowProps> = ({
                         className="p-1 hover:bg-gray-200 dark:hover:bg-gray-600 rounded"
                         title="Chia sẻ"
                     >
-                        <UserPlus size={16} />
+                        <Share2 size={16} />
                     </button>
 
                     <button
