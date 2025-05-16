@@ -1,45 +1,13 @@
 import { DocumentEditor } from "@onlyoffice/document-editor-react";
 import { OnlyOfficeConfig } from "../types/OnlyOfficeConfig";
-import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-
-export const Editor: React.FC = () => {
-    const [searchParams] = useSearchParams();
-    const [config, setConfig] = useState<OnlyOfficeConfig | null>(null);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const configParam = searchParams.get('config');
-        if (configParam) {
-            try {
-                const decodedConfig = decodeURIComponent(configParam);
-                const parsedConfig: OnlyOfficeConfig = JSON.parse(decodedConfig);
-                console.log("url", encodeURI(parsedConfig.documentUrl))
-                setConfig(parsedConfig);
-            } catch (err) {
-                setError("Không thể đọc cấu hình editor");
-            }
-        } else {
-            setError("Không tìm thấy cấu hình editor");
-        }
-    }, [searchParams]);
-
-    if (error) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="text-red-500">{error}</div>
-            </div>
-        );
-    }
-
+interface EditorProps {
+    config: OnlyOfficeConfig | null;
+}
+export const Editor: React.FC<EditorProps> = ({ config }) => {
+    const baseUrl = "https://page-surprising-kde-controlled.trycloudflare.com";
     if (!config) {
-        return (
-            <div className="flex items-center justify-center h-screen">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-            </div>
-        );
+        return <div>No config</div>;
     }
-    const baseUrl = "https://tips-sequence-aging-this.trycloudflare.com";
     return (
         <div style={{ width: "100vw", height: "100vh" }}>
             <DocumentEditor
@@ -56,8 +24,8 @@ export const Editor: React.FC = () => {
                     editorConfig: {
                         mode: config.permissions.edit ? "edit" : "view",
                         user: {
-                            id: config.user.id,
-                            name: config.user.name,
+                            id: config.user?.id,
+                            name: config.user?.name,
                         },
                         callbackUrl: `${baseUrl}/api/v1/documents/save-editor/${localStorage.getItem("accessToken")}`,
                         customization: {

@@ -10,9 +10,10 @@ import PublicRoute from "./routes/PublicRoute";
 import { WebSocketProvider } from "./components/WebSocketProvider";
 import { Toaster } from "sonner";
 import DocumentQA from "./pages/DocumentQA";
-import { Editor } from "./components/Editor";
 import SavedDocumentsPage from "./pages/SavedDocumentsPage";
 import { ThemeProvider } from './contexts/ThemeContext';
+import { DocEditor } from './components/DocEditor';
+import { SharedEditor } from './components/SharedEditor';
 
 const App: React.FC = () => {
     return (
@@ -66,7 +67,16 @@ const App: React.FC = () => {
                                         <MainLayout><DashboardPage isSharedView={true} /></MainLayout>
                                     </PrivateRoute>
                                 } />
-                                <Route path="/editor" element={<Editor />} />
+                                <Route path="/editor" element={
+                                    <PrivateRoute>
+                                        <DocEditor />
+                                    </PrivateRoute>
+                                } />
+                                <Route path="/shared/:token" element={
+                                    <PublicRoute>
+                                        <SharedEditor />
+                                    </PublicRoute>
+                                } />
                             </Routes>
                         </>
                     </WebSocketProvider>

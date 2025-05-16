@@ -7,7 +7,7 @@ import { ItemResponse } from "../types/ItemResponse";
 import { delItem, updateItem, getItems, getItemsSharedWithMe } from "../services/ItemApi";
 import ShareDialog from "../components/ShareDialog";
 import Breadcrumbs from "../components/Breadcrumbs";
-import { copyDocument, downloadDoc, getOnlyOfficeConfig } from "../services/DocumentApi";
+import { copyDocument, downloadDoc } from "../services/DocumentApi";
 import BottomLeftNotification from "../components/BottomLeftNotification";
 import { downloadFolder } from "../services/FolderApi";
 import { AnimatePresence, motion } from "framer-motion";
@@ -16,7 +16,6 @@ import TextInputModal from "../components/TextInputModal";
 import { ItemInfoPanel } from "../components/ItemInfoPanel";
 import VersionHistoryDialog from '../components/VersionHistoryDialog';
 import { DocumentVersionResponse } from "../types/DocumentVersionResponse";
-import { OnlyOfficeConfig } from "../types/OnlyOfficeConfig";
 import { useNavigate, useParams } from "react-router-dom";
 import { removeItem, saveItem } from "../services/ItemSavedApi";
 import { useItemContext } from "../contexts/ItemContext";
@@ -57,22 +56,9 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
 
     const navigate = useNavigate();
     const handleOpen = (id: number) => {
-        getOnlyOfficeConfig(Number(id))
-            .then((response) => {
-                if (response.status === 200) {
-                    const config: OnlyOfficeConfig = response.data;
-                    // Mở editor trong tab mới
-                    const editorUrl = `/editor?config=${encodeURIComponent(JSON.stringify(config))}`;
-                    window.open(editorUrl, '_blank');
-                } else {
-                    toast.error(response.message); // Hiển thị thông báo lỗi nếu không thành công
-                    navigate("/"); // Điều hướng về trang chính nếu có lỗi
-                }
-            }).catch((error) => {
-                toast.error("Lỗi khi lấy cấu hình tài liệu.");
-                navigate("/"); // Điều hướng về trang chính nếu có lỗi
-            })
+        window.open(`/editor?docId=${id}`, '_blank');
     }
+
     const handleRename = (id: number) => {
         setRenamingItemId(id);
         setNewName(itemPage.items.find(item => item.id === id)?.name || "");

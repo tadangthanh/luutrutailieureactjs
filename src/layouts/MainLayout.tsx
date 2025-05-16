@@ -251,12 +251,12 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
         window.addEventListener("dragover", handleDragOver);
         window.addEventListener("dragleave", handleDragLeave);
         window.addEventListener("drop", handleDrop);
-        webSocketService.connect(handleMessage);
+        // webSocketService.connect(handleMessage);
         return () => {
             window.removeEventListener("dragover", handleDragOver);
             window.removeEventListener("dragleave", handleDragLeave);
             window.removeEventListener("drop", handleDrop);
-            webSocketService.disconnect();
+            // webSocketService.disconnect();
         };
     }, [handleDragOver, handleDragLeave, handleDrop, handleMessage]);
     const [pageNo, setPageNo] = useState(0);

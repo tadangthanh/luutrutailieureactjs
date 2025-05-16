@@ -1,8 +1,7 @@
 import { Search, FileText, Folder, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import { getOnlyOfficeConfig, searchDocuments } from "../services/DocumentApi";
-import { OnlyOfficeConfig } from "../types/OnlyOfficeConfig";
+import {  searchDocuments } from "../services/DocumentApi";
 import { useNavigate } from "react-router-dom";
 import { ItemIndexResponse } from "../types/ItemIndexResponse";
 import { ItemIndex } from "../types/ItemIndex";
@@ -57,25 +56,10 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
     const handleItemClick = (item: ItemIndex) => {
         if (item.itemType === "DOCUMENT") {
-            getOnlyOfficeConfig(item.itemId)
-                .then((response) => {
-                    if (response.status === 200) {
-                        const config: OnlyOfficeConfig = response.data;
-                        const editorUrl = `/editor?config=${encodeURIComponent(JSON.stringify(config))}`;
-                        window.open(editorUrl, '_blank');
-                        setIsSearchResultsVisible(false);
-                    } else {
-                        toast.error(response.message);
-                        navigate("/");
-                    }
-                }).catch((error) => {
-                    console.error("Lỗi khi lấy cấu hình OnlyOffice:", error);
-                    toast.error("Lỗi khi lấy cấu hình tài liệu.");
-                    navigate("/");
-                }).finally(() => {
-                    setSearchInput("");
-                    setDebouncedKeyword("");
-                });
+            window.open(`/editor?docId=${item.itemId}`, '_blank');
+            setIsSearchResultsVisible(false);
+            setSearchInput("");
+            setDebouncedKeyword("");
         } else if (item.itemType === "FOLDER") {
             navigate(`/folders/${item.itemId}`);
             setIsSearchResultsVisible(false);
