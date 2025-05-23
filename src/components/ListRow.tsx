@@ -5,7 +5,8 @@ import {
     History,
     Bookmark,
     LucideBotMessageSquare,
-    Share2
+    Share2,
+    Trash2
 } from "lucide-react";
 import { ItemResponse } from "../types/ItemResponse";
 import { Option } from "./Option";
@@ -210,7 +211,7 @@ const ListRow: React.FC<ListRowProps> = ({
                                         <Option label="Lịch sử phiên bản" icon={<History size={16} />} onClick={() => handleVersionHistory(item.id)} />
                                     </>
                                 )}
-                                {isEditor && <Option label="Chuyển vào thùng rác" icon={<Trash size={16} />} onClick={() => handleMoveToTrash(item.id)} />}
+                                {isEditor && <Option label={item.createdBy === localStorage.getItem('email') ? "Chuyển vào thùng rác" : "Xóa"} icon={item.createdBy === localStorage.getItem('email') ? <Trash size={16} /> : <Trash2 size={16} />} onClick={() => handleMoveToTrash(item.id)} />}
                             </ul>
                         </motion.div>
                     )}
