@@ -46,7 +46,7 @@ const VersionHistoryDialog: React.FC<VersionHistoryDialogProps> = ({ documentId,
         try {
             const response = await restoreVersion(documentId, selectedVersion);
             if (response.status === 200) {
-                toast.success("Đã khôi phục phiên bản thành công");
+                // toast.success("Đã khôi phục phiên bản thành công");
                 // Find the restored version
                 const restoredVersion = versions.find(v => v.id === selectedVersion);
                 if (restoredVersion && onRestoreSuccess) {

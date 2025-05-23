@@ -67,3 +67,10 @@ export const deleteForeverItem = async (id: number) => {
         toast.error("Có lỗi khi xóa item vĩnh viễn");
     }
 }
+export const showItem = async (id: number) => {
+    try {
+        return (await api.put(`${apiUrl}/items/show/${id}`)).data;
+    } catch (error) {
+        toast.error("Có lỗi khi hiển thị item");
+    }
+}

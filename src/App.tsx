@@ -62,16 +62,22 @@ const App: React.FC = () => {
                                     </PrivateRoute>
                                 } />
                                 {/* shared with me */}
+                                <Route path="/shared-with-me/folders/:id" element={
+                                    <PrivateRoute>
+                                        <MainLayout><DashboardPage isSharedView={true} /></MainLayout>
+                                    </PrivateRoute>
+                                } />
                                 <Route path="/shared-with-me" element={
                                     <PrivateRoute>
                                         <MainLayout><DashboardPage isSharedView={true} /></MainLayout>
                                     </PrivateRoute>
                                 } />
-                                <Route path="/editor" element={
-                                    <PrivateRoute>
-                                        <DocEditor />
-                                    </PrivateRoute>
-                                } />
+                                <Route
+                                    path="/editor" element={
+                                        <PrivateRoute>
+                                            <DocEditor />
+                                        </PrivateRoute>
+                                    } />
                                 <Route path="/shared/:token" element={
                                     <PublicRoute>
                                         <SharedEditor />

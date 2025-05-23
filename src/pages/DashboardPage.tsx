@@ -259,9 +259,17 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         // // 1) Set the folder (null for root)
         setFolderId(id === 0 ? null : id);
         if (id) {
-            navigate(`/folders/${id}`);
+            if (isSharedView) {
+                navigate(`/shared-with-me/folders/${id}`);
+            } else {
+                navigate(`/folders/${id}`);
+            }
         } else {
-            navigate("/");
+            if (isSharedView) {
+                navigate("/shared-with-me");
+            } else {
+                navigate("/");
+            }
         }
     }
     const [isEditor, setIsEditor] = useState(false);
@@ -280,7 +288,11 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
         if (item.itemType === 'FOLDER') {
             // 1) Set the folder
             setFolderId(item.id);
-            navigate(`/folders/${item.id}`);
+            if (isSharedView) {
+                navigate(`/shared-with-me/folders/${item.id}`);
+            } else {
+                navigate(`/folders/${item.id}`);
+            }
             hasPermissionEditor(item.id).then((res) => {
                 if (res.status === 200) {
                     setIsEditor(res.data);

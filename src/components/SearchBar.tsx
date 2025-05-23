@@ -1,10 +1,11 @@
 import { Search, FileText, Folder, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
-import {  searchDocuments } from "../services/DocumentApi";
+import { searchDocuments } from "../services/DocumentApi";
 import { useNavigate } from "react-router-dom";
 import { ItemIndexResponse } from "../types/ItemIndexResponse";
 import { ItemIndex } from "../types/ItemIndex";
+import { showItem } from "../services/ItemApi";
 
 interface SearchBarProps {
     placeholder?: string;
@@ -61,7 +62,12 @@ const SearchBar: React.FC<SearchBarProps> = ({
             setSearchInput("");
             setDebouncedKeyword("");
         } else if (item.itemType === "FOLDER") {
-            navigate(`/folders/${item.itemId}`);
+            if (item.createdBy !== localStorage.getItem("email")) {
+                showItem(item.itemId);
+                navigate(`/shared-with-me/folders/${item.itemId}`);
+            } else {
+                navigate(`/folders/${item.itemId}`);
+            }
             setIsSearchResultsVisible(false);
             setSearchInput("");
             setDebouncedKeyword("");

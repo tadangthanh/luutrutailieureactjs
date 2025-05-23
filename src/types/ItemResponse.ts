@@ -11,4 +11,5 @@ export interface ItemResponse extends BaseDto {
     itemType: "DOCUMENT" | "FOLDER";
     saved: boolean;
     size: number | null; // Size in bytes, null for folders
+    isSharedWithMe: boolean;
 }
