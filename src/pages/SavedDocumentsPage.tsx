@@ -79,24 +79,25 @@ const SavedDocumentsPage = () => {
     const navigate = useNavigate();
     const handleItemClick = (item: ItemResponse) => () => {
         if (item.itemType === "FOLDER") {
-            navigate(`/folders/${item.id}`);
+            if (item.createdBy === localStorage.getItem("email")) {
+                navigate(`/folders/${item.id}`);
+            } else {
+                navigate(`/shared-with-me/folders/${item.id}`);
+            }
         } else if (item.itemType === "DOCUMENT") {
-            getOnlyOfficeConfig(item.id)
-                .then((response) => {
-                    if (response.status === 200) {
-                        const config: OnlyOfficeConfig = response.data;
-                        // Mở editor trong tab mới
-                        const editorUrl = `/editor?config=${encodeURIComponent(JSON.stringify(config))}`;
-                        window.open(editorUrl, '_blank');
-                    } else {
-                        toast.error(response.message); // Hiển thị thông báo lỗi nếu không thành công
-                        navigate("/"); // Điều hướng về trang chính nếu có lỗi
-                    }
-                }).catch((error) => {
-                    console.error("Lỗi khi lấy cấu hình OnlyOffice:", error);
-                    toast.error("Lỗi khi lấy cấu hình tài liệu.");
-                    navigate("/"); // Điều hướng về trang chính nếu có lỗi
-                })
+            if (item.createdBy === localStorage.getItem("email")) {
+                if (item.parentId) {
+                    navigate(`/folders/${item.parentId}`);
+                } else {
+                    navigate("/");
+                }
+            } else {
+                if (item.parentId) {
+                    navigate(`/shared-with-me/folders/${item.parentId}`);
+                } else {
+                    navigate("/shared-with-me");
+                }
+            }
         }
     }
 
