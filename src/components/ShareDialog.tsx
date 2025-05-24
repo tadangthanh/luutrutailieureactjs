@@ -102,10 +102,20 @@ const ShareDialog: React.FC<ShareDialogProps> = ({ onClose, idItemToShare, itemT
                 !existingUserIds.has(Number(user.user.id))
             );
 
-            setSuggestUserPage(prev => ({
-                ...res.data,
-                items: [...prev.items, ...filteredItems], // nối thêm item mới
-            }));
+            setSuggestUserPage(prev => {
+                // Reset items when pageNoSuggest is 0 (new search)
+                if (pageNoSuggest === 0) {
+                    return {
+                        ...res.data,
+                        items: filteredItems
+                    };
+                }
+                // Append new items when loading more pages
+                return {
+                    ...res.data,
+                    items: [...prev.items, ...filteredItems]
+                };
+            });
 
         } catch (error) {
             console.error(error);
