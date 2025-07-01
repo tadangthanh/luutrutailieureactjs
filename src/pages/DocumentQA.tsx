@@ -539,7 +539,7 @@ const DocumentQA: React.FC = () => {
                 <div className="px-4 sm:px-6 py-6 space-y-6 bg-white dark:bg-gray-900 rounded-2xl mt-4 md:mt-12 shadow-xl border border-gray-200 dark:border-gray-800 transition-colors duration-300">
                     <div className="flex items-center justify-between">
                         <h1 className="text-2xl sm:text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent dark:from-blue-400 dark:to-blue-600 tracking-tight">
-                            AI Hỏi đáp
+                            Truy vấn tài liệu
                         </h1>
                         {chatSelected && (
                             <span className="text-sm text-gray-500 dark:text-gray-400">

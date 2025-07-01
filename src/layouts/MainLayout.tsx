@@ -245,6 +245,7 @@ const MainLayout = ({ children }: { children: ReactNode }) => {
             toast.error("Tải tệp thất bại.");
             webSocketService.unsubscribeUploadProgress();
             webSocketService.unsubscribeUploadSuccess();
+            webSocketService.unsubscribeUploadFailure();
         }
     }, [handleMessage, handleUploadCompleted, handleUploadFailure]);
     useEffect(() => {

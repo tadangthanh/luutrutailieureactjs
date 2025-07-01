@@ -106,7 +106,7 @@ export const SidebarChatList: React.FC<ChatListProps> = ({
                         onClick={onCreateNewChat}
                         className="flex items-center justify-center gap-2 text-white bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-200 rounded-xl py-3 font-medium mb-6 shadow-md hover:shadow-lg"
                     >
-                        <Plus size={18} /> Tạo cuộc trò chuyện
+                        <Plus size={18} /> Tạo mới
                     </motion.button>
 
                     {/* Danh sách */}

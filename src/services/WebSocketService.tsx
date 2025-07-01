@@ -57,6 +57,7 @@ export class WebSocketService {
             "/user/topic/upload-failure",
             (message) => {
                 if (message.body) {
+                    console.log("🔴 Upload failure", message.body);
                     onMessage(message.body);
                 }
             }
