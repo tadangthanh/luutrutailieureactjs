@@ -1,6 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import {
-    MoreHorizontal, Download, Edit, File, Info, Trash, Copy, FileText,
+    MoreHorizontal, Download, Edit, File, Info, Trash, FileText,
     FolderClosed,
     History,
     Bookmark,
@@ -101,7 +101,6 @@ const ListRow: React.FC<ListRowProps> = ({
                 {renderIcon()}
                 {item.name}
             </div>
-
             {/* Cột chủ sở hữu */}
             <div className="col-span-1" title={item.ownerEmail}>
                 {formatOwner(item.ownerEmail)}
@@ -207,7 +206,7 @@ const ListRow: React.FC<ListRowProps> = ({
                                 <Option label="Tải xuống" icon={<Download size={16} />} onClick={() => handleDownload(item.id)} />
                                 {item.itemType === "DOCUMENT" && (
                                     <>
-                                        <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(item.id)} />
+                                        {/* <Option label="Tạo bản sao" icon={<Copy size={16} />} onClick={() => handleCopy(item.id)} /> */}
                                         <Option label="Lịch sử phiên bản" icon={<History size={16} />} onClick={() => handleVersionHistory(item.id)} />
                                     </>
                                 )}

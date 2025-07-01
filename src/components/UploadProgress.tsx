@@ -25,14 +25,14 @@ export const UploadProgress: React.FC<UploadProgressProps> = ({
                 <p className="text-xs text-secondary">
                     {totalFileUploaded}/{totalFile} files ({percent}%)
                 </p>
-                {percent < 100 && (
+                {/* {percent < 100 && (
                     <button
                         onClick={onCancel}
                         className="text-xs text-red-500 hover:underline"
                     >
                         Hủy
                     </button>
-                )}
+                )} */}
             </div>
         </div>
     );

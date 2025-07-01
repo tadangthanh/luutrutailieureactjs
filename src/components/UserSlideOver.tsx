@@ -27,7 +27,9 @@ const UserSlideOver: React.FC<UserSlideOverProps> = ({ isOpen, onClose }) => {
     const handleLogout = () => {
         localStorage.removeItem("accessToken");
         localStorage.removeItem("refreshToken");
+        localStorage.removeItem("email");
         localStorage.removeItem("userName");
+        localStorage.removeItem("fullName");
         localStorage.removeItem("userEmail");
         localStorage.removeItem("avatarUrl");
         navigate("/login");

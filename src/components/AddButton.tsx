@@ -1,4 +1,4 @@
-import { Folder, Upload } from "lucide-react";
+import { Folder, FolderPlus, Upload } from "lucide-react";
 
 import { Plus } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
@@ -7,7 +7,7 @@ import { useItemContext } from "../contexts/ItemContext";
 const AddButton = () => {
     const [open, setOpen] = useState(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const { openCreateFolderModal, triggerFileUpload } = useItemContext();
+    const { openCreateFolderModal, triggerFileUpload, triggerFolderUpload } = useItemContext();
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
@@ -49,6 +49,16 @@ const AddButton = () => {
                     >
                         <Upload size={18} className="text-blue-500" />
                         Tải tài liệu lên
+                    </button>
+                    <button
+                        onClick={() => {
+                            triggerFolderUpload();
+                            setOpen(false);
+                        }}
+                        className="w-full flex items-center gap-2 px-4 py-3 text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all"
+                    >
+                        <FolderPlus size={18} className="text-blue-500" />
+                        Tải thư mục lên
                     </button>
                 </div>
             )}
