@@ -153,7 +153,7 @@ const DashboardPage: React.FC<DashboardPageProps> = ({ isSharedView = false }) =
                     setIdItemToShare(id);
                     setOpenShareDialog(true);
                 } else {
-                    toast.error("Bạn không có quyền chia sẻ tài liệu này. Chỉ người có quyền chỉnh sửa mới có thể chia sẻ.");
+                    toast.info("Bạn không có quyền chia sẻ tài liệu này");
                 }
             } else {
                 toast.error("Không thể kiểm tra quyền truy cập. Vui lòng thử lại sau.");
