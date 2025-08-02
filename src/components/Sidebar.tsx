@@ -155,7 +155,7 @@ function SidebarContent({ setActiveMenu, setIsOpen, currentPath, setActiveLink, 
                 <NavItem
                     to="/document-assistant"
                     icon={<Asterisk size={20} />}
-                    label="NoteBookLM"
+                    label="Truy vấn tài liệu"
                     active={activeLink === "/document-assistant"}
                     onClick={() => {
                         setActiveLink("/document-assistant");

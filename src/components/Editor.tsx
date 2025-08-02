@@ -4,7 +4,7 @@ interface EditorProps {
     config: OnlyOfficeConfig | null;
 }
 export const Editor: React.FC<EditorProps> = ({ config }) => {
-    const baseUrl = "https://sink-retail-paris-modified.trycloudflare.com";
+    const baseUrl = "https://alternate-pitch-sand-equipment.trycloudflare.com";
     if (!config) {
         return <div>No config</div>;
     }

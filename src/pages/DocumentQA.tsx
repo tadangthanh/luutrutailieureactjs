@@ -22,6 +22,7 @@ import { motion, AnimatePresence } from "framer-motion";
 const DocumentQA: React.FC = () => {
     // ====== STATE ======
     const [question, setQuestion] = useState("");
+    const [model, setModel] = useState("gemini-2.5-flash-lite-preview-06-17");
     const [textAreaValue, setTextAreaValue] = useState<string>("");
     const [loading, setLoading] = useState(false);
     const [chatSelected, setChatSelected] = useState<ChatSessionDto | null>(null);
@@ -200,11 +201,12 @@ const DocumentQA: React.FC = () => {
                     documentId: documentId ? Number(documentId) : null,
                 });
             }
+            console.log("assistantFiles", assistantFiles);
             const parts = assistantFiles.map((f) => ({
                 fileData: { fileUri: f.uri, mimeType: f.mimeType?.split(";")[0] },
             }));
             const response = await ai.models.generateContentStream({
-                model: "gemini-2.5-flash-preview-04-17",
+                model: model,
                 contents: {
                     role: "user",
                     parts: [...parts, { text: question }],
@@ -308,7 +310,7 @@ const DocumentQA: React.FC = () => {
             }));
 
             const response = await ai.models.generateContentStream({
-                model: "gemini-2.5-flash-preview-04-17",
+                model: model,
                 contents: {
                     role: "user",
                     parts: [...parts, { text: question }],
